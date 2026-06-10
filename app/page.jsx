@@ -35,13 +35,16 @@ export default function Home() {
         body: JSON.stringify(formData)
       });
       
-      if (!res.ok) throw new Error("Gagal generate dari AI");
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Gagal generate dari AI");
+      }
       
       const data = await res.json();
       setResult(data);
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan saat memproses data dengan AI.");
+      alert(`Terjadi kesalahan: ${error.message}`);
     } finally {
       setIsLoading(false);
     }

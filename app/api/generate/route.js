@@ -1,7 +1,4 @@
-import { GoogleGenAI, Type } from '@google/genai';
 import { NextResponse } from 'next/server';
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function POST(request) {
   try {
@@ -9,6 +6,10 @@ export async function POST(request) {
 
     if (!cpText) {
       return NextResponse.json({ error: 'Teks CP tidak boleh kosong' }, { status: 400 });
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json({ error: 'API Key Gemini belum diatur di Vercel Environment Variables' }, { status: 500 });
     }
 
     const prompt = `Anda adalah ahli kurikulum SMK. Saya akan memberikan data mata pelajaran dan teks Capaian Pembelajaran (CP) mentah dari pemerintah.
@@ -51,62 +52,75 @@ Hasilkan output dalam format JSON dengan struktur persis seperti berikut:
 Catatan: Untuk dimensiProfil, isi dengan string penjelasan singkat BILA relevan. Jika tidak relevan, isi string kosong "". Minimal isi 2 dimensi yang paling cocok.
 `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            analisis: {
-              type: Type.OBJECT,
-              properties: {
-                kompetensiInti: { type: Type.STRING },
-                koneksiIndustri: { type: Type.STRING },
-                koneksiLokal: { type: Type.STRING },
-              }
-            },
-            dimensiProfil: {
-              type: Type.OBJECT,
-              properties: {
-                dimensi1: { type: Type.STRING },
-                dimensi2: { type: Type.STRING },
-                dimensi3: { type: Type.STRING },
-                dimensi4: { type: Type.STRING },
-                dimensi5: { type: Type.STRING },
-                dimensi6: { type: Type.STRING },
-                dimensi7: { type: Type.STRING },
-                dimensi8: { type: Type.STRING },
-              }
-            },
-            deepLearning: {
-              type: Type.OBJECT,
-              properties: {
-                mindful: { type: Type.STRING },
-                meaningful: { type: Type.STRING },
-                joyful: { type: Type.STRING },
-              }
-            },
-            strategi: {
-              type: Type.OBJECT,
-              properties: {
-                model: { type: Type.STRING },
-                asesmen: { type: Type.STRING },
-                media: { type: Type.STRING },
-                alat: { type: Type.STRING },
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              analisis: {
+                type: "OBJECT",
+                properties: {
+                  kompetensiInti: { type: "STRING" },
+                  koneksiIndustri: { type: "STRING" },
+                  koneksiLokal: { type: "STRING" },
+                }
+              },
+              dimensiProfil: {
+                type: "OBJECT",
+                properties: {
+                  dimensi1: { type: "STRING" },
+                  dimensi2: { type: "STRING" },
+                  dimensi3: { type: "STRING" },
+                  dimensi4: { type: "STRING" },
+                  dimensi5: { type: "STRING" },
+                  dimensi6: { type: "STRING" },
+                  dimensi7: { type: "STRING" },
+                  dimensi8: { type: "STRING" },
+                }
+              },
+              deepLearning: {
+                type: "OBJECT",
+                properties: {
+                  mindful: { type: "STRING" },
+                  meaningful: { type: "STRING" },
+                  joyful: { type: "STRING" },
+                }
+              },
+              strategi: {
+                type: "OBJECT",
+                properties: {
+                  model: { type: "STRING" },
+                  asesmen: { type: "STRING" },
+                  media: { type: "STRING" },
+                  alat: { type: "STRING" },
+                }
               }
             }
           }
         }
-      }
+      })
     });
 
-    const result = JSON.parse(response.text());
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      console.error("Gemini API Error Response:", responseData);
+      return NextResponse.json({ error: responseData.error?.message || 'Gagal menghubungi Gemini AI' }, { status: 500 });
+    }
+
+    // Parse the actual text response from Gemini
+    const textOutput = responseData.candidates[0].content.parts[0].text;
+    const result = JSON.parse(textOutput);
+    
     return NextResponse.json(result);
 
   } catch (error) {
-    console.error('Gemini API Error:', error);
-    return NextResponse.json({ error: 'Gagal menghubungi Gemini AI' }, { status: 500 });
+    console.error('Server Error:', error);
+    return NextResponse.json({ error: error.message || 'Terjadi kesalahan di server' }, { status: 500 });
   }
 }
