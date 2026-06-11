@@ -197,3 +197,143 @@ h2 {
 .animate-spin {
   animation: spin 1s linear infinite;
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Accordion ── */
+.accordion {
+  margin-bottom: 1rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.accordion-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: left;
+}
+
+.accordion-header:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.accordion-body {
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.1);
+  border-top: 1px solid var(--glass-border);
+  animation: fadeIn 0.2s ease;
+}
+
+/* ── Info Box ── */
+.info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(255, 192, 0, 0.12);
+  border: 1px solid rgba(255, 192, 0, 0.3);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+}
+
+.info-box svg {
+  flex-shrink: 0;
+  color: var(--accent);
+  margin-top: 2px;
+}
+
+/* ── Required marker ── */
+.required {
+  color: #ff6b6b;
+  margin-left: 2px;
+}
+
+/* ── Result Panel ── */
+.result-panel {
+  text-align: center;
+}
+
+.result-panel h2 {
+  text-align: center;
+  border: none;
+  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+}
+
+.result-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.result-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+  text-align: left;
+  background: rgba(0,0,0,0.15);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+}
+
+.preview-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-size: 0.95rem;
+}
+
+.preview-item:last-child {
+  border-bottom: none;
+}
+
+.badge {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.badge.ai {
+  background: rgba(255, 192, 0, 0.2);
+  border-color: rgba(255, 192, 0, 0.4);
+  color: var(--accent);
+}
+
+/* ── Select styling ── */
+.glass-input option {
+  background: #1F3864;
+  color: white;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+  h1 {
+    font-size: 1.8rem;
+  }
+}
