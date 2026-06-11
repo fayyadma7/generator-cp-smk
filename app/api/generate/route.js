@@ -8,19 +8,12 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Teks CP tidak boleh kosong' }, { status: 400 });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json({ error: 'API Key Gemini belum diatur di Vercel Environment Variables' }, { status: 500 });
-    }
-
-    const prompt = `Anda adalah ahli kurikulum SMK. Saya akan memberikan data mata pelajaran dan teks Capaian Pembelajaran (CP) mentah dari pemerintah.
-Tugas Anda adalah merumuskan analisis dan rekomendasi pembelajaran untuk CP tersebut sesuai format SMK Muhammadiyah 3 Purbalingga (Pendekatan Deep Learning).
-
+    const prompt = `Tugas Anda adalah merumuskan analisis dan rekomendasi pembelajaran untuk CP SMK Muhammadiyah 3 Purbalingga.
 Mata Pelajaran: ${subject}
 Fase: ${phase}
-Teks CP Asli:
-${cpText}
+Teks CP Asli: ${cpText}
 
-Hasilkan output dalam format JSON dengan struktur persis seperti berikut:
+Output HANYA dalam bentuk JSON persis seperti struktur berikut tanpa tambahan karakter markdown (\`\`\`json):
 {
   "analisis": {
     "kompetensiInti": "Sebutkan Pengetahuan, Keterampilan, dan Sikap secara singkat.",
@@ -28,7 +21,7 @@ Hasilkan output dalam format JSON dengan struktur persis seperti berikut:
     "koneksiLokal": "Jelaskan keterkaitan CP dengan potensi lokal Purbalingga."
   },
   "dimensiProfil": {
-    "dimensi1": "Penjelasan keterkaitan dengan Keimanan & Ketakwaan...",
+    "dimensi1": "Penjelasan keterkaitan dengan Keimanan & Ketakwaan... isi dengan string kosong jika tidak relevan.",
     "dimensi2": "Penjelasan...",
     "dimensi3": "Penjelasan...",
     "dimensi4": "Penjelasan...",
@@ -49,78 +42,35 @@ Hasilkan output dalam format JSON dengan struktur persis seperti berikut:
     "alat": "Komputer, software..."
   }
 }
-Catatan: Untuk dimensiProfil, isi dengan string penjelasan singkat BILA relevan. Jika tidak relevan, isi string kosong "". Minimal isi 2 dimensi yang paling cocok.
 `;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    const response = await fetch(`https://text.pollinations.ai/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "OBJECT",
-            properties: {
-              analisis: {
-                type: "OBJECT",
-                properties: {
-                  kompetensiInti: { type: "STRING" },
-                  koneksiIndustri: { type: "STRING" },
-                  koneksiLokal: { type: "STRING" },
-                }
-              },
-              dimensiProfil: {
-                type: "OBJECT",
-                properties: {
-                  dimensi1: { type: "STRING" },
-                  dimensi2: { type: "STRING" },
-                  dimensi3: { type: "STRING" },
-                  dimensi4: { type: "STRING" },
-                  dimensi5: { type: "STRING" },
-                  dimensi6: { type: "STRING" },
-                  dimensi7: { type: "STRING" },
-                  dimensi8: { type: "STRING" },
-                }
-              },
-              deepLearning: {
-                type: "OBJECT",
-                properties: {
-                  mindful: { type: "STRING" },
-                  meaningful: { type: "STRING" },
-                  joyful: { type: "STRING" },
-                }
-              },
-              strategi: {
-                type: "OBJECT",
-                properties: {
-                  model: { type: "STRING" },
-                  asesmen: { type: "STRING" },
-                  media: { type: "STRING" },
-                  alat: { type: "STRING" },
-                }
-              }
-            }
-          }
-        }
+        messages: [
+          { role: 'system', content: 'Anda adalah asisten AI khusus pembuat JSON. Dilarang keras membalas dengan teks apa pun selain raw JSON. Pastikan JSON yang dihasilkan 100% valid dan bisa di parse.' },
+          { role: 'user', content: prompt }
+        ],
+        jsonMode: true,
+        model: 'openai'
       })
     });
 
-    const responseData = await response.json();
-
     if (!response.ok) {
-      console.error("Gemini API Error Response:", responseData);
-      return NextResponse.json({ error: responseData.error?.message || 'Gagal menghubungi Gemini AI' }, { status: 500 });
+      return NextResponse.json({ error: 'Gagal menghubungi server Pollinations AI' }, { status: 500 });
     }
 
-    // Parse the actual text response from Gemini
-    const textOutput = responseData.candidates[0].content.parts[0].text;
-    const result = JSON.parse(textOutput);
+    let textOutput = await response.text();
     
+    // Membersihkan teks jika ada backtick markdown ```json
+    textOutput = textOutput.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    const result = JSON.parse(textOutput);
     return NextResponse.json(result);
 
   } catch (error) {
     console.error('Server Error:', error);
-    return NextResponse.json({ error: error.message || 'Terjadi kesalahan di server' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Terjadi kesalahan di server saat mem-parsing JSON' }, { status: 500 });
   }
 }
