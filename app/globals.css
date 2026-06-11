@@ -337,3 +337,139 @@ h2 {
     font-size: 1.8rem;
   }
 }
+
+/* ── PDF Upload Banner ── */
+.pdf-upload-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, rgba(31, 56, 100, 0.6), rgba(46, 93, 158, 0.4));
+  border: 1px solid rgba(255, 192, 0, 0.35);
+  border-radius: 16px;
+  padding: 1.2rem 1.5rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.pdf-upload-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 200px;
+}
+
+.pdf-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: rgba(255, 192, 0, 0.2);
+  border: 1px solid rgba(255, 192, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.pdf-upload-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: white;
+  margin-bottom: 3px;
+}
+
+.pdf-upload-sub {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.4;
+}
+
+.pdf-upload-btn {
+  background: linear-gradient(135deg, var(--accent), #ff9d00);
+  color: #1A1A1A;
+  font-weight: 700;
+  font-size: 0.9rem;
+  font-family: 'Outfit', sans-serif;
+  padding: 10px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pdf-upload-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(255, 192, 0, 0.4);
+}
+
+/* ── PDF Status ── */
+.pdf-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 0.8rem 1.2rem;
+  margin-top: 0.75rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.pdf-status.success {
+  background: rgba(55, 86, 35, 0.25);
+  border: 1px solid rgba(55, 200, 35, 0.3);
+  color: #a8f090;
+}
+
+.pdf-status.error {
+  background: rgba(180, 30, 30, 0.2);
+  border: 1px solid rgba(255, 80, 80, 0.3);
+  color: #ffaaaa;
+}
+
+.pdf-status svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ── PDF Reading Indicator ── */
+.pdf-reading-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,192,0,0.1);
+  border: 1px solid rgba(255,192,0,0.25);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: var(--accent);
+}
+
+/* ── Spin animation ── */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ── Badge terisi ── */
+.badge-filled {
+  background: rgba(55, 200, 35, 0.2);
+  border: 1px solid rgba(55, 200, 35, 0.35);
+  color: #a8f090;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .pdf-upload-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .pdf-upload-btn {
+    width: 100%;
+    text-align: center;
+  }
+}

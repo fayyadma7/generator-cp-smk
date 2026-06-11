@@ -1,13 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { generateAndDownloadDocx } from '../lib/docxGenerator';
-import { Sparkles, Download, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
-
-const SECTIONS = [
-  { id: 'identitas', label: 'A. Identitas Mata Pelajaran' },
-  { id: 'cp', label: 'B. Capaian Pembelajaran' },
-  { id: 'catatan', label: 'G. Catatan & Tanda Tangan' },
-];
+import { Sparkles, Download, Loader2, ChevronDown, ChevronUp, FileUp, CheckCircle, XCircle } from 'lucide-react';
 
 export default function Home() {
   const [formData, setFormData] = useState({
@@ -21,21 +15,23 @@ export default function Home() {
     teacher: '',
     waka: '',
     principal: '',
-    // B. CP
     elemcp: '',
     cpText: '',
     elemen1: '',
     capaian1: '',
     elemen2: '',
     capaian2: '',
-    // G. Catatan
     catatan: '',
     tantangan: '',
   });
 
   const [openSection, setOpenSection] = useState('identitas');
   const [isLoading, setIsLoading] = useState(false);
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
+  const [pdfStatus, setPdfStatus] = useState(null); // null | 'success' | 'error'
+  const [pdfMessage, setPdfMessage] = useState('');
   const [result, setResult] = useState(null);
+  const fileInputRef = useRef(null);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -45,9 +41,77 @@ export default function Home() {
     setOpenSection(openSection === id ? null : id);
   };
 
+  // ── Upload & Parse PDF ──
+  const handlePdfUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      setPdfStatus('error');
+      setPdfMessage('File harus berformat PDF.');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setPdfStatus('error');
+      setPdfMessage('Ukuran file maksimal 10 MB.');
+      return;
+    }
+
+    setIsPdfLoading(true);
+    setPdfStatus(null);
+    setPdfMessage('');
+
+    // Buka section CP agar guru bisa lihat progress
+    setOpenSection('cp');
+
+    try {
+      const fd = new FormData();
+      fd.append('pdf', file);
+
+      const res = await fetch('/api/parse-pdf', {
+        method: 'POST',
+        body: fd,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Gagal membaca PDF');
+      }
+
+      // Auto-isi form dengan data hasil ekstraksi
+      setFormData(prev => ({
+        ...prev,
+        // Hanya isi jika field masih kosong (jangan timpa yang sudah diisi guru)
+        subject:   data.mataPelajaran && !prev.subject   ? data.mataPelajaran : prev.subject,
+        phase:     data.fase          && !prev.phase     ? data.fase          : prev.phase,
+        elemcp:    data.elemcp        && !prev.elemcp    ? data.elemcp        : prev.elemcp,
+        cpText:    data.cpText        || prev.cpText,
+        elemen1:   data.elemen1       && !prev.elemen1   ? data.elemen1       : prev.elemen1,
+        capaian1:  data.capaian1      && !prev.capaian1  ? data.capaian1      : prev.capaian1,
+        elemen2:   data.elemen2       && !prev.elemen2   ? data.elemen2       : prev.elemen2,
+        capaian2:  data.capaian2      && !prev.capaian2  ? data.capaian2      : prev.capaian2,
+      }));
+
+      setPdfStatus('success');
+      setPdfMessage(`✅ PDF berhasil dibaca! Kolom CP sudah terisi otomatis dari "${file.name}". Silakan periksa dan lengkapi data lainnya.`);
+
+    } catch (error) {
+      console.error(error);
+      setPdfStatus('error');
+      setPdfMessage(`Gagal memproses PDF: ${error.message}`);
+    } finally {
+      setIsPdfLoading(false);
+      // Reset file input agar bisa upload ulang file yang sama
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  // ── Generate AI ──
   const handleGenerate = async (e) => {
     e.preventDefault();
-    if (!formData.cpText) return alert("Teks CP (Deskripsi CP) wajib diisi!");
+    if (!formData.cpText) return alert("Teks CP (Deskripsi CP) wajib diisi! Upload PDF atau isi manual.");
 
     setIsLoading(true);
     setResult(null);
@@ -66,7 +130,6 @@ export default function Home() {
       const data = await res.json();
       setResult(data);
 
-      // Auto scroll ke hasil
       setTimeout(() => {
         document.getElementById('result-section')?.scrollIntoView({ behavior: 'smooth' });
       }, 300);
@@ -88,9 +151,41 @@ export default function Home() {
       <div className="glass-panel" style={{ marginBottom: '2rem' }}>
         <h1>Generator Format CP</h1>
         <p className="subtitle">SMK Muhammadiyah 3 Purbalingga — Kurikulum Merdeka | Pendekatan Deep Learning</p>
-        <p className="subtitle" style={{ fontSize: '0.85rem', marginTop: '0.3rem' }}>
-          Isi form di bawah, klik <strong>Generate</strong>, dan dokumen Word siap diunduh sesuai format resmi sekolah.
-        </p>
+
+        {/* ── PDF UPLOAD BANNER ── */}
+        <div className="pdf-upload-banner">
+          <div className="pdf-upload-left">
+            <div className="pdf-icon-wrap">
+              {isPdfLoading ? <Loader2 className="spin" size={28} /> : <FileUp size={28} />}
+            </div>
+            <div>
+              <div className="pdf-upload-title">Upload PDF Capaian Pembelajaran</div>
+              <div className="pdf-upload-sub">
+                Upload file PDF dokumen CP resmi dari Kepmendikbud — AI akan otomatis membaca dan mengisi kolom teks CP.
+              </div>
+            </div>
+          </div>
+          <label className="pdf-upload-btn" htmlFor="pdf-input">
+            {isPdfLoading ? 'Membaca PDF...' : 'Pilih File PDF'}
+          </label>
+          <input
+            ref={fileInputRef}
+            id="pdf-input"
+            type="file"
+            accept="application/pdf"
+            style={{ display: 'none' }}
+            onChange={handlePdfUpload}
+            disabled={isPdfLoading}
+          />
+        </div>
+
+        {/* Status PDF */}
+        {pdfStatus && (
+          <div className={`pdf-status ${pdfStatus}`}>
+            {pdfStatus === 'success' ? <CheckCircle size={16} /> : <XCircle size={16} />}
+            <span>{pdfMessage}</span>
+          </div>
+        )}
 
         <form onSubmit={handleGenerate} style={{ marginTop: '1.5rem' }}>
 
@@ -165,10 +260,19 @@ export default function Home() {
           <div className="accordion">
             <button type="button" className="accordion-header" onClick={() => toggleSection('cp')}>
               <span>B. Capaian Pembelajaran</span>
-              {openSection === 'cp' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {formData.cpText && <span className="badge-filled">Terisi ✓</span>}
+                {openSection === 'cp' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </div>
             </button>
             {openSection === 'cp' && (
               <div className="accordion-body">
+                {isPdfLoading && (
+                  <div className="pdf-reading-indicator">
+                    <Loader2 className="spin" size={20} />
+                    <span>AI sedang membaca PDF dan mengekstrak teks CP...</span>
+                  </div>
+                )}
                 <div className="form-group">
                   <label>Elemen CP (B.1)</label>
                   <input type="text" name="elemcp" className="glass-input" placeholder="Contoh: Pemrograman, Jaringan Komputer, dll." onChange={handleChange} value={formData.elemcp} />
@@ -179,8 +283,8 @@ export default function Home() {
                     required
                     name="cpText"
                     className="glass-input"
-                    style={{ minHeight: '150px', resize: 'vertical' }}
-                    placeholder="Paste teks CP resmi di sini. Teks ini yang akan dianalisis oleh AI..."
+                    style={{ minHeight: '180px', resize: 'vertical' }}
+                    placeholder={isPdfLoading ? "Menunggu hasil baca PDF..." : "Paste teks CP resmi di sini, atau upload PDF di atas untuk mengisi otomatis..."}
                     onChange={handleChange}
                     value={formData.cpText}
                   />
@@ -235,7 +339,7 @@ export default function Home() {
             <span>Bagian <strong>C, D, E, F</strong> (Analisis, Profil Lulusan, Deep Learning, Strategi) akan <strong>diisi otomatis oleh AI</strong> berdasarkan teks CP yang Anda masukkan.</span>
           </div>
 
-          <button type="submit" className="glass-button" disabled={isLoading} style={{ marginTop: '1.5rem' }}>
+          <button type="submit" className="glass-button" disabled={isLoading || isPdfLoading} style={{ marginTop: '1.5rem' }}>
             {isLoading ? <Loader2 className="animate-spin" /> : <Sparkles />}
             {isLoading ? "AI sedang menganalisis CP..." : "Generate & Analisis dengan AI"}
           </button>
@@ -247,20 +351,21 @@ export default function Home() {
           <div className="result-icon">✅</div>
           <h2>Analisis AI Berhasil!</h2>
           <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-            Dokumen Format CP sudah siap. Klik tombol di bawah untuk mengunduh file <strong>.docx</strong> yang sudah lengkap sesuai format resmi SMK Muhammadiyah 3 Purbalingga.
+            Dokumen Format CP sudah siap. Klik tombol di bawah untuk mengunduh file <strong>.docx</strong> lengkap sesuai format resmi SMK Muhammadiyah 3 Purbalingga (5 Bagian).
           </p>
           <div className="result-preview">
-            <div className="preview-item"><span>📋 Identitas</span><span className="badge">Terisi</span></div>
-            <div className="preview-item"><span>📚 Capaian Pembelajaran</span><span className="badge">Terisi</span></div>
-            <div className="preview-item"><span>🧠 Analisis Kontekstual</span><span className="badge ai">AI Generated</span></div>
-            <div className="preview-item"><span>🏅 8 Dimensi Profil Lulusan</span><span className="badge ai">AI Generated</span></div>
-            <div className="preview-item"><span>⚡ Pendekatan Deep Learning</span><span className="badge ai">AI Generated</span></div>
-            <div className="preview-item"><span>🎯 Strategi Pembelajaran</span><span className="badge ai">AI Generated</span></div>
-            <div className="preview-item"><span>📝 Catatan Pengembangan</span><span className="badge">Terisi</span></div>
+            <div className="preview-item"><span>📋 Identitas Mata Pelajaran</span><span className="badge">Terisi</span></div>
+            <div className="preview-item"><span>📚 Capaian Pembelajaran (B.1 & B.2)</span><span className="badge">Terisi</span></div>
+            <div className="preview-item"><span>🧠 Analisis & Kontekstualisasi (C)</span><span className="badge ai">AI</span></div>
+            <div className="preview-item"><span>🏅 8 Dimensi Profil Lulusan (D)</span><span className="badge ai">AI</span></div>
+            <div className="preview-item"><span>⚡ Implementasi Deep Learning (E)</span><span className="badge ai">AI</span></div>
+            <div className="preview-item"><span>🎯 Strategi Pembelajaran (F)</span><span className="badge ai">AI</span></div>
+            <div className="preview-item"><span>📝 Catatan Pengembangan (G)</span><span className="badge">Terisi</span></div>
+            <div className="preview-item"><span>🗺️ Alur Penggunaan Dokumen (Bag. V)</span><span className="badge">Otomatis</span></div>
           </div>
           <button id="download-btn" onClick={handleDownload} className="glass-button" style={{ marginTop: '1.5rem' }}>
             <Download />
-            Download Format CP (.docx)
+            Download Format CP Lengkap (.docx)
           </button>
         </div>
       )}
