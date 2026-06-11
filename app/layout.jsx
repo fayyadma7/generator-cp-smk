@@ -8,7 +8,18 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="id">
-      <body>{children}</body>
+      <body>
+        <nav className="navbar">
+          <div className="nav-container">
+            <div className="nav-logo">Format AI Generator</div>
+            <div className="nav-links">
+              <a href="/" className="nav-link">Generator CP</a>
+              <a href="/tp-atp" className="nav-link">Generator TP & ATP</a>
+            </div>
+          </div>
+        </nav>
+        {children}
+      </body>
     </html>
   );
 }

@@ -96,11 +96,16 @@ Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format J
   "mataPelajaran": "nama mata pelajaran yang ditemukan, string kosong jika tidak ada",
   "fase": "fase yang ditemukan contoh Fase E atau Fase F, string kosong jika tidak ada",
   "cpText": "teks lengkap deskripsi Capaian Pembelajaran utama WAJIB DIISI ambil bagian inti CP yang substantif",
-  "elemen1": "nama elemen pertama jika ada, string kosong jika tidak ada",
-  "capaian1": "deskripsi capaian elemen pertama jika ada, string kosong jika tidak ada",
-  "elemen2": "nama elemen kedua jika ada, string kosong jika tidak ada",
-  "capaian2": "deskripsi capaian elemen kedua jika ada, string kosong jika tidak ada"
-}`;
+  "elemenList": [
+    {
+      "nama": "nama elemen (misal: Observasi dan eksplorasi)",
+      "capaian": "deskripsi capaian untuk elemen tersebut"
+    }
+  ]
+}
+
+Catatan Penting:
+Pada array "elemenList", ekstrak SEMUA elemen CP beserta capaiannya yang Anda temukan di dalam dokumen. Jumlah elemen bisa 1, 2, 5, atau berapapun. Masukkan semuanya ke dalam array tersebut. Jika tidak ada elemen spesifik, kembalikan array kosong [].`;
 
   const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',

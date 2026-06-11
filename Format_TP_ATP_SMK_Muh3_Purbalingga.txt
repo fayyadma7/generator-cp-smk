@@ -1,0 +1,522 @@
+
+FORMAT TUJUAN PEMBELAJARAN (TP)
+SMK Muhammadiyah 3 Purbalingga  |  Kurikulum Merdeka  |  Pendekatan Deep 
+Learning
+
+Visi: MENJADIKAN SMK YANG UNGGUL, ISLAMI, DAN BERJIWA ENTREPRENEUR
+
+BAGIAN A - DASAR DAN PRINSIP PENGEMBANGAN TUJUAN PEMBELAJARAN
+
+Apa itu Tujuan Pembelajaran (TP)?
+Tujuan Pembelajaran adalah jabaran operasional dari Capaian Pembelajaran (CP) yang 
+menggambarkan kompetensi spesifik yang harus dikuasai peserta didik dalam satu atau beberapa kali 
+pertemuan. TP bersifat terukur dan dapat diobservasi.
+
+Prinsip Perumusan Tujuan Pembelajaran:
+•	Mengacu pada Capaian Pembelajaran (CP) yang telah disusun dalam Format CP.
+•	Menggunakan kata kerja operasional (KKO) yang terukur sesuai Taksonomi Bloom yang 
+direvisi (C1-C6).
+•	Memuat komponen: Audience (peserta didik) + Behavior (perilaku/KKO) + Condition (kondisi) + 
+Degree (tingkat ketercapaian) - ABCD.
+•	Berkontribusi pada pengembangan minimal 1 Dimensi Profil Lulusan SMK Muhammadiyah 3 
+Purbalingga.
+•	Mendukung pendekatan Deep Learning: Mindful, Meaningful, dan/atau Joyful.
+•	Disusun secara progresif dari level kognitif rendah (C1-C2) menuju tinggi (C4-C6).
+
+Taksonomi Bloom - Panduan Pemilihan Kata Kerja Operasional:
+
+Level
+Kode
+Kata Kerja 
+Operasional (Contoh)
+Makna
+1
+C1 - 
+Mengingat
+Menyebutkan, 
+mendefinisikan, 
+menghafal, mengenali
+Mengingat kembali fakta dan konsep dasar
+2
+C2 - 
+Memahami
+Menjelaskan, 
+merangkum, 
+mendeskripsikan, 
+menginterpretasi
+Memahami makna dari informasi
+3
+C3 - 
+Menerapkan
+Menggunakan, 
+melaksanakan, 
+menerapkan, 
+mendemonstrasikan
+Menggunakan pengetahuan dalam situasi nyata
+4
+C4 - 
+Menganalisis
+Membandingkan, 
+menganalisis, 
+membedakan, 
+memeriksa
+Memecah informasi menjadi bagian-bagian
+5
+C5 - 
+Mengevaluasi
+Menilai, memutuskan, 
+mengkritik, 
+memvalidasi
+Membuat penilaian berdasarkan kriteria
+6
+C6 - 
+Mencipta
+Merancang, membuat, 
+mengembangkan, 
+menyusun
+Menggabungkan elemen menjadi sesuatu yang baru
+
+BAGIAN B - IDENTITAS MATA PELAJARAN
+
+IDENTITAS MATA PELAJARAN
+Nama Mata Pelajaran
+Tulis nama mata pelajaran ...
+Program Keahlian
+Tulis program keahlian ...
+Fase / Kelas
+Contoh: Fase E / Kelas X
+Semester
+Ganjil / Genap
+Tahun Pelajaran
+Contoh: 2025/2026
+Alokasi Waktu Total
+... JP ( ... pertemuan × ... JP)
+Guru Mata Pelajaran
+Nama & NIP/NUPTK ...
+Elemen CP yang 
+Dirujuk
+Tuliskan elemen CP sesuai dokumen CP yang telah 
+disusun ...
+
+BAGIAN C - RINGKASAN CAPAIAN PEMBELAJARAN YANG DIRUJUK
+
+Capaian Pembelajaran (CP) Rujukan
+Fase
+Tulis fase ... (diisi sesuai Format CP yang telah 
+disusun)
+Elemen CP
+Salin elemen CP dari dokumen Format CP ...
+Deskripsi CP
+Salin deskripsi CP dari dokumen Format CP ...
+Kompetensi yang 
+Dijabarkan
+1. ...
+2. ...
+3. ...
+4. ...
+5. ...
+
+
+
+
+BAGIAN D - TABEL TUJUAN PEMBELAJARAN
+
+Rumuskan setiap Tujuan Pembelajaran menggunakan komponen ABCD (Audience, Behavior, 
+Condition, Degree) dan pastikan setiap TP terhubung langsung dengan CP yang telah 
+diidentifikasi pada Bagian C.
+
+No. 
+TP
+Rumusan Tujuan Pembelajaran
+Level 
+Kognitif 
+(Bloom)
+Dimensi Profil 
+Lulusan
+Alokasi 
+Waktu
+TP-
+01
+Peserta didik mampu menjelaskan konsep [nama 
+konsep] secara lisan maupun tulisan dengan tepat.
+C2
+Penalaran Kritis, 
+Komunikasi
+2 JP
+TP-
+02
+Peserta didik mampu mengidentifikasi [nama 
+objek/komponen] sesuai prosedur yang berlaku.
+C2
+Penalaran Kritis
+2 JP
+TP-
+03
+Peserta didik mampu menerapkan [nama 
+prosedur/langkah] dalam konteks nyata secara 
+mandiri.
+C3
+Kemandirian, 
+Kreativitas
+4 JP
+TP-
+04
+Peserta didik mampu menganalisis [nama 
+masalah] dan menyajikan solusi yang logis secara 
+kolaboratif.
+C4
+Penalaran Kritis, 
+Kolaborasi
+4 JP
+TP-
+05
+Peserta didik mampu menciptakan [nama 
+produk/karya] yang orisinal sesuai standar industri.
+C6
+Kreativitas, 
+Kemandirian
+4 JP
+TP-
+06
+...
+...
+...
+... JP
+TP-
+07
+...
+...
+...
+... JP
+TP-
+08
+...
+...
+...
+... JP
+
+BAGIAN E - INDIKATOR KETERCAPAIAN TUJUAN PEMBELAJARAN (IKTP) & 
+ASESMEN
+
+Setiap TP harus memiliki minimal 1 Indikator Ketercapaian (IKTP) yang dapat diobservasi dan 
+diukur, serta dilengkapi dengan rencana asesmen yang sesuai.
+
+No. 
+TP
+Rumusan TP (singkat)
+Indikator Ketercapaian TP 
+(IKTP)
+Bentuk Asesmen
+Instrumen / 
+Alat Ukur
+TP-
+01
+...
+Peserta didik dapat 
+menyebutkan minimal 3 
+ciri/komponen ...
+Formatif 
+(lisan/tulisan)
+Pertanyaan 
+lisan, lembar 
+observasi
+TP-
+02
+...
+Peserta didik dapat 
+mengidentifikasi dengan 
+tingkat akurasi = 80% ...
+Formatif (unjuk 
+kerja)
+Rubrik penilaian 
+praktik
+TP-
+03
+...
+Peserta didik dapat 
+menerapkan prosedur 
+secara mandiri dan benar ...
+Formatif + Sumatif
+Lembar kerja, 
+checklist praktik
+TP-
+04
+...
+Peserta didik dapat 
+menyajikan analisis secara 
+sistematis ...
+Sumatif (proyek)
+Rubrik proyek, 
+presentasi
+TP-
+05
+...
+Peserta didik menghasilkan 
+produk sesuai kriteria 
+standar industri ...
+Sumatif 
+(portofolio)
+Rubrik 
+portofolio, 
+penilaian 
+sejawat
+
+BAGIAN F - CATATAN PENGEMBANGAN DAN VALIDASI TP
+
+Catatan Kontekstualisasi
+Jelaskan penyesuaian TP dengan konteks lokal Purbalingga / DUDI ...
+Kesesuaian dengan Deep 
+Learning
+Jelaskan bagaimana rangkaian TP mendukung Mindful, Meaningful, 
+Joyful Learning ...
+Tanggal Penyusunan
+...
+Guru Penyusun
+Nama & tanda tangan
+Verifikasi Waka Kurikulum
+Nama & tanda tangan
+Pengesahan Kepala 
+Sekolah
+Nama & tanda tangan
+
+SMK MUHAMMADIYAH 3 PURBALINGGA
+Unggul  •  Islami  •  Berjiwa Entrepreneur
+
+
+
+FORMAT ALUR TUJUAN PEMBELAJARAN (ATP)
+SMK Muhammadiyah 3 Purbalingga  |  Kurikulum Merdeka  |  Pendekatan Deep Learning
+
+Apa itu Alur Tujuan Pembelajaran (ATP)?  ATP adalah urutan/sekuens Tujuan Pembelajaran (TP) yang disusun secara logis dan sistematis dari yang 
+sederhana menuju kompleks, memperhatikan keterkaitan antar TP, dan memastikan peserta didik memiliki fondasi yang cukup sebelum melanjutkan ke TP 
+berikutnya. ATP menjadi panduan utama guru dalam menyusun Modul Ajar.
+
+Mata Pelajaran
+...
+Program Keahlian
+...
+Fase / Kelas
+Fase ... / Kelas ...
+Tahun Pelajaran
+2025/2026
+Alokasi Waktu Total
+... JP
+Guru Penyusun
+...
+
+PETA ALUR TUJUAN PEMBELAJARAN
+TP-01
+Mengingat & 
+Memahami (C1-C2)
+?
+TP-02
+Mengidentifikasi (C2-
+C3)
+?
+TP-03
+Menerapkan (C3)
+?
+TP-04
+Menganalisis (C4)
+?
+TP-05
+Mengevaluasi (C5)
+?
+TP-06
+Mencipta (C6) - 
+Produk
+
+
+No.
+Tujuan Pembelajaran
+Materi / Konten Esensial
+Dimensi Profil 
+Lulusan
+Pendekatan Deep 
+Learning
+Waktu
+Asesmen
+Keterangan 
+Pertemuan
+SEMESTER GANJIL
+TP-
+01
+Peserta didik mampu ... 
+[Rumusan TP sesuai 
+Format TP yang telah 
+disusun]
+- Topik/sub-materi A - 
+Topik/sub-materi B - 
+Koneksi DUDI ...
+Penalaran 
+Kritis, 
+Komunikasi
+Mindful: Refleksi & 
+kesadaran belajar
+2 JP
+Formatif lisan
+Pertemuan 1
+TP-
+02
+Peserta didik mampu ... 
+[Rumusan TP sesuai 
+Format TP yang telah 
+disusun]
+- Topik/sub-materi A - 
+Topik/sub-materi B - 
+Koneksi DUDI ...
+Penalaran Kritis
+Meaningful: Studi kasus 
+nyata industri
+2 JP
+Formatif tulis
+Pertemuan 2
+TP-
+03
+Peserta didik mampu ... 
+[Rumusan TP sesuai 
+Format TP yang telah 
+disusun]
+- Topik/sub-materi A - 
+Topik/sub-materi B - 
+Koneksi DUDI ...
+Kemandirian, 
+Kreativitas
+Joyful: Proyek & eksplorasi 
+praktis
+4 JP
+Unjuk kerja
+Pertemuan 3-4
+TP-
+04
+Peserta didik mampu ... 
+[Rumusan TP sesuai 
+Format TP yang telah 
+disusun]
+- Topik/sub-materi A - 
+Topik/sub-materi B - 
+Koneksi DUDI ...
+Penalaran 
+Kritis, 
+Kolaborasi
+Meaningful+Joyful: Diskusi 
+& presentasi
+4 JP
+Penilaian proyek
+Pertemuan 5-6
+SEMESTER GENAP
+TP-
+05
+Peserta didik mampu ... 
+[Rumusan TP sesuai 
+Format TP yang telah 
+disusun]
+- Topik/sub-materi C - 
+Topik/sub-materi D - 
+Proyek integratif ...
+Kreativitas, 
+Kemandirian
+Mindful: Pembelajaran 
+mandiri terstruktur
+4 JP
+Formatif 
+portofolio
+Pertemuan 7-8
+TP-
+06
+Peserta didik mampu ... 
+[Rumusan TP sesuai 
+Format TP yang telah 
+disusun]
+- Topik/sub-materi C - 
+Topik/sub-materi D - 
+Proyek integratif ...
+Kolaborasi, 
+Komunikasi
+Meaningful: Analisis kasus 
+industri lokal
+4 JP
+Formatif + 
+sumatif
+Pertemuan 9-
+10
+TP-
+07
+Peserta didik mampu ... 
+[Rumusan TP sesuai 
+Format TP yang telah 
+disusun]
+- Topik/sub-materi C - 
+Topik/sub-materi D - 
+Proyek integratif ...
+Kreativitas, 
+Penalaran Kritis
+Joyful: Teaching Factory / 
+pameran karya
+4 JP
+Sumatif proyek
+Pertemuan 11-
+12
+TP-
+08
+Peserta didik mampu ... 
+[Rumusan TP sesuai 
+Format TP yang telah 
+disusun]
+- Topik/sub-materi C - 
+Topik/sub-materi D - 
+Proyek integratif ...
+Semua dimensi 
+relevant
+Mindful+Meaningful+Joyful: 
+Produk akhir & refleksi
+4 JP
+Sumatif portofolio 
+& presentasi
+Pertemuan 13-
+16
+TP-
+09
+... (tambahkan sesuai 
+kebutuhan)
+...
+...
+...
+... JP
+...
+...
+TP-
+10
+... (tambahkan sesuai 
+kebutuhan)
+...
+...
+...
+... JP
+...
+...
+
+VALIDASI DAN PENGESAHAN DOKUMEN ATP
+Total TP
+Total JP
+Model Pembelajaran Utama
+Catatan
+... TP
+... JP (Ganjil: ... JP | Genap: ... JP)
+PjBL / Teaching Factory / 
+Discovery ...
+Selaras dengan Format CP & TP yang telah 
+disusun
+Tanggal: ...
+Guru Penyusun: ...
+Waka Kurikulum: ...
+Kepala Sekolah: ...
+
+SMK MUHAMMADIYAH 3 PURBALINGGA  |  Unggul  •  Islami  •  Berjiwa Entrepreneur
+
+FORMAT TUJUAN PEMBELAJARAN (TP) | SMK Muhammadiyah 3 Purbalingga
+Kurikulum Merdeka | Deep Learning
+SMK Muhammadiyah 3 Purbalingga  |  Halaman 1 dari 1
+FORMAT ALUR TUJUAN PEMBELAJARAN (ATP) | SMK Muhammadiyah 3 Purbalingga
+Kurikulum Merdeka | Deep Learning
+SMK Muhammadiyah 3 Purbalingga  |  Halaman 1 dari 1
