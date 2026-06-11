@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 // ── Polyfill untuk DOMMatrix yang tidak tersedia di Node.js ──
 if (typeof globalThis.DOMMatrix === 'undefined') {
@@ -44,49 +44,47 @@ if (typeof globalThis.Path2D === 'undefined') {
   };
 }
 
-export async function POST(request) {
+// ── Ekstrak teks dari PDF via Gemini API (untuk PDF scan/gambar) ──
+async function extractTextViaGemini(buffer) {
+  const GEMINI_KEY = process.env.GEMINI_API_KEY;
+  if (!GEMINI_KEY) return null;
+
   try {
-    const formData = await request.formData();
-    const file = formData.get('pdf');
+    const base64 = buffer.toString('base64');
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: 'Ekstrak semua teks dari dokumen PDF ini. Kembalikan seluruh teks apa adanya tanpa modifikasi, tanpa ringkasan, tanpa komentar tambahan. Jika dokumen berisi tabel, tuliskan konten tabel dalam format teks biasa.' },
+              { inlineData: { mimeType: 'application/pdf', data: base64 } }
+            ]
+          }]
+        })
+      }
+    );
 
-    if (!file) {
-      return NextResponse.json({ error: 'File PDF tidak ditemukan' }, { status: 400 });
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error('Gemini API error:', res.status, errBody.slice(0, 500));
+      return null;
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const json = await res.json();
+    const text = json?.candidates?.[0]?.content?.parts?.map(p => p.text).join('\n') || '';
+    return text.trim() || null;
+  } catch (err) {
+    console.error('Gemini extract error:', err);
+    return null;
+  }
+}
 
-    // Parse PDF
-    let rawText = '';
-    try {
-      const pdfParse = (await import('pdf-parse')).default;
-      const pdfData = await pdfParse(buffer, {
-        // Opsi minimal agar tidak error di server
-        pagerender: null,
-        max: 0,
-      });
-      rawText = pdfData.text;
-    } catch (parseErr) {
-      console.error('PDF parse error:', parseErr);
-      return NextResponse.json(
-        { error: 'Gagal membaca PDF. Pastikan file PDF bukan hasil scan/foto dan tidak terproteksi password.' },
-        { status: 400 }
-      );
-    }
-
-    if (!rawText || rawText.trim().length < 50) {
-      return NextResponse.json(
-        { error: 'Teks dalam PDF tidak dapat diekstrak. Pastikan PDF bukan hasil scan/gambar.' },
-        { status: 400 }
-      );
-    }
-
-    // Kirim ke Groq AI untuk mengekstrak bagian CP
-    if (!process.env.GROQ_API_KEY) {
-      return NextResponse.json({ cpText: rawText.trim().substring(0, 3000) });
-    }
-
-    const prompt = `Anda adalah asisten yang membantu guru SMK mengekstrak informasi dari dokumen PDF Capaian Pembelajaran (CP) resmi Kepmendikbudristek.
+// ── Minta Groq AI mengekstrak struktur CP dari teks mentah ──
+async function extractCPWithGroq(rawText) {
+  const prompt = `Anda adalah asisten yang membantu guru SMK mengekstrak informasi dari dokumen PDF Capaian Pembelajaran (CP) resmi Kepmendikbudristek.
 
 Berikut adalah teks yang diekstrak dari PDF:
 ---
@@ -105,30 +103,85 @@ Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format J
   "capaian2": "deskripsi capaian elemen kedua jika ada, string kosong jika tidak ada"
 }`;
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
-        messages: [
-          { role: 'system', content: 'Anda adalah asisten ekstraksi data. Keluarkan HANYA JSON murni tanpa markdown.' },
-          { role: 'user', content: prompt }
-        ],
-        response_format: { type: 'json_object' }
-      })
-    });
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: 'Anda adalah asisten ekstraksi data. Keluarkan HANYA JSON murni tanpa markdown.' },
+        { role: 'user', content: prompt }
+      ],
+      response_format: { type: 'json_object' }
+    })
+  });
 
-    if (!response.ok) {
-      // Kalau AI gagal, kembalikan teks mentah saja
-      return NextResponse.json({ cpText: rawText.trim().substring(0, 3000) });
+  if (!res.ok) return null;
+
+  const aiData = await res.json();
+  return JSON.parse(aiData.choices[0].message.content);
+}
+
+export async function POST(request) {
+  try {
+    const formData = await request.formData();
+    const file = formData.get('pdf');
+
+    if (!file) {
+      return NextResponse.json({ error: 'File PDF tidak ditemukan' }, { status: 400 });
     }
 
-    const aiData = await response.json();
-    const extracted = JSON.parse(aiData.choices[0].message.content);
-    return NextResponse.json(extracted);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // ── Strategi 1: Coba pdf-parse (cepat untuk PDF berbasis teks) ──
+    let rawText = '';
+    let usedOcr = false;
+
+    try {
+      const pdfParse = (await import('pdf-parse')).default;
+      const pdfData = await pdfParse(buffer);
+      rawText = pdfData.text || '';
+    } catch (parseErr) {
+      console.warn('pdf-parse gagal, akan coba Gemini OCR:', parseErr.message);
+    }
+
+    // Jika teks terlalu sedikit, fallback ke Gemini OCR
+    if (!rawText || rawText.trim().length < 50) {
+      console.log('Teks dari pdf-parse terlalu sedikit, fallback ke Gemini OCR...');
+      const geminiText = await extractTextViaGemini(buffer);
+      if (geminiText && geminiText.length >= 50) {
+        rawText = geminiText;
+        usedOcr = true;
+      } else {
+        return NextResponse.json(
+          { error: 'Gagal membaca PDF. PDF ini mungkin hasil scan/foto. Pastikan teks terbaca jelas atau gunakan PDF berbasis teks (bukan hasil scan).' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // ── Strategi 2: Ekstrak struktur CP dengan AI ──
+    if (process.env.GROQ_API_KEY) {
+      try {
+        const extracted = await extractCPWithGroq(rawText);
+        if (extracted && extracted.cpText) {
+          return NextResponse.json({ ...extracted, _usedOcr: usedOcr });
+        }
+      } catch (aiErr) {
+        console.warn('Groq extraction gagal, fallback ke teks mentah:', aiErr.message);
+      }
+    }
+
+    // Fallback: kirim teks mentah
+    return NextResponse.json({
+      cpText: rawText.trim().substring(0, 5000),
+      _usedOcr: usedOcr,
+      _note: 'Ekstraksi AI tidak tersedia, teks dikirim mentah'
+    });
 
   } catch (error) {
     console.error('Server Error:', error);
