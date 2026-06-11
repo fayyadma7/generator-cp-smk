@@ -473,3 +473,107 @@ h2 {
     text-align: center;
   }
 }
+
+/* ── CP Section Label ── */
+.cp-section-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--accent);
+  border-left: 3px solid var(--accent);
+  padding-left: 10px;
+  margin-bottom: 1rem;
+  letter-spacing: 0.01em;
+}
+
+/* ── Elemen List ── */
+.elemen-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Elemen Card ── */
+.elemen-card {
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  position: relative;
+  transition: border-color 0.2s;
+}
+
+.elemen-card:hover {
+  border-color: rgba(255, 192, 0, 0.3);
+}
+
+.elemen-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.elemen-number {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--accent);
+  background: rgba(255, 192, 0, 0.12);
+  border: 1px solid rgba(255, 192, 0, 0.25);
+  padding: 3px 12px;
+  border-radius: 20px;
+}
+
+.btn-remove-elemen {
+  background: rgba(255, 80, 80, 0.15);
+  border: 1px solid rgba(255, 80, 80, 0.3);
+  color: #ff8080;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-remove-elemen:hover {
+  background: rgba(255, 80, 80, 0.3);
+  color: #ffaaaa;
+}
+
+/* ── Tombol Tambah Elemen ── */
+.btn-add-elemen {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 192, 0, 0.1);
+  border: 1px dashed rgba(255, 192, 0, 0.5);
+  color: var(--accent);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-top: 0.25rem;
+}
+
+.btn-add-elemen:hover {
+  background: rgba(255, 192, 0, 0.2);
+  border-color: var(--accent);
+}
+
+/* ── Elemen card form-group spacing ── */
+.elemen-card .form-group {
+  margin-bottom: 0.75rem;
+}
+
+.elemen-card .form-group:last-child {
+  margin-bottom: 0;
+}
+
