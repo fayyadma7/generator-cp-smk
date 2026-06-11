@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   try {
-    const { subject, phase, cpText } = await request.json();
+    const { subject, program, phase, cpText } = await request.json();
 
     if (!cpText) {
       return NextResponse.json({ error: 'Teks CP tidak boleh kosong' }, { status: 400 });
@@ -13,10 +13,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'API Key Groq belum diatur di Vercel Environment Variables' }, { status: 500 });
     }
 
-    const prompt = `Anda adalah ahli kurikulum SMK. Saya akan memberikan data mata pelajaran dan teks Capaian Pembelajaran (CP) mentah dari pemerintah.
+    const prompt = `Anda adalah ahli kurikulum SMK. Saya akan memberikan data mata pelajaran, program keahlian, dan teks Capaian Pembelajaran (CP) mentah dari pemerintah.
 Tugas Anda adalah merumuskan analisis dan rekomendasi pembelajaran untuk CP tersebut sesuai format SMK Muhammadiyah 3 Purbalingga (Pendekatan Deep Learning).
 
+Gunakan informasi Program Keahlian sebagai referensi utama/konteks untuk menyusun Analisis & Kontekstualisasi CP, serta bagian-bagian lainnya agar sangat relevan dengan keahlian spesifik tersebut.
+
 Mata Pelajaran: ${subject}
+Program Keahlian: ${program || 'Tidak disebutkan'}
 Fase: ${phase}
 Teks CP Asli:
 ${cpText}
@@ -24,19 +27,19 @@ ${cpText}
 Output harus HANYA berupa JSON persis dengan struktur berikut:
 {
   "analisis": {
-    "kompetensiInti": "Sebutkan Pengetahuan, Keterampilan, dan Sikap secara singkat.",
-    "koneksiIndustri": "Jelaskan relevansi CP dengan industri.",
-    "koneksiLokal": "Jelaskan keterkaitan CP dengan potensi lokal Purbalingga."
+    "kompetensiInti": "Sebutkan Pengetahuan, Keterampilan, dan Sikap secara ringkas dan spesifik sesuai Program Keahlian.",
+    "koneksiIndustri": "Jelaskan relevansi CP dengan industri spesifik pada Program Keahlian tersebut.",
+    "koneksiLokal": "Jelaskan keterkaitan CP dengan potensi lokal Purbalingga dalam konteks Program Keahlian tersebut."
   },
   "dimensiProfil": {
     "dimensi1": "Penjelasan keterkaitan dengan Keimanan & Ketakwaan...",
-    "dimensi2": "Penjelasan...",
-    "dimensi3": "Penjelasan...",
-    "dimensi4": "Penjelasan...",
-    "dimensi5": "Penjelasan...",
-    "dimensi6": "Penjelasan...",
-    "dimensi7": "Penjelasan...",
-    "dimensi8": "Penjelasan..."
+    "dimensi2": "Penjelasan keterkaitan dengan Kewargaan (Citizenship)...",
+    "dimensi3": "Penjelasan keterkaitan dengan Penalaran Kritis...",
+    "dimensi4": "Penjelasan keterkaitan dengan Kreativitas...",
+    "dimensi5": "Penjelasan keterkaitan dengan Kemandirian...",
+    "dimensi6": "Penjelasan keterkaitan dengan Kolaborasi...",
+    "dimensi7": "Penjelasan keterkaitan dengan Komunikasi...",
+    "dimensi8": "Penjelasan keterkaitan dengan Kesehatan..."
   },
   "deepLearning": {
     "mindful": "Uraikan aktivitas mindful...",
@@ -45,12 +48,18 @@ Output harus HANYA berupa JSON persis dengan struktur berikut:
   },
   "strategi": {
     "model": "Contoh: PBL, PjBL...",
-    "asesmen": "Contoh: Formatif...",
-    "media": "Buku, video...",
-    "alat": "Komputer, software..."
+    "asesmen": "Contoh: Formatif, Sumatif...",
+    "media": "Buku, video, alat peraga...",
+    "alat": "Komputer, mesin, alat praktik spesifik..."
+  },
+  "catatanPengembangan": {
+    "catatan": "Tuliskan catatan kontekstualisasi dan penyesuaian CP yang dilakukan oleh guru (dibuat seolah-olah guru yang menulis).",
+    "tantangan": "Uraikan potensi tantangan atau kendala dan solusi antisipasinya."
   }
 }
-Catatan: Untuk dimensiProfil, isi dengan string penjelasan singkat BILA relevan. Jika tidak relevan, isi string kosong "". Minimal isi 2 dimensi yang paling cocok.
+Catatan Penting: 
+1. Untuk dimensiProfil, PASTIKAN ke-8 (delapan) dimensi diisi semua dan buatlah deskripsinya se-relevan mungkin dengan Mata Pelajaran dan Program Keahlian. TIDAK BOLEH ADA YANG KOSONG.
+2. Gunakan selalu konteks Program Keahlian dalam menyusun setiap poin.
 `;
 
     // Memanggil API Groq

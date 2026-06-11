@@ -8,8 +8,7 @@ export default function Home() {
     subject: '', program: '', phase: '', grade: '',
     semester: '', year: '2025/2026', time: '',
     teacher: '', waka: '', principal: '',
-    elemcp: '', cpText: '',
-    catatan: '', tantangan: '',
+    cpText: '',
   });
 
   // List elemen dinamis
@@ -63,7 +62,6 @@ export default function Home() {
         ...prev,
         subject: data.mataPelajaran && !prev.subject ? data.mataPelajaran : prev.subject,
         phase:   data.fase          && !prev.phase   ? data.fase          : prev.phase,
-        elemcp:  data.elemcp        && !prev.elemcp  ? data.elemcp        : prev.elemcp,
         cpText:  data.cpText        || prev.cpText,
       }));
 
@@ -235,10 +233,6 @@ export default function Home() {
                 {/* B.1 */}
                 <div className="cp-section-label">B.1 — Capaian Pembelajaran Umum (dari Kepmendikbudristek)</div>
                 <div className="form-group">
-                  <label>Elemen CP</label>
-                  <input type="text" name="elemcp" className="glass-input" placeholder="Contoh: Kewirausahaan, Pemrograman, dll." onChange={handleChange} value={formData.elemcp}/>
-                </div>
-                <div className="form-group">
                   <label>Deskripsi CP Umum <span className="required">*</span></label>
                   <textarea required name="cpText" className="glass-input"
                     style={{ minHeight:'180px', resize:'vertical' }}
@@ -285,31 +279,9 @@ export default function Home() {
             )}
           </div>
 
-          {/* ── G. CATATAN ── */}
-          <div className="accordion">
-            <button type="button" className="accordion-header" onClick={() => toggleSection('catatan')}>
-              <span>G. Catatan Pengembangan (Opsional)</span>
-              {openSection === 'catatan' ? <ChevronUp size={18}/> : <ChevronDown size={18}/>}
-            </button>
-            {openSection === 'catatan' && (
-              <div className="accordion-body">
-                <div className="form-group">
-                  <label>Catatan Kontekstualisasi CP</label>
-                  <textarea name="catatan" className="glass-input" style={{ minHeight:'80px', resize:'vertical' }}
-                    placeholder="Tuliskan catatan penyesuaian yang dilakukan..." onChange={handleChange} value={formData.catatan}/>
-                </div>
-                <div className="form-group" style={{ marginTop:'1rem' }}>
-                  <label>Tantangan & Solusi Antisipasi</label>
-                  <textarea name="tantangan" className="glass-input" style={{ minHeight:'80px', resize:'vertical' }}
-                    placeholder="Uraikan potensi kendala dan solusinya..." onChange={handleChange} value={formData.tantangan}/>
-                </div>
-              </div>
-            )}
-          </div>
-
           <div className="info-box">
             <Sparkles size={16}/>
-            <span>Bagian <strong>C, D, E, F</strong> (Analisis, Profil Lulusan, Deep Learning, Strategi) akan <strong>diisi otomatis oleh AI</strong> berdasarkan teks CP yang Anda masukkan.</span>
+            <span>Bagian <strong>C, D, E, F, G</strong> (Analisis, Profil Lulusan, Deep Learning, Strategi, Catatan) akan <strong>diisi otomatis oleh AI</strong> berdasarkan teks CP dan Program Keahlian.</span>
           </div>
 
           <button type="submit" className="glass-button" disabled={isLoading || isPdfLoading} style={{ marginTop:'1.5rem' }}>
@@ -334,7 +306,7 @@ export default function Home() {
             <div className="preview-item"><span>🏅 8 Dimensi Profil Lulusan (D)</span><span className="badge ai">AI</span></div>
             <div className="preview-item"><span>⚡ Implementasi Deep Learning (E)</span><span className="badge ai">AI</span></div>
             <div className="preview-item"><span>🎯 Strategi Pembelajaran (F)</span><span className="badge ai">AI</span></div>
-            <div className="preview-item"><span>📝 Catatan Pengembangan (G)</span><span className="badge">Terisi</span></div>
+            <div className="preview-item"><span>📝 Catatan Pengembangan (G)</span><span className="badge ai">AI</span></div>
           </div>
           <button id="download-btn" onClick={handleDownload} className="glass-button" style={{ marginTop:'1.5rem' }}>
             <Download/> Download Format CP Lengkap (.docx)

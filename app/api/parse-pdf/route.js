@@ -95,7 +95,6 @@ Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format J
 {
   "mataPelajaran": "nama mata pelajaran yang ditemukan, string kosong jika tidak ada",
   "fase": "fase yang ditemukan contoh Fase E atau Fase F, string kosong jika tidak ada",
-  "elemcp": "nama elemen CP utama, string kosong jika tidak ada",
   "cpText": "teks lengkap deskripsi Capaian Pembelajaran utama WAJIB DIISI ambil bagian inti CP yang substantif",
   "elemen1": "nama elemen pertama jika ada, string kosong jika tidak ada",
   "capaian1": "deskripsi capaian elemen pertama jika ada, string kosong jika tidak ada",
