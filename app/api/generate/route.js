@@ -8,8 +8,9 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Teks CP tidak boleh kosong' }, { status: 400 });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json({ error: 'API Key Gemini belum diatur di Vercel Environment Variables' }, { status: 500 });
+    // Mengambil API Key dari Groq
+    if (!process.env.GROQ_API_KEY) {
+      return NextResponse.json({ error: 'API Key Groq belum diatur di Vercel Environment Variables' }, { status: 500 });
     }
 
     const prompt = `Anda adalah ahli kurikulum SMK. Saya akan memberikan data mata pelajaran dan teks Capaian Pembelajaran (CP) mentah dari pemerintah.
@@ -20,7 +21,7 @@ Fase: ${phase}
 Teks CP Asli:
 ${cpText}
 
-Hasilkan output dalam format JSON dengan struktur persis seperti berikut:
+Output harus HANYA berupa JSON persis dengan struktur berikut:
 {
   "analisis": {
     "kompetensiInti": "Sebutkan Pengetahuan, Keterampilan, dan Sikap secara singkat.",
@@ -52,68 +53,31 @@ Hasilkan output dalam format JSON dengan struktur persis seperti berikut:
 Catatan: Untuk dimensiProfil, isi dengan string penjelasan singkat BILA relevan. Jika tidak relevan, isi string kosong "". Minimal isi 2 dimensi yang paling cocok.
 `;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    // Memanggil API Groq
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+      },
       body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "OBJECT",
-            properties: {
-              analisis: {
-                type: "OBJECT",
-                properties: {
-                  kompetensiInti: { type: "STRING" },
-                  koneksiIndustri: { type: "STRING" },
-                  koneksiLokal: { type: "STRING" },
-                }
-              },
-              dimensiProfil: {
-                type: "OBJECT",
-                properties: {
-                  dimensi1: { type: "STRING" },
-                  dimensi2: { type: "STRING" },
-                  dimensi3: { type: "STRING" },
-                  dimensi4: { type: "STRING" },
-                  dimensi5: { type: "STRING" },
-                  dimensi6: { type: "STRING" },
-                  dimensi7: { type: "STRING" },
-                  dimensi8: { type: "STRING" },
-                }
-              },
-              deepLearning: {
-                type: "OBJECT",
-                properties: {
-                  mindful: { type: "STRING" },
-                  meaningful: { type: "STRING" },
-                  joyful: { type: "STRING" },
-                }
-              },
-              strategi: {
-                type: "OBJECT",
-                properties: {
-                  model: { type: "STRING" },
-                  asesmen: { type: "STRING" },
-                  media: { type: "STRING" },
-                  alat: { type: "STRING" },
-                }
-              }
-            }
-          }
-        }
+        model: 'llama-3.1-8b-instant',
+        messages: [
+          { role: "system", content: "Anda adalah AI asisten untuk mem-parsing data menjadi JSON. Anda HANYA boleh mengeluarkan output berupa string JSON murni tanpa ada embel-embel markdown atau teks tambahan." },
+          { role: "user", content: prompt }
+        ],
+        response_format: { type: "json_object" }
       })
     });
 
     const responseData = await response.json();
 
     if (!response.ok) {
-      console.error("Gemini API Error Response:", responseData);
-      return NextResponse.json({ error: responseData.error?.message || 'Gagal menghubungi Gemini AI' }, { status: 500 });
+      console.error("Groq API Error Response:", responseData);
+      return NextResponse.json({ error: responseData.error?.message || 'Gagal menghubungi Groq AI' }, { status: 500 });
     }
 
-    const textOutput = responseData.candidates[0].content.parts[0].text;
+    const textOutput = responseData.choices[0].message.content;
     const result = JSON.parse(textOutput);
     
     return NextResponse.json(result);
