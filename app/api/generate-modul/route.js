@@ -84,71 +84,109 @@ const SCHEMA_STEP_3 = {
     pertemuan: [
       {
         nomor: 1,
-        topik: "[Topik pertemuan 1: Pembukaan & Eksplorasi Konsep]",
-        alokasi_waktu: "[Waktu pertemuan 1, misal: 4 JP (180 menit)]",
+        topik: "[Isi Topik spesifik pertemuan ini]",
+        alokasi_waktu: "[Waktu pertemuan 1, misal: 5 JP (225 menit)]",
         pendahuluan: {
-          durasi: "[Estimasi: 15% dari total waktu, misal: 30 menit]",
+          durasi: "[Estimasi: 30 menit]",
           kegiatan_guru: [
-            "[Langkah 1: Kegiatan guru, berikan label MINDFUL pada langkah yang relevan]",
-            "[Langkah 2: Kegiatan guru]"
+            "[MINDFUL] Langkah 1 — Pembukaan ritual: Salam, basmallah/doa pembuka, cek kehadiran dan kesiapan",
+            "[MINDFUL] Langkah 2 — Stimulus dan aktivasi pengetahuan awal: Gunakan stimulus kontekstual lokal, cara memancing respons (Durasi: ... menit)",
+            "[MINDFUL] Langkah 3 — Apersepsi dan pertanyaan pemantik: Kutip dari bagian pemantik, gunakan teknik tanya-jawab",
+            "[MINDFUL] Langkah 4 — Penetapan tujuan bersama: Cara guru menyampaikan TP dan IKTP, kontrak belajar singkat"
           ],
           kegiatan_peserta_didik: [
-            "[Langkah 1: Kegiatan aktif siswa, paralel/simetris dengan guru]",
-            "[Langkah 2: Kegiatan aktif siswa]"
+            "[Langkah 1 — Siswa membalas salam, berdoa, merespons kehadiran]",
+            "[Langkah 2 — Siswa mengamati stimulus dan memberikan respons pertama]",
+            "[Langkah 3 — Siswa merespons pertanyaan pemantik secara aktif]",
+            "[Langkah 4 — Siswa mencatat tujuan dan menyepakati kontrak belajar]"
           ]
         },
         inti: {
-          durasi: "[Estimasi: 70% dari total waktu, misal: 120 menit]",
+          durasi: "[Estimasi: 165 menit]",
           kegiatan_guru: [
-            "[Langkah 1: Terapkan sintaks model pembelajaran, berikan label JOYFUL/MEANINGFUL]",
-            "[Langkah 2: Fasilitasi/bimbingan pembuatan produk]"
+            "[MEANINGFUL] Langkah 1 — Penyampaian materi dengan konteks nyata (Koneksikan dengan konteks lokal secara eksplisit)",
+            "[JOYFUL] Langkah 2 — Aktivitas individual/berpasangan/kelompok (Deskripsi konkret guru memfasilitasi aktivitas)",
+            "[MEANINGFUL] Langkah 3 — Integrasi nilai karakter Islami secara kontekstual",
+            "[JOYFUL] Langkah 4 — Lanjutan aktivitas variatif sesuai sintaks model pembelajaran",
+            "[MEANINGFUL] Langkah 5 — Pengerjaan produk belajar: Guru memantau dan memberi scaffolding langkah demi langkah"
           ],
           kegiatan_peserta_didik: [
-            "[Langkah 1: Aktivitas siswa mengerjakan instruksi guru, eksplorasi/diskusi]",
-            "[Langkah 2: Siswa berkolaborasi]"
+            "[Langkah 1 — Siswa merespons materi dan menghubungkannya dengan pengalaman/konteks lokal]",
+            "[Langkah 2 — Siswa berkolaborasi atau melakukan aktivitas mandiri (mind map, peer review, gallery walk, dll)]",
+            "[Langkah 3 — Siswa merefleksikan keterkaitan nilai dengan materi]",
+            "[Langkah 4 — Siswa mempraktikkan/mensimulasikan kegiatan]",
+            "[Langkah 5 — Siswa mengerjakan produk belajar]"
           ]
         },
         penutup: {
-          durasi: "[Estimasi: 15% dari total waktu, misal: 30 menit]",
+          durasi: "[Estimasi: 30 menit]",
           kegiatan_guru: [
-            "[Langkah 1: Penyimpulan, asesmen formatif]",
-            "[Langkah 2: Refleksi akhir dengan label MINDFUL]"
+            "[MINDFUL] Langkah 1 — Konsolidasi dan penyimpulan: Guru membimbing siswa menarik kesimpulan bersama",
+            "[MINDFUL] Langkah 2 — Asesmen formatif cepat: Teknik lisan/exit ticket, sebutkan jumlah pertanyaan",
+            "[MINDFUL] Langkah 3 — Refleksi 3-2-1: Guru menginstruksikan menulis 3 hal dipelajari, 2 pertanyaan, 1 cara penerapan",
+            "[MINDFUL] Langkah 4 — Jembatan ke pertemuan berikutnya: Informasikan teaser topik selanjutnya dan tugas mandiri",
+            "[MINDFUL] Langkah 5 — Penutupan ritual: Doa penutup dan salam"
           ],
           kegiatan_peserta_didik: [
-            "[Langkah 1: Menjawab asesmen, membuat kesimpulan]",
-            "[Langkah 2: Melakukan refleksi mandiri]"
+            "[Langkah 1 — Siswa merumuskan kesimpulan secara lisan/tulis]",
+            "[Langkah 2 — Siswa merespons asesmen formatif cepat]",
+            "[Langkah 3 — Siswa menuliskan refleksi 3-2-1]",
+            "[Langkah 4 — Siswa mencatat informasi pertemuan depan dan tugas]",
+            "[Langkah 5 — Siswa berdoa dan menjawab salam]"
           ]
         }
       },
       {
         nomor: 2,
-        topik: "[Topik pertemuan 2: Analisis Mendalam & Penerapan / Presentasi]",
+        topik: "[Isi Topik spesifik pertemuan 2]",
         alokasi_waktu: "[Waktu pertemuan 2]",
         pendahuluan: {
-          durasi: "[Estimasi 15% waktu]",
+          durasi: "[Estimasi: 30 menit]",
           kegiatan_guru: [
-            "[Review pertemuan sebelumnya, sampaikan tujuan hari ini]"
+            "[MINDFUL] Langkah 1 — Pembukaan ritual",
+            "[MINDFUL] Langkah 2 — Review pertemuan sebelumnya",
+            "[MINDFUL] Langkah 3 — Apersepsi lanjutan",
+            "[MINDFUL] Langkah 4 — Penyampaian tujuan/fokus pertemuan 2"
           ],
           kegiatan_peserta_didik: [
-            "[Menyimak dan merespons]"
+            "[Langkah 1 — Merespons pembukaan]",
+            "[Langkah 2 — Menyimak dan mengingat kembali]",
+            "[Langkah 3 — Merespons apersepsi]",
+            "[Langkah 4 — Mencatat tujuan]"
           ]
         },
         inti: {
-          durasi: "[Estimasi 70% waktu]",
+          durasi: "[Estimasi: 165 menit]",
           kegiatan_guru: [
-            "[Fasilitasi presentasi produk, berikan umpan balik]"
+            "[MEANINGFUL] Langkah 1 — Fasilitasi diskusi mendalam",
+            "[JOYFUL] Langkah 2 — Presentasi hasil/produk belajar",
+            "[MEANINGFUL] Langkah 3 — Integrasi nilai karakter lanjutan",
+            "[JOYFUL] Langkah 4 — Umpan balik antar teman (Peer Review)",
+            "[MEANINGFUL] Langkah 5 — Finalisasi produk belajar"
           ],
           kegiatan_peserta_didik: [
-            "[Presentasi produk, memberikan tanggapan antar kelompok]"
+            "[Langkah 1 — Berdiskusi aktif]",
+            "[Langkah 2 — Siswa/kelompok mempresentasikan produk]",
+            "[Langkah 3 — Merefleksikan nilai karakter]",
+            "[Langkah 4 — Memberikan tanggapan konstruktif]",
+            "[Langkah 5 — Menyempurnakan produk]"
           ]
         },
         penutup: {
-          durasi: "[Estimasi 15% waktu]",
+          durasi: "[Estimasi: 30 menit]",
           kegiatan_guru: [
-            "[Evaluasi keseluruhan, doa penutup]"
+            "[MINDFUL] Langkah 1 — Konsolidasi hasil akhir",
+            "[MINDFUL] Langkah 2 — Asesmen formatif/sumatif",
+            "[MINDFUL] Langkah 3 — Refleksi 3-2-1 / Evaluasi pembelajaran",
+            "[MINDFUL] Langkah 4 — Jembatan materi berikutnya",
+            "[MINDFUL] Langkah 5 — Penutupan ritual"
           ],
           kegiatan_peserta_didik: [
-            "[Mencatat evaluasi, berdoa]"
+            "[Langkah 1 — Menyimpulkan capaian akhir]",
+            "[Langkah 2 — Mengerjakan asesmen]",
+            "[Langkah 3 — Mengisi refleksi]",
+            "[Langkah 4 — Mencatat info lanjutan]",
+            "[Langkah 5 — Berdoa dan salam]"
           ]
         }
       }
