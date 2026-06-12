@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 export const maxDuration = 120;
 
-// ── Minta Groq AI mengekstrak struktur CP dari teks docx ──
-async function extractCPWithGroq(rawText) {
+// ── Minta Gemini AI mengekstrak struktur CP dari teks docx ──
+async function extractCPWithGemini(rawText) {
   const prompt = `Anda adalah asisten yang membantu guru SMK mengekstrak informasi dari dokumen Format Capaian Pembelajaran (CP) yang diunggah.
 
 Berikut adalah teks yang diekstrak dari dokumen DOCX:
@@ -17,34 +17,44 @@ Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format J
   "mataPelajaran": "nama mata pelajaran yang ditemukan, string kosong jika tidak ada",
   "fase": "fase yang ditemukan contoh Fase E atau Fase F, string kosong jika tidak ada",
   "cpText": "Ekstrak SEMUA teks Capaian Pembelajaran secara lengkap (biasanya ada di bagian B. CAPAIAN PEMBELAJARAN, termasuk B.1 dan B.2 elemen-elemennya jika ada). Susun menjadi satu kesatuan teks yang rapi."
-}
+}`;
 
-Keluarkan HANYA JSON murni tanpa markdown, tanpa penjelasan tambahan.`;
+  // Coba ambil dari multiple key, fallback ke GEMINI_API_KEY
+  const apiKey = process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
+  
+  if (!apiKey) {
+    console.error('API Key Gemini tidak ditemukan.');
+    return null;
+  }
 
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
     },
     body: JSON.stringify({
-      model: 'llama-3.1-8b-instant',
-      messages: [
-        { role: 'system', content: 'Anda adalah asisten ekstraksi data. Keluarkan HANYA JSON murni tanpa markdown.' },
-        { role: 'user', content: prompt }
-      ],
-      response_format: { type: 'json_object' }
+      systemInstruction: {
+        parts: [{ text: "Anda adalah asisten ekstraksi data. Keluarkan HANYA JSON murni tanpa markdown." }]
+      },
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        temperature: 0.1
+      }
     })
   });
 
   if (!res.ok) {
     const errorText = await res.text();
-    console.error('Groq API Error:', errorText);
+    console.error('Gemini API Error:', errorText);
     return null;
   }
 
   const aiData = await res.json();
-  return JSON.parse(aiData.choices[0].message.content);
+  const content = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!content) return null;
+  
+  return JSON.parse(content);
 }
 
 export async function POST(request) {
@@ -79,15 +89,15 @@ export async function POST(request) {
       );
     }
 
-    if (process.env.GROQ_API_KEY) {
+    if (process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY) {
       try {
-        const extracted = await extractCPWithGroq(rawText);
+        const extracted = await extractCPWithGemini(rawText);
         if (extracted && extracted.cpText) {
           extracted.rawText = rawText; // IMPORTANT: include raw text for Modul Ajar generator
           return NextResponse.json(extracted);
         }
       } catch (aiErr) {
-        console.warn('Groq extraction gagal, fallback ke teks mentah:', aiErr.message);
+        console.warn('Gemini extraction gagal, fallback ke teks mentah:', aiErr.message);
       }
     }
 

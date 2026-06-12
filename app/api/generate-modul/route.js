@@ -312,26 +312,37 @@ Kembalikan HANYA objek JSON yang memiliki struktur PERSIS sama dengan skema, tan
 SKEMA YANG HARUS DIISI:
 ${JSON.stringify(schema, null, 2)}`;
 
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    let apiKey;
+    if (step === 1) apiKey = process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
+    else if (step === 2 || step === 4) apiKey = process.env.GEMINI_API_KEY_2 || process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
+    else if (step === 3) apiKey = process.env.GEMINI_API_KEY_3 || process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
+    
+    if (!apiKey) {
+      return NextResponse.json({ error: 'API Key Gemini tidak dikonfigurasi pada environment (Step ' + step + ')' }, { status: 500 });
+    }
+
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: userPrompt }
+        systemInstruction: {
+          parts: [{ text: SYSTEM_PROMPT }]
+        },
+        contents: [
+          { parts: [{ text: userPrompt }] }
         ],
-        response_format: { type: 'json_object' },
-        temperature: 0.4
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.4
+        }
       })
     });
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error(`Groq API Error (step ${step}):`, errorText);
+      console.error(`Gemini API Error (step ${step}):`, errorText);
 
       // Deteksi rate limit agar frontend bisa retry
       if (res.status === 429) {
@@ -344,7 +355,11 @@ ${JSON.stringify(schema, null, 2)}`;
     }
 
     const aiData = await res.json();
-    const content = aiData.choices[0].message.content;
+    const content = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!content) {
+      return NextResponse.json({ error: `AI mengembalikan respon kosong pada step ${step}.` }, { status: 500 });
+    }
 
     let result;
     try {
