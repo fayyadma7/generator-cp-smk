@@ -1,92 +1,121 @@
 import { NextResponse } from 'next/server';
+import { buildCPPrompt } from '../../../cpGenerator';
 
 export async function POST(request) {
   try {
-    const { subject, program, phase, cpText } = await request.json();
+    const data = await request.json();
+    const { subject, program, phase, cpText, grade, semester, year, time, teacher } = data;
 
     if (!cpText) {
       return NextResponse.json({ error: 'Teks CP tidak boleh kosong' }, { status: 400 });
     }
 
-    // Mengambil API Key dari Groq
-    if (!process.env.GROQ_API_KEY) {
-      return NextResponse.json({ error: 'API Key Groq belum diatur di Vercel Environment Variables' }, { status: 500 });
+    // Load balancer sederhana menggunakan beberapa key Gemini
+    const apiKeys = [
+      process.env.GEMINI_API_KEY_1,
+      process.env.GEMINI_API_KEY_2,
+      process.env.GEMINI_API_KEY_3,
+      process.env.GEMINI_API_KEY
+    ].filter(Boolean);
+
+    if (apiKeys.length === 0) {
+      return NextResponse.json({ error: 'API Key Gemini belum diatur di Vercel Environment Variables' }, { status: 500 });
     }
 
-    const prompt = `Anda adalah ahli kurikulum SMK. Saya akan memberikan data mata pelajaran, program keahlian, dan teks Capaian Pembelajaran (CP) mentah dari pemerintah.
-Tugas Anda adalah merumuskan analisis dan rekomendasi pembelajaran untuk CP tersebut sesuai format SMK Muhammadiyah 3 Purbalingga (Pendekatan Deep Learning).
+    // Pilih random key untuk load balancing simpel
+    const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
 
-Gunakan informasi Program Keahlian sebagai referensi utama/konteks untuk menyusun Analisis & Kontekstualisasi CP, serta bagian-bagian lainnya agar sangat relevan dengan keahlian spesifik tersebut.
+    // Memanggil generator prompt dari cpGenerator.js
+    const { systemPrompt, userPrompt } = buildCPPrompt({
+      programKeahlian: program || 'Umum',
+      konsentrasiKeahlian: subject || '',
+      fase: phase?.replace('Fase ', '') || 'E',
+      kelas: grade || 'X',
+      semester: semester || 'Ganjil',
+      tahunPelajaran: year || '2025/2026',
+      namaGuru: teacher || 'Guru',
+      alokasiWaktu: time || '144 JP',
+    });
 
-Mata Pelajaran: ${subject}
-Program Keahlian: ${program || 'Tidak disebutkan'}
-Fase: ${phase}
-Teks CP Asli:
+    const finalUserPrompt = `${userPrompt}
+
+Teks CP Asli (sebagai bahan dasar):
 ${cpText}
 
-Output harus HANYA berupa JSON persis dengan struktur berikut:
+Output harus HANYA berupa JSON persis dengan struktur berikut. PASTIKAN SELURUH PROPERTY DIISI:
 {
+  "elemenList": [
+    { "nama": "Nama Elemen 1", "capaian": "Deskripsi kontekstual elemen 1" },
+    { "nama": "Nama Elemen 2", "capaian": "Deskripsi kontekstual elemen 2" }
+  ],
   "analisis": {
-    "kompetensiInti": "Sebutkan Pengetahuan, Keterampilan, dan Sikap secara ringkas dan spesifik sesuai Program Keahlian.",
-    "koneksiIndustri": "Jelaskan relevansi CP dengan industri spesifik pada Program Keahlian tersebut.",
-    "koneksiLokal": "Jelaskan keterkaitan CP dengan potensi lokal Purbalingga dalam konteks Program Keahlian tersebut."
+    "kompetensiInti": "Sebutkan Pengetahuan, Keterampilan, dan Sikap secara spesifik",
+    "koneksiIndustri": "Relevansi CP dengan minimal 3 jenis pekerjaan/industri",
+    "koneksiLokal": "5-6 tema projek kontekstual berkaitan potensi lokal"
   },
   "dimensiProfil": {
-    "dimensi1": "Penjelasan keterkaitan dengan Keimanan & Ketakwaan...",
-    "dimensi2": "Penjelasan keterkaitan dengan Kewargaan (Citizenship)...",
-    "dimensi3": "Penjelasan keterkaitan dengan Penalaran Kritis...",
-    "dimensi4": "Penjelasan keterkaitan dengan Kreativitas...",
-    "dimensi5": "Penjelasan keterkaitan dengan Kemandirian...",
-    "dimensi6": "Penjelasan keterkaitan dengan Kolaborasi...",
-    "dimensi7": "Penjelasan keterkaitan dengan Komunikasi...",
-    "dimensi8": "Penjelasan keterkaitan dengan Kesehatan..."
+    "dimensi1": "Kaitan dengan Keimanan...",
+    "dimensi2": "Kaitan dengan Kewargaan...",
+    "dimensi3": "Kaitan dengan Penalaran Kritis...",
+    "dimensi4": "Kaitan dengan Kreativitas...",
+    "dimensi5": "Kaitan dengan Kemandirian...",
+    "dimensi6": "Kaitan dengan Kolaborasi...",
+    "dimensi7": "Kaitan dengan Komunikasi...",
+    "dimensi8": "Kaitan dengan Kesehatan..."
   },
   "deepLearning": {
-    "mindful": "Uraikan aktivitas mindful...",
-    "meaningful": "Uraikan pembelajaran bermakna...",
-    "joyful": "Uraikan strategi joyful..."
+    "mindful": "3-4 aktivitas mindful spesifik",
+    "meaningful": "3-4 cara materi dikaitkan konteks DUDI lokal",
+    "joyful": "3-4 aktivitas pembelajaran menyenangkan"
   },
   "strategi": {
-    "model": "Contoh: PBL, PjBL...",
-    "asesmen": "Contoh: Formatif, Sumatif...",
-    "media": "Buku, video, alat peraga...",
-    "alat": "Komputer, mesin, alat praktik spesifik..."
+    "model": "Model pembelajaran prioritas",
+    "asesmen": "Pendekatan asesmen",
+    "media": "Sumber & media belajar",
+    "alat": "Alat/perangkat tersedia"
   },
   "catatanPengembangan": {
-    "catatan": "Tuliskan catatan kontekstualisasi dan penyesuaian CP yang dilakukan oleh guru (dibuat seolah-olah guru yang menulis).",
-    "tantangan": "Uraikan potensi tantangan atau kendala dan solusi antisipasinya."
+    "catatan": "Catatan kontekstualisasi CP",
+    "tantangan": "2-3 tantangan dan solusi"
   }
-}
-Catatan Penting: 
-1. Untuk dimensiProfil, PASTIKAN ke-8 (delapan) dimensi diisi semua dan buatlah deskripsinya se-relevan mungkin dengan Mata Pelajaran dan Program Keahlian. TIDAK BOLEH ADA YANG KOSONG.
-2. Gunakan selalu konteks Program Keahlian dalam menyusun setiap poin.
-`;
+}`;
 
-    // Memanggil API Groq
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    // Memanggil API Gemini
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
-        messages: [
-          { role: "system", content: "Anda adalah AI asisten untuk mem-parsing data menjadi JSON. Anda HANYA boleh mengeluarkan output berupa string JSON murni tanpa ada embel-embel markdown atau teks tambahan." },
-          { role: "user", content: prompt }
+        systemInstruction: {
+          parts: [{ text: systemPrompt }]
+        },
+        contents: [
+          { parts: [{ text: finalUserPrompt }] }
         ],
-        response_format: { type: "json_object" }
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.4
+        }
       })
     });
 
-    const responseData = await response.json();
-
     if (!response.ok) {
-      console.error("Groq API Error Response:", responseData);
-      return NextResponse.json({ error: responseData.error?.message || 'Gagal menghubungi Groq AI' }, { status: 500 });
+      const errorText = await response.text();
+      console.error("Gemini API Error Response:", errorText);
+      if (response.status === 429) {
+        return NextResponse.json({ error: 'Batas request API tercapai (Rate Limit). Silakan coba lagi.' }, { status: 429 });
+      }
+      return NextResponse.json({ error: 'Gagal menghubungi Gemini AI' }, { status: 500 });
     }
 
-    const textOutput = responseData.choices[0].message.content;
+    const aiData = await response.json();
+    const textOutput = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!textOutput) {
+      return NextResponse.json({ error: 'AI mengembalikan respon kosong.' }, { status: 500 });
+    }
+
     const result = JSON.parse(textOutput);
     
     return NextResponse.json(result);
