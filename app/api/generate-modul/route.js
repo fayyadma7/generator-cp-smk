@@ -43,38 +43,38 @@ const SCHEMA_STEP_1 = {
 const SCHEMA_STEP_2 = {
   rancangan_pembelajaran: {
     mindful_learning: {
-      apersepsi: "[Deskripsikan apersepsi konkret dari lingkungan LOKAL sekolah, maks 10 menit]",
+      apersepsi: "[Gunakan stimulus visual/audio fenomena NYATA di konteks Purbalingga. Sebutkan contoh konkret tempat/kegiatan industri, deskripsikan aktivitas peserta didik secara detail]",
       pertanyaan_pemantik: [
-        "[Pertanyaan 1: konteks sehari-hari lokal]",
-        "[Pertanyaan 2: kausal/ilmiah fenomena lokal]",
-        "[Pertanyaan 3: nilai moral/spiritual]"
+        "[Pertanyaan 1: Konkret, mengaitkan materi dengan kehidupan nyata/industri/kearifan lokal]",
+        "[Pertanyaan 2: Analitis, menantang penalaran kritis]",
+        "[Pertanyaan 3: Reflektif, mengandung dimensi nilai Islami (Muhammadiyah)]"
       ],
-      penetapan_tujuan_bersama: "[Deskripsikan prosedur 5-10 menit pelibatan suara siswa menetapkan tujuan]",
-      strategi_refleksi: "[Deskripsikan teknik refleksi terstruktur beserta instruksinya]"
+      penetapan_tujuan_bersama: "[Deskripsikan prosedur spesifik pelibatan suara peserta didik untuk menyepakati tujuan. Kaitkan dengan TP]",
+      strategi_refleksi: "[Pilih teknik refleksi (3-2-1/Exit Ticket/dll) dan jelaskan instruksi spesifiknya yang relevan dengan produk belajar]"
     },
     meaningful_learning: {
-      koneksi_dunia_nyata: "[Deskripsikan min 2 industri/profesi LOKAL yang relevan]",
+      koneksi_dunia_nyata: "[Kaitkan materi SECARA EKSPLISIT dengan industri lokal Purbalingga. Sebutkan contoh penerapan nyata di pekerjaan sehari-hari]",
       koneksi_antar_mapel: {
         "Nama Mapel 1": "[Koneksi substantif dengan materi]",
         "Nama Mapel 2": "[Koneksi substantif dengan materi]"
       },
-      koneksi_kearifan_lokal: "[Deskripsikan kearifan lokal/tradisi yang relevan, atau null jika tidak ada]",
-      produk_bermakna: "[Deskripsikan format produk, isi, dan fungsinya di luar kelas]"
+      koneksi_kearifan_lokal: "[Kaitkan materi dengan kearifan lokal Purbalingga secara bermakna, atau isi null jika tidak relevan]",
+      produk_bermakna: "[Deskripsikan detail format, isi, kriteria, dan nilai guna produk bagi peserta didik di dunia industri]"
     },
     joyful_learning: {
-      model_pembelajaran: "[Sebutkan nama model pembelajaran + alasan + cara implementasi]",
+      model_pembelajaran: "[Jelaskan penerapan model pembelajaran (PBL/PjBL/dll) secara spesifik, langkah konkret penerapannya bukan definisi]",
       variasi_aktivitas: {
-        individu: "[Deskripsi aktivitas individu]",
-        berpasangan: "[Deskripsi aktivitas berpasangan]",
-        kelompok: "[Deskripsi aktivitas kelompok]",
-        presentasi: "[Deskripsi aktivitas presentasi]"
+        individu: "[Aktivitas individu dengan nama/metode jelas]",
+        berpasangan: "[Aktivitas berpasangan dengan nama/metode jelas]",
+        kelompok: "[Aktivitas kelompok dengan nama/metode jelas]",
+        presentasi: "[Aktivitas presentasi dengan nama/metode jelas]"
       },
       diferensiasi_pembelajaran: {
-        konten: "[Pilihan diferensiasi konten]",
-        proses: "[Pilihan diferensiasi proses]",
-        produk: "[Pilihan diferensiasi produk]"
+        konten: "[Pilihan diferensiasi konten/materi yang relevan]",
+        proses: "[Pilihan diferensiasi proses/cara belajar]",
+        produk: "[Pilihan diferensiasi produk/hasil karya]"
       },
-      integrasi_nilai: "[Untuk sekolah Islam: ayat/hadits relevan + pembiasaan; non-Islam: nilai karakter]"
+      integrasi_nilai: "[Integrasikan nilai Islami (Muhammadiyah) secara organik ke aktivitas/diskusi/produk, bukan sekadar pembuka doa]"
     }
   }
 };
@@ -84,35 +84,71 @@ const SCHEMA_STEP_3 = {
     pertemuan: [
       {
         nomor: 1,
-        topik: "[Topik pertemuan 1, kontekstual lokal]",
+        topik: "[Topik pertemuan 1: Pembukaan & Eksplorasi Konsep]",
         alokasi_waktu: "[Waktu pertemuan 1, misal: 4 JP (180 menit)]",
         pendahuluan: {
-          durasi: "[Misal: 15 menit]",
+          durasi: "[Estimasi: 15% dari total waktu, misal: 30 menit]",
           kegiatan_guru: [
-            "[Langkah 1 kegiatan guru]",
-            "[Langkah 2 kegiatan guru]"
+            "[Langkah 1: Kegiatan guru, berikan label MINDFUL pada langkah yang relevan]",
+            "[Langkah 2: Kegiatan guru]"
           ],
           kegiatan_peserta_didik: [
-            "[Langkah 1 kegiatan siswa, respons terhadap guru langkah 1]",
-            "[Langkah 2 kegiatan siswa, respons terhadap guru langkah 2]"
+            "[Langkah 1: Kegiatan aktif siswa, paralel/simetris dengan guru]",
+            "[Langkah 2: Kegiatan aktif siswa]"
           ]
         },
         inti: {
-          durasi: "[Misal: 150 menit]",
+          durasi: "[Estimasi: 70% dari total waktu, misal: 120 menit]",
           kegiatan_guru: [
-            "[Langkah eksplorasi/diskusi guru]"
+            "[Langkah 1: Terapkan sintaks model pembelajaran, berikan label JOYFUL/MEANINGFUL]",
+            "[Langkah 2: Fasilitasi/bimbingan pembuatan produk]"
           ],
           kegiatan_peserta_didik: [
-            "[Aktivitas aktif siswa]"
+            "[Langkah 1: Aktivitas siswa mengerjakan instruksi guru, eksplorasi/diskusi]",
+            "[Langkah 2: Siswa berkolaborasi]"
           ]
         },
         penutup: {
-          durasi: "[Misal: 15 menit]",
+          durasi: "[Estimasi: 15% dari total waktu, misal: 30 menit]",
           kegiatan_guru: [
-            "[Langkah penyimpulan, refleksi, asesmen]"
+            "[Langkah 1: Penyimpulan, asesmen formatif]",
+            "[Langkah 2: Refleksi akhir dengan label MINDFUL]"
           ],
           kegiatan_peserta_didik: [
-            "[Langkah kesimpulan, respon siswa]"
+            "[Langkah 1: Menjawab asesmen, membuat kesimpulan]",
+            "[Langkah 2: Melakukan refleksi mandiri]"
+          ]
+        }
+      },
+      {
+        nomor: 2,
+        topik: "[Topik pertemuan 2: Analisis Mendalam & Penerapan / Presentasi]",
+        alokasi_waktu: "[Waktu pertemuan 2]",
+        pendahuluan: {
+          durasi: "[Estimasi 15% waktu]",
+          kegiatan_guru: [
+            "[Review pertemuan sebelumnya, sampaikan tujuan hari ini]"
+          ],
+          kegiatan_peserta_didik: [
+            "[Menyimak dan merespons]"
+          ]
+        },
+        inti: {
+          durasi: "[Estimasi 70% waktu]",
+          kegiatan_guru: [
+            "[Fasilitasi presentasi produk, berikan umpan balik]"
+          ],
+          kegiatan_peserta_didik: [
+            "[Presentasi produk, memberikan tanggapan antar kelompok]"
+          ]
+        },
+        penutup: {
+          durasi: "[Estimasi 15% waktu]",
+          kegiatan_guru: [
+            "[Evaluasi keseluruhan, doa penutup]"
+          ],
+          kegiatan_peserta_didik: [
+            "[Mencatat evaluasi, berdoa]"
           ]
         }
       }
