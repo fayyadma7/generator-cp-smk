@@ -83,6 +83,7 @@ export async function POST(request) {
       try {
         const extracted = await extractCPWithGroq(rawText);
         if (extracted && extracted.cpText) {
+          extracted.rawText = rawText; // IMPORTANT: include raw text for Modul Ajar generator
           return NextResponse.json(extracted);
         }
       } catch (aiErr) {

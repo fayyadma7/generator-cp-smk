@@ -43,7 +43,7 @@ export default function ModulAjarGenerator() {
       if (!res.ok) throw new Error(data.error || 'Gagal membaca DOCX');
 
       // Set data mentah untuk dikirim ke prompt AI generate-modul
-      setTpTextRaw(data.cpText || '');
+      setTpTextRaw(data.rawText || data.cpText || '');
 
       setFormData(prev => ({
         ...prev,

@@ -36,7 +36,7 @@ export async function POST(request) {
         'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant', // or another supported Groq model like llama3-70b-8192
+        model: 'llama-3.3-70b-versatile', 
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: userPromptContent }
@@ -48,11 +48,19 @@ export async function POST(request) {
     if (!res.ok) {
       const errorText = await res.text();
       console.error('Groq API Error:', errorText);
-      return NextResponse.json({ error: 'Gagal menghubungi Groq AI: ' + res.status }, { status: 500 });
+      return NextResponse.json({ error: 'Gagal menghubungi Groq AI: ' + res.status + ' - ' + errorText }, { status: 500 });
     }
 
     const aiData = await res.json();
-    const result = JSON.parse(aiData.choices[0].message.content);
+    const content = aiData.choices[0].message.content;
+    
+    let result;
+    try {
+      result = JSON.parse(content);
+    } catch (parseError) {
+      console.error('JSON Parse Error. Raw content:', content);
+      return NextResponse.json({ error: 'AI mengembalikan format yang tidak valid. Silakan coba lagi.' }, { status: 500 });
+    }
 
     return NextResponse.json(result);
 
