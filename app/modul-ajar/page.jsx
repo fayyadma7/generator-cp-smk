@@ -3,10 +3,17 @@ import { useState, useRef } from 'react';
 import { generateAndDownloadModulDocx } from '../../lib/docxGeneratorModul';
 import { Sparkles, Download, Loader2, ChevronDown, ChevronUp, FileUp, CheckCircle, XCircle } from 'lucide-react';
 
+const STEP_LABELS = [
+  { step: 1, icon: '📋', label: 'Identitas & Kerangka Kurikulum' },
+  { step: 2, icon: '🧠', label: 'Rancangan Deep Learning' },
+  { step: 3, icon: '📝', label: 'Skenario Pembelajaran' },
+  { step: 4, icon: '🎯', label: 'Asesmen, Materi & Rubrik' },
+];
+
 export default function ModulAjarGenerator() {
   const [formData, setFormData] = useState({
     subject: '', program: '', phase: '', grade: '',
-    semester: 'Ganjil & Genap', year: '2025/2026',
+    semester: 'Ganjil', year: '2025/2026',
     teacher: '', cpText: '', targetTp: '', elemenCP: '', targetTpText: ''
   });
 
@@ -17,6 +24,9 @@ export default function ModulAjarGenerator() {
   const [docxStatus, setDocxStatus]       = useState(null);
   const [docxMessage, setDocxMessage]     = useState('');
   const [result, setResult]               = useState(null);
+  const [currentStep, setCurrentStep]     = useState(0);      // 0 = belum mulai, 1-4 = step aktif
+  const [completedSteps, setCompletedSteps] = useState([]);   // array step yang sudah selesai
+  const [stepError, setStepError]         = useState(null);
   const fileInputRef = useRef(null);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,8 +36,8 @@ export default function ModulAjarGenerator() {
   const handleDocxUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.name.endsWith('.docx') && file.type !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') { 
-      setDocxStatus('error'); setDocxMessage('File harus berformat DOCX.'); return; 
+    if (!file.name.endsWith('.docx') && file.type !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      setDocxStatus('error'); setDocxMessage('File harus berformat DOCX.'); return;
     }
     if (file.size > 10 * 1024 * 1024) { setDocxStatus('error'); setDocxMessage('Ukuran file maksimal 10 MB.'); return; }
 
@@ -37,19 +47,17 @@ export default function ModulAjarGenerator() {
     try {
       const fd = new FormData();
       fd.append('docx', file);
-      // Kita pakai route parse-docx yang sudah dibuat sebelumnya (hanya untuk baca teks raw & identitas umum)
       const res  = await fetch('/api/parse-docx', { method: 'POST', body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal membaca DOCX');
 
-      // Set data mentah untuk dikirim ke prompt AI generate-modul
       setTpTextRaw(data.rawText || data.cpText || '');
 
       setFormData(prev => ({
         ...prev,
         subject: data.mataPelajaran && !prev.subject ? data.mataPelajaran : prev.subject,
         phase:   data.fase          && !prev.phase   ? data.fase          : prev.phase,
-        cpText:  data.cpText        ? "Teks CP berhasil diekstrak..." : prev.cpText,
+        cpText:  data.cpText        ? 'Teks CP berhasil diekstrak...' : prev.cpText,
       }));
 
       setDocxStatus('success');
@@ -62,32 +70,77 @@ export default function ModulAjarGenerator() {
     }
   };
 
-  // ── Generate AI ──
+  // ── Helper: delay ──
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  // ── Generate AI — MIPIL (Step by Step) ──
   const handleGenerate = async (e) => {
     e.preventDefault();
-    if (!tpTextRaw) return alert("Silakan upload dokumen TP & ATP terlebih dahulu!");
-    if (!formData.targetTp) return alert("Nomor/Target Tujuan Pembelajaran (TP) wajib diisi!");
+    if (!tpTextRaw) return alert('Silakan upload dokumen TP & ATP terlebih dahulu!');
+    if (!formData.targetTp) return alert('Nomor/Target Tujuan Pembelajaran (TP) wajib diisi!');
 
-    setIsLoading(true); setResult(null);
-    try {
-      const payload = {
-        ...formData,
-        tpText: tpTextRaw
-      };
+    setIsLoading(true);
+    setResult(null);
+    setCurrentStep(0);
+    setCompletedSteps([]);
+    setStepError(null);
 
-      const res = await fetch('/api/generate-modul', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) { const err = await res.json(); throw new Error(err.error || "Gagal generate dari AI"); }
-      const data = await res.json();
-      setResult(data);
-      setTimeout(() => document.getElementById('result-section')?.scrollIntoView({ behavior: 'smooth' }), 300);
-    } catch (error) {
-      alert(`Terjadi kesalahan: ${error.message}`);
-    } finally {
-      setIsLoading(false);
+    const payload = { ...formData, tpText: tpTextRaw };
+    const assembled = {};
+
+    for (let step = 1; step <= 4; step++) {
+      setCurrentStep(step);
+      let retryCount = 0;
+      const maxRetries = 3;
+
+      while (retryCount <= maxRetries) {
+        try {
+          const res = await fetch('/api/generate-modul', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...payload, step })
+          });
+
+          const data = await res.json();
+
+          if (res.status === 429) {
+            // Rate limit — tunggu dan coba lagi
+            const waitSec = 20 + retryCount * 10;
+            setStepError(`⏳ Batas API tercapai di Bagian ${step}. Menunggu ${waitSec} detik dan akan otomatis lanjut...`);
+            await delay(waitSec * 1000);
+            setStepError(null);
+            retryCount++;
+            continue;
+          }
+
+          if (!res.ok) {
+            throw new Error(data.error || `Gagal di step ${step}`);
+          }
+
+          // Merge hasil ke assembled object
+          Object.assign(assembled, data.result);
+          setCompletedSteps(prev => [...prev, step]);
+          retryCount = maxRetries + 1; // break retry loop
+          
+          // Jeda kecil antar step agar tidak kena rate limit
+          if (step < 4) await delay(3000);
+
+        } catch (err) {
+          if (retryCount >= maxRetries) {
+            setIsLoading(false);
+            setStepError(`❌ Gagal pada Bagian ${step} setelah ${maxRetries} percobaan: ${err.message}`);
+            return;
+          }
+          retryCount++;
+          await delay(5000);
+        }
+      }
     }
+
+    setResult(assembled);
+    setIsLoading(false);
+    setCurrentStep(0);
+    setTimeout(() => document.getElementById('result-section')?.scrollIntoView({ behavior: 'smooth' }), 300);
   };
 
   const handleDownload = () => {
@@ -108,8 +161,8 @@ export default function ModulAjarGenerator() {
               {isDocxLoading ? <Loader2 className="spin" size={28} /> : <FileUp size={28} />}
             </div>
             <div>
-              <div className="pdf-upload-title">Upload Dokumen TP & ATP (.docx)</div>
-              <div className="pdf-upload-sub">Upload dokumen Format TP & ATP yang sudah digenerate dari website ini sebagai acuan Modul Ajar.</div>
+              <div className="pdf-upload-title">Upload Dokumen TP &amp; ATP (.docx)</div>
+              <div className="pdf-upload-sub">Upload dokumen Format TP &amp; ATP yang sudah digenerate dari website ini sebagai acuan Modul Ajar.</div>
             </div>
           </div>
           <label className="pdf-upload-btn" htmlFor="docx-input">
@@ -193,17 +246,17 @@ export default function ModulAjarGenerator() {
                 <div className="form-group">
                   <label>Pilih/Ketik TP yang akan dibuatkan Modul Ajar <span className="required">*</span></label>
                   <p style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
-                    Tulis secara spesifik TP yang ingin difokuskan (misalnya: "TP-01: Menerapkan K3LH"). AI akan mengekstrak detailnya dari file yang Anda upload.
+                    Tulis secara spesifik TP yang ingin difokuskan (misalnya: &quot;TP-01: Menerapkan K3LH&quot;). AI akan mengekstrak detailnya dari file yang Anda upload.
                   </p>
-                  <input required type="text" name="targetTp" className="glass-input" 
+                  <input required type="text" name="targetTp" className="glass-input"
                     placeholder="Contoh: TP-01 s.d. TP-02 (Merakit Komputer)" onChange={handleChange} value={formData.targetTp}/>
                 </div>
-                
+
                 <div className="form-group">
                   <label>Elemen CP (Opsional)</label>
                   <input type="text" name="elemenCP" className="glass-input" placeholder="Misal: Sistem Komputer" onChange={handleChange} value={formData.elemenCP}/>
                 </div>
-                
+
                 <div className="form-group">
                   <label>Teks Tujuan Pembelajaran Lengkap (Opsional)</label>
                   <textarea name="targetTpText" className="glass-input" rows="2"
@@ -216,14 +269,42 @@ export default function ModulAjarGenerator() {
 
           <div className="info-box">
             <Sparkles size={16}/>
-            <span>Skenario Deep Learning (Mindful, Meaningful, Joyful), Asesmen, Rubrik Penilaian, dan Lampiran akan <strong>digenerate secara otomatis oleh AI</strong> berdasarkan TP yang dipilih dan file TP & ATP yang diupload.</span>
+            <span>AI akan menyusun modul secara <strong>bertahap (4 bagian)</strong> — Identitas, Deep Learning, Skenario, Asesmen &amp; Rubrik — untuk hasil terbaik dan menghindari batas API.</span>
           </div>
 
           <button type="submit" className="glass-button" disabled={isLoading || isDocxLoading} style={{ marginTop:'1.5rem' }}>
             {isLoading ? <Loader2 className="animate-spin"/> : <Sparkles/>}
-            {isLoading ? "AI sedang menyusun Modul Ajar..." : "Generate Modul Ajar"}
+            {isLoading ? `Menyusun Bagian ${currentStep}/4...` : 'Generate Modul Ajar'}
           </button>
         </form>
+
+        {/* ── PROGRESS STEPS ── */}
+        {isLoading && (
+          <div className="step-progress" style={{ marginTop: '1.5rem' }}>
+            {STEP_LABELS.map(({ step, icon, label }) => {
+              const isDone    = completedSteps.includes(step);
+              const isActive  = currentStep === step;
+              return (
+                <div key={step} className={`step-item ${isDone ? 'done' : ''} ${isActive ? 'active' : ''}`}>
+                  <div className="step-icon">
+                    {isDone ? '✅' : isActive ? <Loader2 size={18} className="animate-spin"/> : icon}
+                  </div>
+                  <div className="step-label">
+                    <span className="step-num">Bagian {step}/4</span>
+                    <span className="step-name">{label}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── ERROR / RETRY MESSAGE ── */}
+        {stepError && (
+          <div className="pdf-status error" style={{ marginTop: '1rem' }}>
+            <span>{stepError}</span>
+          </div>
+        )}
       </div>
 
       {result && (
@@ -234,7 +315,7 @@ export default function ModulAjarGenerator() {
             Dokumen Modul Ajar sudah siap — difokuskan pada: <strong>{formData.targetTp}</strong>.
           </p>
           <div className="result-preview">
-            <div className="preview-item"><span>📋 Identitas & Kerangka Kurikulum</span><span className="badge ai">AI</span></div>
+            <div className="preview-item"><span>📋 Identitas &amp; Kerangka Kurikulum</span><span className="badge ai">AI</span></div>
             <div className="preview-item"><span>🧠 Rancangan Deep Learning (MMJ)</span><span className="badge ai">AI</span></div>
             <div className="preview-item"><span>📝 Skenario Pembelajaran ({result.skenario_pembelajaran?.pertemuan?.length || 0} Pertemuan)</span><span className="badge ai">AI</span></div>
             <div className="preview-item"><span>🎯 Rancangan Asesmen (Diag, Form, Sum)</span><span className="badge ai">AI</span></div>

@@ -621,3 +621,73 @@ h2 {
   color: var(--accent);
 }
 
+/* ─── Step Progress (Mipil Generator) ─── */
+.step-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.2rem 1.4rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid transparent;
+  opacity: 0.45;
+  transition: all 0.3s ease;
+}
+
+.step-item.active {
+  opacity: 1;
+  border-color: rgba(99,179,237,0.4);
+  background: rgba(99,179,237,0.08);
+  box-shadow: 0 0 12px rgba(99,179,237,0.1);
+}
+
+.step-item.done {
+  opacity: 0.85;
+  border-color: rgba(72,187,120,0.35);
+  background: rgba(72,187,120,0.07);
+}
+
+.step-icon {
+  font-size: 1.2rem;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.step-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.step-item.active .step-num { color: #90cdf4; }
+.step-item.done .step-num   { color: #68d391; }
+
+.step-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+
