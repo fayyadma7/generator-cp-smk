@@ -236,7 +236,7 @@ export default function ModulAjarGenerator() {
           <div className="result-preview">
             <div className="preview-item"><span>📋 Identitas & Kerangka Kurikulum</span><span className="badge ai">AI</span></div>
             <div className="preview-item"><span>🧠 Rancangan Deep Learning (MMJ)</span><span className="badge ai">AI</span></div>
-            <div className="preview-item"><span>📝 Skenario Pembelajaran ({result.skenario?.length || 0} Pertemuan)</span><span className="badge ai">AI</span></div>
+            <div className="preview-item"><span>📝 Skenario Pembelajaran ({result.skenario_pembelajaran?.pertemuan?.length || 0} Pertemuan)</span><span className="badge ai">AI</span></div>
             <div className="preview-item"><span>🎯 Rancangan Asesmen (Diag, Form, Sum)</span><span className="badge ai">AI</span></div>
             <div className="preview-item"><span>📊 Rubrik Penilaian Holistik</span><span className="badge ai">AI</span></div>
           </div>
