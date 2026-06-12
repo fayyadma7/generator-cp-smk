@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Format Modul Ajar - SMK Muhammadiyah 3 Purbalingga</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .a4-container {
+            width: 100%;
+            max-width: 210mm; /* A4 width */
+            margin: 2rem auto;
+            background: white;
+            padding: 20mm;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Form Elements Styling */
+        input[type="text"], textarea {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+            background-color: #f9fafb;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 1px #3b82f6;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            align-items: start;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #374151;
+            padding-top: 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        th, td {
+            border: 1px solid #9ca3af;
+            padding: 0.5rem;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #e5e7eb;
+            font-weight: 600;
+        }
+
+        /* Print Settings */
+        @media print {
+            body {
+                background-color: white;
+            }
+            .a4-container {
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                max-width: 100%;
+            }
+            .no-print {
+                display: none !important;
+            }
+            input[type="text"], textarea {
+                border: 1px solid #e5e7eb;
+                background-color: white;
+                resize: none;
+            }
+            /* Prevent page breaks inside tables and sections */
+            table, .break-inside-avoid {
+                break-inside: avoid;
+            }
+            h2 {
+                page-break-after: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Action Bar for Web View -->
+    <div class="no-print fixed top-0 left-0 right-0 bg-blue-600 text-white p-4 shadow-md z-50 flex justify-between items-center">
+        <div>
+            <h1 class="font-bold text-lg">Editor Modul Ajar</h1>
+            <p class="text-xs text-blue-200">Isi form di bawah ini, lalu klik Print untuk menyimpan sebagai PDF.</p>
+        </div>
+        <button onclick="window.print()" class="bg-white text-blue-600 px-4 py-2 rounded font-semibold hover:bg-blue-50 transition flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Print / Save to PDF
+        </button>
+    </div>
+
+    <!-- Main Document Container -->
+    <div class="a4-container mt-24 sm:mt-8">
+        
+        <!-- Header -->
+        <div class="text-center mb-8 border-b-2 border-gray-800 pb-4">
+            <h1 class="text-2xl font-bold uppercase tracking-wide">Format Modul Ajar</h1>
+            <p class="text-lg font-semibold mt-1">SMK Muhammadiyah 3 Purbalingga | Kurikulum Merdeka | Pendekatan Deep Learning</p>
+            <p class="text-sm italic mt-2 font-medium text-gray-700">Visi: MENJADIKAN SMK YANG UNGGUL, ISLAMI, DAN BERJIWA ENTREPRENEUR</p>
+        </div>
+
+        <!-- Kedudukan Modul Ajar -->
+        <div class="mb-8 text-sm">
+            <p class="font-bold mb-1">Kedudukan Modul Ajar dalam Alur Kurikulum Merdeka:</p>
+            <div class="bg-blue-50 border border-blue-200 p-3 rounded flex flex-wrap gap-2 items-center text-blue-800 font-medium justify-center">
+                <span>Format CP</span> ➔ <span>Format TP</span> ➔ <span>Format ATP</span> ➔ <span class="bg-blue-200 px-2 py-1 rounded">MODUL AJAR (dokumen ini)</span> ➔ <span>Pelaksanaan Pembelajaran</span> ➔ <span>Asesmen & Refleksi</span>
+            </div>
+            <p class="mt-2 text-gray-600 italic">Modul Ajar adalah penjabaran operasional dari ATP untuk satu atau beberapa pertemuan, berisi skenario, asesmen, media, dan refleksi.</p>
+        </div>
+
+        <!-- Panduan Umum -->
+        <div class="mb-8 break-inside-avoid">
+            <h2 class="text-lg font-bold bg-gray-800 text-white px-2 py-1 mb-2">PANDUAN UMUM PENGISIAN MODUL AJAR</h2>
+            <p class="text-sm mb-2">Modul Ajar dikembangkan berdasarkan Format CP, TP, dan ATP yang telah disusun sebelumnya. Setiap Modul Ajar memuat skenario lengkap untuk satu atau beberapa pertemuan, mencakup 10 bagian wajib berikut:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="w-12 text-center">Bag.</th>
+                        <th class="w-1/4">Komponen</th>
+                        <th>Isi Singkat</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="text-center font-bold">A</td><td>Identitas Modul Ajar</td><td>Nama mapel, program keahlian, fase/kelas, nomor modul, TP yang dirujuk, guru penyusun.</td></tr>
+                    <tr><td class="text-center font-bold">B</td><td>Kerangka Kurikulum</td><td>CP, elemen CP, rumusan TP, IKTP, posisi dalam ATP, dimensi profil lulusan yang dikembangkan.</td></tr>
+                    <tr><td class="text-center font-bold">C</td><td>Rancangan Deep Learning</td><td>Mindful (apersepsi, pertanyaan pemantik, refleksi), Meaningful (koneksi nyata, DUDI, lokal), Joyful (model, variasi aktivitas, diferensiasi, nilai Islami).</td></tr>
+                    <tr><td class="text-center font-bold">D</td><td>Skenario Pembelajaran</td><td>Langkah-langkah per pertemuan: Pendahuluan - Inti - Penutup dengan kegiatan guru dan peserta didik.</td></tr>
+                    <tr><td class="text-center font-bold">E</td><td>Rancangan Asesmen</td><td>Asesmen diagnostik, formatif (+ tindak lanjut), sumatif, KKTP, dimensi profil yang dinilai.</td></tr>
+                    <tr><td class="text-center font-bold">F</td><td>Materi & Sumber Belajar</td><td>Materi pokok, pengayaan, remedial, sumber belajar, media, alat/bahan praktik, LKPD.</td></tr>
+                    <tr><td class="text-center font-bold">G</td><td>Rubrik Penilaian</td><td>Rubrik 4 aspek × 4 level: Perlu Bimbingan - Cukup - Baik - Sangat Baik.</td></tr>
+                    <tr><td class="text-center font-bold">H</td><td>Refleksi Guru</td><td>Diisi setelah pembelajaran: ketercapaian TP, hal yang baik/perlu diperbaiki, tindak lanjut.</td></tr>
+                    <tr><td class="text-center font-bold">I</td><td>Daftar Lampiran</td><td>Checklist semua lampiran: LKPD, instrumen, rubrik, materi, media, refleksi siswa, dll.</td></tr>
+                    <tr><td class="text-center font-bold">J</td><td>Pengesahan</td><td>Tanda tangan Guru, Waka Kurikulum, dan Kepala Sekolah.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Prinsip Deep Learning -->
+        <div class="mb-10 break-inside-avoid">
+            <h2 class="text-lg font-bold bg-gray-800 text-white px-2 py-1 mb-2">PRINSIP DEEP LEARNING DALAM MODUL AJAR</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="border border-green-500 rounded p-3">
+                    <h3 class="font-bold text-green-700 mb-2 text-center border-b border-green-200 pb-1">MINDFUL (Penuh Kesadaran)</h3>
+                    <ul class="text-xs space-y-1 list-disc pl-4 text-gray-700">
+                        <li>Peserta didik menyadari tujuan belajarnya</li>
+                        <li>Guru menyampaikan pertanyaan pemantik yang kuat</li>
+                        <li>Pembelajaran dimulai dengan mengaktifkan pengetahuan awal</li>
+                        <li>Refleksi bermakna di akhir setiap sesi</li>
+                        <li>Pembiasaan hadir penuh (mindful presence) dalam kelas</li>
+                    </ul>
+                </div>
+                <div class="border border-blue-500 rounded p-3">
+                    <h3 class="font-bold text-blue-700 mb-2 text-center border-b border-blue-200 pb-1">MEANINGFUL (Bermakna)</h3>
+                    <ul class="text-xs space-y-1 list-disc pl-4 text-gray-700">
+                        <li>Materi dihubungkan dengan konteks nyata & industri</li>
+                        <li>Koneksi dengan kearifan lokal Purbalingga</li>
+                        <li>Peserta didik menghasilkan karya yang bernilai guna</li>
+                        <li>Pembelajaran menjawab pertanyaan 'mengapa ini penting?'</li>
+                        <li>Integrasi antar mata pelajaran (interdisipliner)</li>
+                    </ul>
+                </div>
+                <div class="border border-orange-500 rounded p-3">
+                    <h3 class="font-bold text-orange-700 mb-2 text-center border-b border-orange-200 pb-1">JOYFUL (Menyenangkan)</h3>
+                    <ul class="text-xs space-y-1 list-disc pl-4 text-gray-700">
+                        <li>Variasi aktivitas: individu, pasangan, kelompok</li>
+                        <li>Diferensiasi konten, proses, dan produk</li>
+                        <li>Model PjBL / PBL / Teaching Factory</li>
+                        <li>Permainan edukatif, simulasi, atau kompetisi positif</li>
+                        <li>Perayaan keberhasilan belajar & apresiasi karya</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center my-10 font-bold text-xl border-t-4 border-b-4 border-double border-gray-300 py-2">
+            FORMAT ISIAN MODUL AJAR<br>
+            <span class="text-lg">SMK MUHAMMADIYAH 3 PURBALINGGA</span>
+        </div>
+
+        <!-- A. IDENTITAS -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold bg-gray-200 p-2 mb-4 border-l-4 border-blue-600">A. IDENTITAS MODUL AJAR</h2>
+            <div class="form-row"><div class="form-label">Nama Mata Pelajaran</div><div><input type="text" placeholder="Tulis nama mata pelajaran ..."></div></div>
+            <div class="form-row"><div class="form-label">Program Keahlian</div><div><input type="text" placeholder="Tulis program keahlian ..."></div></div>
+            <div class="form-row"><div class="form-label">Fase / Kelas</div><div><input type="text" placeholder="Fase ... / Kelas ..."></div></div>
+            <div class="form-row"><div class="form-label">Semester</div><div><input type="text" placeholder="Ganjil / Genap"></div></div>
+            <div class="form-row"><div class="form-label">Tahun Pelajaran</div><div><input type="text" value="2025/2026"></div></div>
+            <div class="form-row"><div class="form-label">Judul Modul Ajar</div><div><input type="text" placeholder="Tulis judul yang menggambarkan topik/tema utama pertemuan ini ..."></div></div>
+            <div class="form-row"><div class="form-label">Nomor Modul Ajar</div><div><input type="text" placeholder="MA-[Kode Mapel]-[No. Urut] (contoh: MA-TKJ-01)"></div></div>
+            <div class="form-row"><div class="form-label">Nomor TP yang Dirujuk</div><div><input type="text" placeholder="TP-__ s.d. TP-__ (sesuai Format TP)"></div></div>
+            <div class="form-row"><div class="form-label">Alokasi Waktu</div><div><input type="text" placeholder="... JP ( ... pertemuan @ ... JP )"></div></div>
+            <div class="form-row"><div class="form-label">Pertemuan ke-</div><div><input type="text" placeholder="Pertemuan ke-... s.d. ke-..."></div></div>
+            <div class="form-row"><div class="form-label">Guru Mata Pelajaran</div><div><input type="text" placeholder="Nama lengkap & NIP/NUPTK ..."></div></div>
+        </div>
+
+        <!-- B. KERANGKA -->
+        <div class="mb-8 break-inside-avoid">
+            <h2 class="text-xl font-bold bg-gray-200 p-2 mb-4 border-l-4 border-blue-600">B. KERANGKA KURIKULUM</h2>
+            <div class="form-row"><div class="form-label">Capaian Pembelajaran (CP)</div><div><textarea rows="3" placeholder="Salin deskripsi CP dari Format CP yang telah disusun ..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Elemen CP</div><div><textarea rows="2" placeholder="Tulis elemen CP yang menjadi fokus modul ini ..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Tujuan Pembelajaran (TP)</div><div><textarea rows="3" placeholder="TP-01: Peserta didik mampu ...&#10;TP-02: Peserta didik mampu ..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Indikator Ketercapaian TP (IKTP)</div><div><textarea rows="3" placeholder="IKTP 1.1: ...&#10;IKTP 1.2: ..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Posisi dalam ATP</div><div><textarea rows="3" placeholder="Modul ini menempati urutan ke-... dalam Alur Tujuan Pembelajaran. Sebelum modul ini: [...]. Setelah modul ini: [...]."></textarea></div></div>
+            <div class="form-row">
+                <div class="form-label">8 Dimensi Profil Lulusan yang Dikembangkan</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mt-1">
+                    <label class="flex items-center space-x-2"><input type="checkbox" class="rounded border-gray-300"> <span>Keimanan & Ketakwaan</span></label>
+                    <label class="flex items-center space-x-2"><input type="checkbox" class="rounded border-gray-300"> <span>Kewargaan</span></label>
+                    <label class="flex items-center space-x-2"><input type="checkbox" class="rounded border-gray-300"> <span>Penalaran Kritis</span></label>
+                    <label class="flex items-center space-x-2"><input type="checkbox" class="rounded border-gray-300"> <span>Kreativitas</span></label>
+                    <label class="flex items-center space-x-2"><input type="checkbox" class="rounded border-gray-300"> <span>Kemandirian</span></label>
+                    <label class="flex items-center space-x-2"><input type="checkbox" class="rounded border-gray-300"> <span>Kolaborasi</span></label>
+                    <label class="flex items-center space-x-2"><input type="checkbox" class="rounded border-gray-300"> <span>Komunikasi</span></label>
+                    <label class="flex items-center space-x-2"><input type="checkbox" class="rounded border-gray-300"> <span>Kesehatan</span></label>
+                    <div class="col-span-2 mt-2"><input type="text" placeholder="Detail profil yang dikembangkan..."></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- C. RANCANGAN -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold bg-gray-200 p-2 mb-4 border-l-4 border-blue-600">C. RANCANGAN PEMBELAJARAN — PENDEKATAN DEEP LEARNING</h2>
+            
+            <h3 class="font-bold text-green-700 border-b border-green-500 pb-1 mb-3 mt-4">C.1 MINDFUL LEARNING - Pembelajaran Penuh Kesadaran</h3>
+            <div class="form-row"><div class="form-label">Apersepsi & Aktivasi Pengetahuan Awal</div><div><textarea rows="2" placeholder="Jelaskan cara guru mengaktifkan pengetahuan awal peserta didik..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Pertanyaan Pemantik</div><div><textarea rows="3" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Penetapan Tujuan Bersama</div><div><textarea rows="2" placeholder="Jelaskan bagaimana guru dan peserta didik menyepakati tujuan..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Strategi Refleksi Akhir</div><div><textarea rows="2" placeholder="Jelaskan teknik refleksi yang digunakan (jurnal, 3-2-1, dll)..."></textarea></div></div>
+
+            <h3 class="font-bold text-blue-700 border-b border-blue-500 pb-1 mb-3 mt-6">C.2 MEANINGFUL LEARNING - Pembelajaran Bermakna</h3>
+            <div class="form-row"><div class="form-label">Koneksi dengan Dunia Nyata / Industri</div><div><textarea rows="2" placeholder="Jelaskan kaitan materi dengan konteks nyata atau DUDI..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Koneksi Antar Mata Pelajaran</div><div><textarea rows="2" placeholder="Tuliskan keterkaitan dengan mapel lain (jika ada)..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Koneksi dengan Kearifan Lokal Purbalingga</div><div><textarea rows="2" placeholder="Keterkaitan materi dengan potensi lokal/budaya Purbalingga..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Produk / Hasil Belajar Bermakna</div><div><textarea rows="2" placeholder="Karya/hasil nyata yang dihasilkan peserta didik..."></textarea></div></div>
+
+            <h3 class="font-bold text-orange-700 border-b border-orange-500 pb-1 mb-3 mt-6">C.3 JOYFUL LEARNING - Pembelajaran yang Menyenangkan</h3>
+            <div class="form-row"><div class="form-label">Strategi / Model Pembelajaran</div><div><textarea rows="2" placeholder="Pilih dan jelaskan model: PjBL / PBL / Discovery, dll..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Variasi Aktivitas Pembelajaran</div><div><textarea rows="4" placeholder="Aktivitas Individu: ...&#10;Aktivitas Berpasangan: ...&#10;Aktivitas Kelompok: ...&#10;Aktivitas Presentasi: ..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Diferensiasi Pembelajaran</div><div><textarea rows="4" placeholder="Diferensiasi Konten: ...&#10;Diferensiasi Proses: ...&#10;Diferensiasi Produk: ...&#10;Diferensiasi Lingkungan: ..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Integrasi Nilai Islami (Karakter Muhammadiyah)</div><div><textarea rows="2" placeholder="Nilai islami, ayat, hadis, contoh teladan, pembiasaan..."></textarea></div></div>
+        </div>
+
+        <!-- D. SKENARIO -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold bg-gray-200 p-2 mb-2 border-l-4 border-blue-600">D. SKENARIO / LANGKAH-LANGKAH PEMBELAJARAN</h2>
+            <p class="text-sm italic mb-4 text-gray-600">Catatan: Isilah skenario berikut. Pastikan setiap pertemuan memuat elemen Mindful, Meaningful, dan/atau Joyful.</p>
+
+            <!-- Pertemuan 1 -->
+            <div class="mb-6 border border-gray-400 p-1 break-inside-avoid">
+                <div class="bg-gray-100 p-2 font-bold mb-2 flex items-center justify-between">
+                    <span>PERTEMUAN KE-1 (satu)</span>
+                    <span class="text-sm font-normal"><input type="text" placeholder="... JP (... menit)" class="w-48 inline-block"></span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="w-1/6">Fase Pembelajaran</th>
+                            <th class="w-2/5">Kegiatan Guru</th>
+                            <th class="w-2/5">Kegiatan Peserta Didik</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-bold text-center">PENDAHULUAN<br><input type="text" placeholder="... menit" class="text-center mt-1 w-full text-xs font-normal"></td>
+                            <td><textarea rows="5" class="w-full text-xs">Membuka kelas dengan salam dan doa.
+Mengecek kehadiran peserta didik.
+Menyampaikan apersepsi dan mengaktifkan pengetahuan awal.
+Menyampaikan tujuan pembelajaran dan manfaatnya (Mindful).
+Menyampaikan pertanyaan pemantik.</textarea></td>
+                            <td><textarea rows="5" class="w-full text-xs">Menjawab salam dan berdoa bersama.
+Merespons presensi.
+Mengungkapkan pengetahuan awal terkait topik.
+Menyimak dan mencatat tujuan pembelajaran.
+Merespons pertanyaan pemantik.</textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-center">INTI<br><input type="text" placeholder="... menit" class="text-center mt-1 w-full text-xs font-normal"></td>
+                            <td><textarea rows="6" class="w-full text-xs">Menyajikan materi/konteks nyata/stimulus (Meaningful).
+Membimbing eksplorasi dan diskusi kelompok.
+Memfasilitasi aktivitas joyful: [nama aktivitas] (Joyful).
+Memberikan bimbingan individual/kelompok.
+Mengaitkan materi dengan nilai-nilai islami.
+Mengaitkan dengan konteks industri / kearifan lokal.</textarea></td>
+                            <td><textarea rows="6" class="w-full text-xs">Menyimak pemaparan guru dan bertanya.
+Berdiskusi kelompok / mengerjakan LK.
+Melakukan aktivitas: [nama aktivitas].
+Mengajukan pertanyaan dan menjawab.
+Mengintegrasikan nilai karakter dalam aktivitas.
+Menghubungkan materi dengan pengalaman nyata.</textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-center">PENUTUP<br><input type="text" placeholder="... menit" class="text-center mt-1 w-full text-xs font-normal"></td>
+                            <td><textarea rows="5" class="w-full text-xs">Membimbing peserta didik menyimpulkan pembelajaran.
+Melakukan asesmen formatif (lisan/tulisan/observasi).
+Memfasilitasi refleksi akhir (Mindful).
+Menyampaikan rencana pembelajaran berikutnya.
+Menutup dengan doa dan salam.</textarea></td>
+                            <td><textarea rows="5" class="w-full text-xs">Menyusun kesimpulan pembelajaran bersama guru.
+Mengerjakan asesmen formatif.
+Mengisi lembar/jurnal refleksi.
+Menyimak arahan tindak lanjut.
+Berdoa dan menjawab salam.</textarea></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pertemuan 2 -->
+            <div class="mb-6 border border-gray-400 p-1 break-inside-avoid">
+                <div class="bg-gray-100 p-2 font-bold mb-2 flex items-center justify-between">
+                    <span>PERTEMUAN KE-2 (dua)</span>
+                    <span class="text-sm font-normal"><input type="text" placeholder="... JP (... menit)" class="w-48 inline-block"></span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="w-1/6">Fase Pembelajaran</th>
+                            <th class="w-2/5">Kegiatan Guru</th>
+                            <th class="w-2/5">Kegiatan Peserta Didik</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-bold text-center">PENDAHULUAN<br><input type="text" placeholder="... menit" class="text-center mt-1 w-full text-xs font-normal"></td>
+                            <td><textarea rows="5" class="w-full text-xs"></textarea></td>
+                            <td><textarea rows="5" class="w-full text-xs"></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-center">INTI<br><input type="text" placeholder="... menit" class="text-center mt-1 w-full text-xs font-normal"></td>
+                            <td><textarea rows="6" class="w-full text-xs"></textarea></td>
+                            <td><textarea rows="6" class="w-full text-xs"></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-center">PENUTUP<br><input type="text" placeholder="... menit" class="text-center mt-1 w-full text-xs font-normal"></td>
+                            <td><textarea rows="5" class="w-full text-xs"></textarea></td>
+                            <td><textarea rows="5" class="w-full text-xs"></textarea></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="text-xs text-center text-gray-500 mt-2 italic">[ Duplikat format tabel di atas jika memerlukan pertemuan ke-3, ke-4, dst. ]</p>
+            </div>
+        </div>
+
+        <!-- E. ASESMEN -->
+        <div class="mb-8 break-inside-avoid">
+            <h2 class="text-xl font-bold bg-gray-200 p-2 mb-4 border-l-4 border-blue-600">E. RANCANGAN ASESMEN</h2>
+            
+            <h3 class="font-bold bg-gray-100 p-1 mb-2">E.1 ASESMEN FORMATIF (Asesmen Untuk Pembelajaran)</h3>
+            <div class="form-row"><div class="form-label">Teknik Asesmen Formatif</div><div><input type="text" placeholder="observasi, lisan, kuis, lembar kerja, dll..."></div></div>
+            <div class="form-row"><div class="form-label">Instrumen Asesmen Formatif</div><div><input type="text" placeholder="daftar pertanyaan, lembar observasi, rubrik..."></div></div>
+            <div class="form-row"><div class="form-label">Waktu Pelaksanaan</div><div><input type="text" placeholder="Awal / Tengah / Akhir pembelajaran"></div></div>
+            <div class="form-row"><div class="form-label">Tindak Lanjut Formatif</div><div><textarea rows="3" placeholder="Remediasi: ...&#10;Pengayaan: ...&#10;Penguatan: ..."></textarea></div></div>
+
+            <h3 class="font-bold bg-gray-100 p-1 mb-2 mt-4">E.2 ASESMEN SUMATIF (Asesmen Hasil Pembelajaran)</h3>
+            <div class="form-row"><div class="form-label">Teknik Asesmen Sumatif</div><div><input type="text" placeholder="Tes tulis / praktik / presentasi / proyek / unjuk kerja"></div></div>
+            <div class="form-row"><div class="form-label">Instrumen Asesmen Sumatif</div><div><input type="text" placeholder="Soal tes / Rubrik proyek / Rubrik presentasi..."></div></div>
+            <div class="form-row"><div class="form-label">Kriteria Ketercapaian (KKTP)</div><div><textarea rows="2" placeholder="Jelaskan kriteria minimum ketercapaian..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Dimensi Profil Lulusan</div><div><input type="text" placeholder="Dimensi profil yang dinilai..."></div></div>
+
+            <h3 class="font-bold bg-gray-100 p-1 mb-2 mt-4">E.3 ASESMEN DIAGNOSTIK (Asesmen Sebelum Pembelajaran)</h3>
+            <div class="form-row"><div class="form-label">Teknik Diagnostik</div><div><input type="text" placeholder="Kuis awal / Pertanyaan pemantik / Wawancara..."></div></div>
+            <div class="form-row"><div class="form-label">Hasil & Tindak Lanjut</div><div><textarea rows="2" placeholder="Bagaimana hasil digunakan untuk diferensiasi..."></textarea></div></div>
+        </div>
+
+        <!-- F. MATERI & SUMBER BELAJAR -->
+        <div class="mb-8 break-inside-avoid">
+            <h2 class="text-xl font-bold bg-gray-200 p-2 mb-4 border-l-4 border-blue-600">F. MATERI DAN SUMBER BELAJAR</h2>
+            <div class="form-row"><div class="form-label">Materi Pokok / Esensial</div><div><textarea rows="3" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Materi Pengayaan</div><div><textarea rows="2" placeholder="Materi tambahan bagi yang melampaui KKTP..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Materi Remedial</div><div><textarea rows="2" placeholder="Materi/pendekatan bagi yang belum mencapai KKTP..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Sumber Belajar Utama</div><div><input type="text" placeholder="Buku teks, modul (judul, penulis, penerbit, tahun)..."></div></div>
+            <div class="form-row"><div class="form-label">Sumber Belajar Pendukung</div><div><input type="text" placeholder="Video, artikel, website, jurnal, DUDI..."></div></div>
+            <div class="form-row"><div class="form-label">Media Pembelajaran</div><div><input type="text" placeholder="PPT, infografis, alat peraga, simulasi..."></div></div>
+            <div class="form-row"><div class="form-label">Alat & Bahan Praktik</div><div><input type="text" placeholder="Alat, bahan, dan perangkat praktik..."></div></div>
+            <div class="form-row"><div class="form-label">Lembar Kerja Peserta Didik (LKPD)</div><div><input type="text" placeholder="Judul LKPD: ... | Terlampir: Ya / Tidak"></div></div>
+        </div>
+
+        <!-- G. RUBRIK -->
+        <div class="mb-8 break-inside-avoid">
+            <h2 class="text-xl font-bold bg-gray-200 p-2 mb-2 border-l-4 border-blue-600">G. RUBRIK PENILAIAN HOLISTIK</h2>
+            <p class="text-sm mb-2 text-gray-700">Rubrik ini mencakup 4 aspek utama penilaian. Skor: Perlu Bimbingan (1) | Cukup (2) | Baik (3) | Sangat Baik (4). Nilai Akhir = (Total Skor / Skor Maksimal) × 100.</p>
+            <table class="text-sm">
+                <thead>
+                    <tr>
+                        <th class="w-1/5">Aspek Penilaian</th>
+                        <th class="w-1/5">Perlu Bimbingan (1)</th>
+                        <th class="w-1/5">Cukup (2)</th>
+                        <th class="w-1/5">Baik (3)</th>
+                        <th class="w-1/5">Sangat Baik (4)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="font-bold">Pengetahuan / Pemahaman Konsep</td>
+                        <td>Belum memahami konsep; jawaban tidak relevan.</td>
+                        <td>Memahami sebagian konsep dengan kekeliruan.</td>
+                        <td>Memahami konsep dengan baik; sedikit kekeliruan.</td>
+                        <td>Memahami konsep secara mendalam dan komprehensif.</td>
+                    </tr>
+                    <tr>
+                        <td class="font-bold">Keterampilan / Unjuk Kerja</td>
+                        <td>Belum dapat melaksanakan prosedur.</td>
+                        <td>Melaksanakan prosedur dengan banyak kesalahan.</td>
+                        <td>Melaksanakan prosedur dengan beberapa kesalahan kecil.</td>
+                        <td>Melaksanakan prosedur dengan tepat, sistematis, dan mandiri.</td>
+                    </tr>
+                    <tr>
+                        <td class="font-bold">Sikap & Profil Lulusan</td>
+                        <td>Belum menunjukkan sikap yang diharapkan.</td>
+                        <td>Menunjukkan sikap dengan bimbingan penuh.</td>
+                        <td>Menunjukkan sikap secara konsisten dengan sedikit bimbingan.</td>
+                        <td>Menunjukkan sikap secara mandiri, konsisten, dan menjadi teladan.</td>
+                    </tr>
+                    <tr>
+                        <td class="font-bold">Produk / Karya Akhir</td>
+                        <td>Produk tidak sesuai kriteria.</td>
+                        <td>Produk sesuai sebagian kriteria.</td>
+                        <td>Produk sesuai kriteria dengan kualitas cukup baik.</td>
+                        <td>Produk melampaui kriteria; inovatif dan bernilai guna tinggi.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- H. REFLEKSI -->
+        <div class="mb-8 break-inside-avoid">
+            <h2 class="text-xl font-bold bg-gray-200 p-2 mb-4 border-l-4 border-blue-600">H. REFLEKSI GURU DAN TINDAK LANJUT</h2>
+            <div class="form-row"><div class="form-label">Apakah tujuan pembelajaran tercapai?</div><div><input type="text" placeholder="Ya / Sebagian / Belum | Alasan: ..."></div></div>
+            <div class="form-row"><div class="form-label">Apa yang berjalan baik?</div><div><textarea rows="2" placeholder="Uraikan aspek pembelajaran yang berjalan efektif..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Apa yang perlu diperbaiki?</div><div><textarea rows="2" placeholder="Uraikan aspek yang perlu ditingkatkan..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Bagaimana respons peserta didik?</div><div><textarea rows="2" placeholder="Uraikan respons dan antusiasme peserta didik..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Tindak Lanjut yang Direncanakan</div><div><textarea rows="2" placeholder="Rencana perbaikan / pengembangan berikutnya..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Catatan Khusus</div><div><textarea rows="2" placeholder="Kejadian, temuan, kebutuhan khusus..."></textarea></div></div>
+            <div class="form-row"><div class="form-label">Tanggal Refleksi</div><div><input type="text" placeholder="dd/mm/yyyy" class="w-48"></div></div>
+        </div>
+
+        <!-- I. LAMPIRAN & CHECKLIST -->
+        <div class="mb-8 break-inside-avoid">
+            <h2 class="text-xl font-bold bg-gray-200 p-2 mb-4 border-l-4 border-blue-600">I. DAFTAR LAMPIRAN MODUL AJAR</h2>
+            <table>
+                <thead>
+                    <tr><th class="w-12">No.</th><th class="w-1/3">Nama Lampiran</th><th>Keterangan</th><th class="w-1/6">Status</th></tr>
+                </thead>
+                <tbody class="text-center">
+                    <tr><td>1</td><td class="text-left">Lembar Kerja Peserta Didik (LKPD)</td><td class="text-left">Terlampir dalam modul</td><td><input type="text" placeholder="Ada/Tidak" class="text-center text-xs"></td></tr>
+                    <tr><td>2</td><td class="text-left">Instrumen Asesmen Formatif</td><td class="text-left">Lembar observasi, kuis, dll.</td><td><input type="text" placeholder="Ada/Tidak" class="text-center text-xs"></td></tr>
+                    <tr><td>3</td><td class="text-left">Instrumen Asesmen Sumatif</td><td class="text-left">Soal tes / Rubrik proyek</td><td><input type="text" placeholder="Ada/Tidak" class="text-center text-xs"></td></tr>
+                    <tr><td>4</td><td class="text-left">Rubrik Penilaian Lengkap</td><td class="text-left">Rubrik 4 aspek sesuai Bagian G</td><td><input type="text" placeholder="Ada/Tidak" class="text-center text-xs"></td></tr>
+                    <tr><td>5</td><td class="text-left">Materi Ajar / Bahan Bacaan</td><td class="text-left">Handout / ringkasan materi</td><td><input type="text" placeholder="Ada/Tidak" class="text-center text-xs"></td></tr>
+                    <tr><td>6</td><td class="text-left">Media Pembelajaran</td><td class="text-left">Link video / PPT / infografis</td><td><input type="text" placeholder="Ada/Tidak" class="text-center text-xs"></td></tr>
+                    <tr><td>7</td><td class="text-left">Lembar Refleksi Peserta Didik</td><td class="text-left">Jurnal / exit ticket / 3-2-1</td><td><input type="text" placeholder="Ada/Tidak" class="text-center text-xs"></td></tr>
+                    <tr><td>8</td><td class="text-left">Bahan Pengayaan</td><td class="text-left">Untuk peserta didik KKTP terlampaui</td><td><input type="text" placeholder="Ada/Tidak" class="text-center text-xs"></td></tr>
+                    <tr><td>9</td><td class="text-left">Bahan Remediasi</td><td class="text-left">Untuk peserta didik belum KKTP</td><td><input type="text" placeholder="Ada/Tidak" class="text-center text-xs"></td></tr>
+                    <tr><td>10</td><td class="text-left">Dokumentasi Foto Kegiatan</td><td class="text-left">Foto proses pembelajaran</td><td><input type="text" placeholder="Ada/Tidak" class="text-center text-xs"></td></tr>
+                </tbody>
+            </table>
+
+            <h3 class="font-bold bg-gray-100 p-1 mb-2 mt-6">CHECKLIST KELENGKAPAN MODUL AJAR</h3>
+            <table>
+                <thead>
+                    <tr><th class="w-12">Bag.</th><th class="w-1/4">Kriteria Kelengkapan</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="text-center font-bold">A</td><td>Identitas Modul Ajar</td><td><input type="text" placeholder="✓ Lengkap / ✗ Dalam Proses / Belum" class="text-xs"></td></tr>
+                    <tr><td class="text-center font-bold">B</td><td>Kerangka Kurikulum</td><td><input type="text" placeholder="✓ Lengkap / ✗ Dalam Proses / Belum" class="text-xs"></td></tr>
+                    <tr><td class="text-center font-bold">C</td><td>Rancangan Deep Learning</td><td><input type="text" placeholder="✓ Lengkap / ✗ Dalam Proses / Belum" class="text-xs"></td></tr>
+                    <tr><td class="text-center font-bold">D</td><td>Skenario Pembelajaran</td><td><input type="text" placeholder="✓ Lengkap / ✗ Dalam Proses / Belum" class="text-xs"></td></tr>
+                    <tr><td class="text-center font-bold">E</td><td>Rancangan Asesmen</td><td><input type="text" placeholder="✓ Lengkap / ✗ Dalam Proses / Belum" class="text-xs"></td></tr>
+                    <tr><td class="text-center font-bold">F</td><td>Materi & Sumber Belajar</td><td><input type="text" placeholder="✓ Lengkap / ✗ Dalam Proses / Belum" class="text-xs"></td></tr>
+                    <tr><td class="text-center font-bold">G</td><td>Rubrik Penilaian</td><td><input type="text" placeholder="✓ Lengkap / ✗ Dalam Proses / Belum" class="text-xs"></td></tr>
+                    <tr><td class="text-center font-bold">H</td><td>Refleksi Guru</td><td><input type="text" placeholder="✓ Lengkap / ✗ Dalam Proses / Belum" class="text-xs"></td></tr>
+                    <tr><td class="text-center font-bold">I</td><td>Daftar Lampiran</td><td><input type="text" placeholder="✓ Lengkap / ✗ Dalam Proses / Belum" class="text-xs"></td></tr>
+                    <tr><td class="text-center font-bold">J</td><td>Pengesahan</td><td><input type="text" placeholder="✓ Lengkap / ✗ Dalam Proses / Belum" class="text-xs"></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- J. PENGESAHAN -->
+        <div class="mb-8 break-inside-avoid">
+            <h2 class="text-xl font-bold bg-gray-200 p-2 mb-6 border-l-4 border-blue-600">J. PENGESAHAN MODUL AJAR</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center text-sm">
+                <div>
+                    <p class="mb-16">Disusun Oleh<br>Guru Mata Pelajaran</p>
+                    <div class="border-b border-gray-400 w-4/5 mx-auto mb-1"><input type="text" placeholder="Nama..." class="text-center border-none bg-transparent w-full"></div>
+                    <div class="flex justify-center items-center"><span class="w-10 text-left">NIP.</span><input type="text" class="border-none bg-transparent w-32"></div>
+                </div>
+                <div>
+                    <p class="mb-16">Diperiksa Oleh<br>Wakil Kepala Kurikulum</p>
+                    <div class="border-b border-gray-400 w-4/5 mx-auto mb-1"><input type="text" placeholder="Nama..." class="text-center border-none bg-transparent w-full"></div>
+                    <div class="flex justify-center items-center"><span class="w-10 text-left">NIP.</span><input type="text" class="border-none bg-transparent w-32"></div>
+                </div>
+                <div>
+                    <p class="mb-16">Disahkan Oleh<br>Kepala Sekolah</p>
+                    <div class="border-b border-gray-400 w-4/5 mx-auto mb-1"><input type="text" placeholder="Nama..." class="text-center border-none bg-transparent w-full"></div>
+                    <div class="flex justify-center items-center"><span class="w-10 text-left">NIP.</span><input type="text" class="border-none bg-transparent w-32"></div>
+                </div>
+            </div>
+            <div class="text-right mt-4 mr-4 text-sm">
+                Tanggal: <input type="text" placeholder="..................................." class="border-none bg-transparent w-32">
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-xs text-gray-500 font-bold border-t border-gray-300 pt-4 mt-8 break-inside-avoid">
+            SMK MUHAMMADIYAH 3 PURBALINGGA<br>
+            <span class="font-normal italic">Unggul • Islami • Berjiwa Entrepreneur</span>
+        </div>
+
+    </div>
+
+</body>
+</html>

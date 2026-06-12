@@ -1,15 +1,16 @@
 'use client';
 import { useState, useRef } from 'react';
-import { generateAndDownloadTpAtp } from '../../lib/docxGeneratorTpAtp';
+import { generateAndDownloadModulDocx } from '../../lib/docxGeneratorModul';
 import { Sparkles, Download, Loader2, ChevronDown, ChevronUp, FileUp, CheckCircle, XCircle } from 'lucide-react';
 
-export default function TpAtpGenerator() {
+export default function ModulAjarGenerator() {
   const [formData, setFormData] = useState({
     subject: '', program: '', phase: '', grade: '',
-    semester: 'Ganjil & Genap', year: '2025/2026', timeTotal: '',
-    teacher: '', waka: '', principal: '', cpText: '',
+    semester: 'Ganjil & Genap', year: '2025/2026',
+    teacher: '', cpText: '', targetTp: '', elemenCP: '', targetTpText: ''
   });
 
+  const [tpTextRaw, setTpTextRaw]         = useState('');
   const [openSection, setOpenSection]     = useState('identitas');
   const [isLoading, setIsLoading]         = useState(false);
   const [isDocxLoading, setIsDocxLoading] = useState(false);
@@ -21,7 +22,7 @@ export default function TpAtpGenerator() {
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
   const toggleSection = (id) => setOpenSection(openSection === id ? null : id);
 
-  // ── Upload & Parse DOCX ──
+  // ── Upload & Parse DOCX (TP & ATP) ──
   const handleDocxUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -36,19 +37,23 @@ export default function TpAtpGenerator() {
     try {
       const fd = new FormData();
       fd.append('docx', file);
+      // Kita pakai route parse-docx yang sudah dibuat sebelumnya (hanya untuk baca teks raw & identitas umum)
       const res  = await fetch('/api/parse-docx', { method: 'POST', body: fd });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal membaca PDF');
+      if (!res.ok) throw new Error(data.error || 'Gagal membaca DOCX');
+
+      // Set data mentah untuk dikirim ke prompt AI generate-modul
+      setTpTextRaw(data.cpText || '');
 
       setFormData(prev => ({
         ...prev,
         subject: data.mataPelajaran && !prev.subject ? data.mataPelajaran : prev.subject,
         phase:   data.fase          && !prev.phase   ? data.fase          : prev.phase,
-        cpText:  data.cpText        || prev.cpText,
+        cpText:  data.cpText        ? "Teks CP berhasil diekstrak..." : prev.cpText,
       }));
 
       setDocxStatus('success');
-      setDocxMessage(`✅ Format CP "${file.name}" berhasil dibaca! Kolom CP sudah terisi otomatis.`);
+      setDocxMessage(`✅ Format TP & ATP "${file.name}" berhasil dibaca! Identitas telah terisi otomatis.`);
     } catch (error) {
       setDocxStatus('error'); setDocxMessage(`Gagal memproses DOCX: ${error.message}`);
     } finally {
@@ -60,13 +65,19 @@ export default function TpAtpGenerator() {
   // ── Generate AI ──
   const handleGenerate = async (e) => {
     e.preventDefault();
-    if (!formData.cpText) return alert("Teks CP (Ringkasan CP) wajib diisi!");
+    if (!tpTextRaw) return alert("Silakan upload dokumen TP & ATP terlebih dahulu!");
+    if (!formData.targetTp) return alert("Nomor/Target Tujuan Pembelajaran (TP) wajib diisi!");
 
     setIsLoading(true); setResult(null);
     try {
-      const res = await fetch('/api/generate-tp', {
+      const payload = {
+        ...formData,
+        tpText: tpTextRaw
+      };
+
+      const res = await fetch('/api/generate-modul', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       if (!res.ok) { const err = await res.json(); throw new Error(err.error || "Gagal generate dari AI"); }
       const data = await res.json();
@@ -81,13 +92,13 @@ export default function TpAtpGenerator() {
 
   const handleDownload = () => {
     if (!result) return;
-    generateAndDownloadTpAtp(formData, result);
+    generateAndDownloadModulDocx(formData, result);
   };
 
   return (
     <div className="container">
       <div className="glass-panel" style={{ marginBottom: '2rem' }}>
-        <h1>Generator Format TP & ATP</h1>
+        <h1>Generator Modul Ajar</h1>
         <p className="subtitle">SMK Muhammadiyah 3 Purbalingga — Kurikulum Merdeka | Pendekatan Deep Learning</p>
 
         {/* ── DOCX UPLOAD BANNER ── */}
@@ -97,8 +108,8 @@ export default function TpAtpGenerator() {
               {isDocxLoading ? <Loader2 className="spin" size={28} /> : <FileUp size={28} />}
             </div>
             <div>
-              <div className="pdf-upload-title">Upload Format CP (.docx)</div>
-              <div className="pdf-upload-sub">Upload dokumen Format CP yang sudah digenerate dari website ini. AI akan otomatis mengekstrak teks CP.</div>
+              <div className="pdf-upload-title">Upload Dokumen TP & ATP (.docx)</div>
+              <div className="pdf-upload-sub">Upload dokumen Format TP & ATP yang sudah digenerate dari website ini sebagai acuan Modul Ajar.</div>
             </div>
           </div>
           <label className="pdf-upload-btn" htmlFor="docx-input">
@@ -117,10 +128,10 @@ export default function TpAtpGenerator() {
 
         <form onSubmit={handleGenerate} style={{ marginTop: '1.5rem' }}>
 
-          {/* ── A. IDENTITAS ── */}
+          {/* ── A. IDENTITAS UMUM ── */}
           <div className="accordion">
             <button type="button" className="accordion-header" onClick={() => toggleSection('identitas')}>
-              <span>A. Identitas Mata Pelajaran</span>
+              <span>A. Identitas Dasar</span>
               {openSection === 'identitas' ? <ChevronUp size={18}/> : <ChevronDown size={18}/>}
             </button>
             {openSection === 'identitas' && (
@@ -152,53 +163,52 @@ export default function TpAtpGenerator() {
                     </select>
                   </div>
                   <div className="form-group">
-                    <label>Tahun Pelajaran</label>
-                    <input type="text" name="year" className="glass-input" value={formData.year} onChange={handleChange}/>
-                  </div>
-                  <div className="form-group">
-                    <label>Alokasi Waktu Total (JP) <span className="required">*</span></label>
-                    <input required type="number" name="timeTotal" className="glass-input" placeholder="Contoh: 144" onChange={handleChange} value={formData.timeTotal}/>
+                    <label>Semester</label>
+                    <select name="semester" className="glass-input" onChange={handleChange} value={formData.semester} required>
+                      <option value="">-- Pilih Semester --</option>
+                      <option value="Ganjil">Ganjil</option>
+                      <option value="Genap">Genap</option>
+                    </select>
                   </div>
                   <div className="form-group">
                     <label>Guru Penyusun <span className="required">*</span></label>
                     <input required type="text" name="teacher" className="glass-input" placeholder="Nama Lengkap & NIP/NUPTK" onChange={handleChange} value={formData.teacher}/>
-                  </div>
-                  <div className="form-group">
-                    <label>Waka Kurikulum</label>
-                    <input type="text" name="waka" className="glass-input" placeholder="Nama Waka Kurikulum" onChange={handleChange} value={formData.waka}/>
-                  </div>
-                  <div className="form-group">
-                    <label>Kepala Sekolah</label>
-                    <input type="text" name="principal" className="glass-input" placeholder="Nama Kepala Sekolah" onChange={handleChange} value={formData.principal}/>
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* ── B. CAPAIAN PEMBELAJARAN ── */}
+          {/* ── B. FOKUS MODUL (TARGET TP) ── */}
           <div className="accordion">
             <button type="button" className="accordion-header" onClick={() => toggleSection('cp')}>
-              <span>B. Teks Capaian Pembelajaran (CP)</span>
+              <span>B. Fokus Modul Ajar</span>
               <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-                {formData.cpText && <span className="badge-filled">Terisi ✓</span>}
+                {formData.targetTp && <span className="badge-filled">Terisi ✓</span>}
                 {openSection === 'cp' ? <ChevronUp size={18}/> : <ChevronDown size={18}/>}
               </div>
             </button>
             {openSection === 'cp' && (
               <div className="accordion-body">
-                {isDocxLoading && (
-                  <div className="pdf-reading-indicator">
-                    <Loader2 className="spin" size={20}/>
-                    <span>AI sedang membaca DOCX dan mengekstrak teks CP...</span>
-                  </div>
-                )}
                 <div className="form-group">
-                  <label>Deskripsi CP yang Dirujuk <span className="required">*</span></label>
-                  <textarea required name="cpText" className="glass-input"
-                    style={{ minHeight:'180px', resize:'vertical' }}
-                    placeholder={isDocxLoading ? "Menunggu hasil baca DOCX..." : "Paste atau upload file DOCX untuk mengisi otomatis teks CP..."}
-                    onChange={handleChange} value={formData.cpText}/>
+                  <label>Pilih/Ketik TP yang akan dibuatkan Modul Ajar <span className="required">*</span></label>
+                  <p style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
+                    Tulis secara spesifik TP yang ingin difokuskan (misalnya: "TP-01: Menerapkan K3LH"). AI akan mengekstrak detailnya dari file yang Anda upload.
+                  </p>
+                  <input required type="text" name="targetTp" className="glass-input" 
+                    placeholder="Contoh: TP-01 s.d. TP-02 (Merakit Komputer)" onChange={handleChange} value={formData.targetTp}/>
+                </div>
+                
+                <div className="form-group">
+                  <label>Elemen CP (Opsional)</label>
+                  <input type="text" name="elemenCP" className="glass-input" placeholder="Misal: Sistem Komputer" onChange={handleChange} value={formData.elemenCP}/>
+                </div>
+                
+                <div className="form-group">
+                  <label>Teks Tujuan Pembelajaran Lengkap (Opsional)</label>
+                  <textarea name="targetTpText" className="glass-input" rows="2"
+                    placeholder="Jika diperlukan, salin bunyi lengkap Tujuan Pembelajaran di sini..."
+                    onChange={handleChange} value={formData.targetTpText}/>
                 </div>
               </div>
             )}
@@ -206,12 +216,12 @@ export default function TpAtpGenerator() {
 
           <div className="info-box">
             <Sparkles size={16}/>
-            <span>Tujuan Pembelajaran (TP), IKTP, dan Peta Alur (ATP) akan <strong>digenerate secara otomatis oleh AI</strong> berdasarkan teks CP yang dimasukkan.</span>
+            <span>Skenario Deep Learning (Mindful, Meaningful, Joyful), Asesmen, Rubrik Penilaian, dan Lampiran akan <strong>digenerate secara otomatis oleh AI</strong> berdasarkan TP yang dipilih dan file TP & ATP yang diupload.</span>
           </div>
 
           <button type="submit" className="glass-button" disabled={isLoading || isDocxLoading} style={{ marginTop:'1.5rem' }}>
             {isLoading ? <Loader2 className="animate-spin"/> : <Sparkles/>}
-            {isLoading ? "AI sedang merumuskan TP & ATP..." : "Generate TP & ATP"}
+            {isLoading ? "AI sedang menyusun Modul Ajar..." : "Generate Modul Ajar"}
           </button>
         </form>
       </div>
@@ -219,19 +229,19 @@ export default function TpAtpGenerator() {
       {result && (
         <div id="result-section" className="glass-panel result-panel" style={{ animation:'fadeIn 0.5s' }}>
           <div className="result-icon">✅</div>
-          <h2>Analisis AI Berhasil!</h2>
+          <h2>Modul Ajar Berhasil Disusun!</h2>
           <p style={{ color:'var(--text-muted)', marginBottom:'0.5rem' }}>
-            Dokumen Format TP & ATP sudah siap — <strong>{result.tujuanPembelajaran?.length || 0} Tujuan Pembelajaran</strong> berhasil dirumuskan.
+            Dokumen Modul Ajar sudah siap — difokuskan pada: <strong>{formData.targetTp}</strong>.
           </p>
           <div className="result-preview">
-            <div className="preview-item"><span>📋 Tabel Tujuan Pembelajaran (ABCD)</span><span className="badge ai">AI</span></div>
-            <div className="preview-item"><span>🎯 IKTP & Asesmen</span><span className="badge ai">AI</span></div>
-            <div className="preview-item"><span>🗺️ Peta Alur Tujuan Pembelajaran</span><span className="badge ai">AI</span></div>
-            <div className="preview-item"><span>📊 Alur TP Semester Ganjil & Genap</span><span className="badge ai">AI</span></div>
-            <div className="preview-item"><span>⚡ Integrasi Deep Learning & Profil Lulusan</span><span className="badge ai">AI</span></div>
+            <div className="preview-item"><span>📋 Identitas & Kerangka Kurikulum</span><span className="badge ai">AI</span></div>
+            <div className="preview-item"><span>🧠 Rancangan Deep Learning (MMJ)</span><span className="badge ai">AI</span></div>
+            <div className="preview-item"><span>📝 Skenario Pembelajaran ({result.skenario?.length || 0} Pertemuan)</span><span className="badge ai">AI</span></div>
+            <div className="preview-item"><span>🎯 Rancangan Asesmen (Diag, Form, Sum)</span><span className="badge ai">AI</span></div>
+            <div className="preview-item"><span>📊 Rubrik Penilaian Holistik</span><span className="badge ai">AI</span></div>
           </div>
           <button id="download-btn" onClick={handleDownload} className="glass-button" style={{ marginTop:'1.5rem' }}>
-            <Download/> Download Format TP & ATP Lengkap (.docx)
+            <Download/> Download Modul Ajar Lengkap (.docx)
           </button>
         </div>
       )}

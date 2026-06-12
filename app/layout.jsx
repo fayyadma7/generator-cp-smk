@@ -15,6 +15,7 @@ export default function RootLayout({ children }) {
             <div className="nav-links">
               <a href="/" className="nav-link">Generator CP</a>
               <a href="/tp-atp" className="nav-link">Generator TP & ATP</a>
+              <a href="/modul-ajar" className="nav-link">Generator Modul Ajar</a>
             </div>
           </div>
         </nav>
