@@ -10,92 +10,110 @@ export const maxDuration = 120;
 
 const SCHEMA_STEP_1 = {
   identitas: {
-    nama_mata_pelajaran: { prompt: "Tulis nama mata pelajaran lengkap sesuai nomenklatur Kurikulum Merdeka." },
-    program_keahlian: { prompt: "Isi dengan program keahlian spesifik atau 'Semua Program Keahlian'." },
-    fase_kelas: { prompt: "Format: 'Fase [E/F] / Kelas [X/XI/XII]'." },
-    semester: { prompt: "'Ganjil' atau 'Genap' sesuai semester berjalan." },
-    tahun_pelajaran: { prompt: "Format 'YYYY/YYYY'." },
-    judul_modul: { prompt: "Judul modul menarik, kontekstual lokal, maks 20 kata, bukan generik." },
-    nomor_modul: { prompt: "Format: 'MA-[KODE_MAPEL]-[NOMOR_URUT]'." },
-    nomor_tp: { prompt: "Nomor TP yang dirujuk, misal 'TP-01'." },
-    alokasi_waktu: { prompt: "Format: '[Total JP] JP ([pertemuan] Pertemuan × [JP/ptm] JP @ [menit] menit)'." },
-    pertemuan_ke: { prompt: "Format: 'Pertemuan ke-[awal] s.d. ke-[akhir]'." }
+    nama_mata_pelajaran: "[Isi dengan nama mata pelajaran lengkap]",
+    program_keahlian: "[Isi dengan program keahlian spesifik atau 'Semua Program Keahlian']",
+    fase_kelas: "[Isi dengan format: 'Fase [E/F] / Kelas [X/XI/XII]']",
+    semester: "[Isi dengan 'Ganjil' atau 'Genap']",
+    tahun_pelajaran: "[Isi dengan format 'YYYY/YYYY']",
+    judul_modul: "[Isi dengan judul modul yang menarik, kontekstual lokal, maks 20 kata]",
+    nomor_modul: "[Isi dengan format: 'MA-[KODE_MAPEL]-[NOMOR_URUT]']",
+    nomor_tp: "[Isi dengan Nomor TP yang dirujuk, misal 'TP-01']",
+    alokasi_waktu: "[Isi dengan format: '[Total JP] JP ([pertemuan] Pertemuan × [JP/ptm] JP @ [menit] menit)']",
+    pertemuan_ke: "[Isi dengan format: 'Pertemuan ke-[awal] s.d. ke-[akhir]']"
   },
   kerangka_kurikulum: {
-    capaian_pembelajaran: { prompt: "Salin Capaian Pembelajaran (CP) resmi dari dokumen referensi yang relevan dengan mata pelajaran dan fase." },
-    elemen_cp: { prompt: "Array elemen CP yang relevan dengan modul ini, ambil dari dokumen CP resmi." },
-    tujuan_pembelajaran: { prompt: "Rumuskan TP: 'Peserta didik mampu...' + kompetensi + konten + konteks lokal. Gunakan taksonomi Bloom C1-C6." },
-    indikator_ketercapaian_tp: { prompt: "Buat 2-4 IKTP spesifik dan terukur, dari LOTS ke HOTS. Format array string 'IKTP [no_tp].[no_indikator]: ...'." },
-    posisi_dalam_atp: { prompt: "Jelaskan urutan ke-berapa dalam ATP, peran modul, prasyarat, dan kelanjutan." },
-    dimensi_profil_lulusan: { prompt: "Pilih 2-4 dimensi PPP yang benar-benar dikembangkan. Format array string: 'Dimensi → penjelasan konkret'." }
+    capaian_pembelajaran: "[Salin utuh Capaian Pembelajaran resmi dari referensi yang relevan]",
+    elemen_cp: [
+      "[Isi dengan elemen 1]",
+      "[Isi dengan elemen 2]"
+    ],
+    tujuan_pembelajaran: "[Rumuskan TP: 'Peserta didik mampu...' + kompetensi + konten + konteks lokal]",
+    indikator_ketercapaian_tp: [
+      "[IKTP 1: dari LOTS ke HOTS]",
+      "[IKTP 2: spesifik dan terukur]"
+    ],
+    posisi_dalam_atp: "[Jelaskan peran modul, urutan, prasyarat, dan kelanjutannya]",
+    dimensi_profil_lulusan: [
+      "[Dimensi 1 → penjelasan konkret integrasinya]",
+      "[Dimensi 2 → penjelasan konkret integrasinya]"
+    ]
   }
 };
 
 const SCHEMA_STEP_2 = {
   rancangan_pembelajaran: {
     mindful_learning: {
-      apersepsi: { prompt: "Stimulus konkret dari lingkungan LOKAL sekolah, maks 10 menit, aktivasi pengetahuan awal." },
-      pertanyaan_pemantik: { prompt: "Buat 3 pertanyaan: (1) konteks sehari-hari lokal, (2) kausal/ilmiah fenomena lokal spesifik, (3) nilai moral/spiritual/sosial. Format array string." },
-      penetapan_tujuan_bersama: { prompt: "Prosedur 5-10 menit yang melibatkan suara siswa, hubungkan TP dengan relevansi personal." },
-      strategi_refleksi: { prompt: "Teknik refleksi terstruktur: 3-2-1, Exit Ticket, PMI, dll. Jelaskan instruksi spesifiknya." }
+      apersepsi: "[Deskripsikan apersepsi konkret dari lingkungan LOKAL sekolah, maks 10 menit]",
+      pertanyaan_pemantik: [
+        "[Pertanyaan 1: konteks sehari-hari lokal]",
+        "[Pertanyaan 2: kausal/ilmiah fenomena lokal]",
+        "[Pertanyaan 3: nilai moral/spiritual]"
+      ],
+      penetapan_tujuan_bersama: "[Deskripsikan prosedur 5-10 menit pelibatan suara siswa menetapkan tujuan]",
+      strategi_refleksi: "[Deskripsikan teknik refleksi terstruktur beserta instruksinya]"
     },
     meaningful_learning: {
-      koneksi_dunia_nyata: { prompt: "Min 2 industri/profesi/fenomena LOKAL yang relevan. Nama industri/tempat lokal yang nyata." },
-      koneksi_antar_mapel: { prompt: "2-4 mapel lain dengan koneksi substantif. Format object: key nama mapel, value penjelasan koneksi konkret." },
-      koneksi_kearifan_lokal: { prompt: "Kearifan lokal/tradisi daerah yang relevan. Jika tidak ada, tulis null. Jangan mengarang." },
-      produk_bermakna: { prompt: "Artefak nyata yang bisa digunakan di luar kelas: nama produk, format, isi minimal, fungsi." }
+      koneksi_dunia_nyata: "[Deskripsikan min 2 industri/profesi LOKAL yang relevan]",
+      koneksi_antar_mapel: {
+        "Nama Mapel 1": "[Koneksi substantif dengan materi]",
+        "Nama Mapel 2": "[Koneksi substantif dengan materi]"
+      },
+      koneksi_kearifan_lokal: "[Deskripsikan kearifan lokal/tradisi yang relevan, atau null jika tidak ada]",
+      produk_bermakna: "[Deskripsikan format produk, isi, dan fungsinya di luar kelas]"
     },
     joyful_learning: {
-      model_pembelajaran: { prompt: "Pilih model paling sesuai (Discovery/Inquiry/PBL/PjBL/dll). Nama model + alasan + cara implementasi konteks lokal." },
-      variasi_aktivitas: { prompt: "Min 3 moda sosial: individu, berpasangan, kelompok, presentasi. Format object: key moda, value deskripsi aktivitas." },
-      diferensiasi_pembelajaran: { prompt: "Min 3 dari 4 aspek: konten, proses, produk, lingkungan. Min 2 pilihan konkret per aspek. Format object." },
-      integrasi_nilai: { prompt: "Untuk sekolah Islam: 1 ayat/hadits relevan + terjemahan + koneksi substantif + pembiasaan. Untuk non-Islam: nilai karakter umum." }
+      model_pembelajaran: "[Sebutkan nama model pembelajaran + alasan + cara implementasi]",
+      variasi_aktivitas: {
+        individu: "[Deskripsi aktivitas individu]",
+        berpasangan: "[Deskripsi aktivitas berpasangan]",
+        kelompok: "[Deskripsi aktivitas kelompok]",
+        presentasi: "[Deskripsi aktivitas presentasi]"
+      },
+      diferensiasi_pembelajaran: {
+        konten: "[Pilihan diferensiasi konten]",
+        proses: "[Pilihan diferensiasi proses]",
+        produk: "[Pilihan diferensiasi produk]"
+      },
+      integrasi_nilai: "[Untuk sekolah Islam: ayat/hadits relevan + pembiasaan; non-Islam: nilai karakter]"
     }
   }
 };
 
 const SCHEMA_STEP_3 = {
   skenario_pembelajaran: {
-    _instruction: "Buat skenario untuk setiap pertemuan. Setiap pertemuan: pendahuluan (10-15%), inti (70-75%), penutup (10-15%).",
     pertemuan: [
       {
         nomor: 1,
-        topik: { prompt: "Topik pertemuan pertama: fokus sebagian TP, bangun fondasi, konteks lokal di nama topik." },
-        alokasi_waktu: { prompt: "Format: '[JP] JP ([menit] menit)'." },
+        topik: "[Topik pertemuan 1, kontekstual lokal]",
+        alokasi_waktu: "[Waktu pertemuan 1, misal: 4 JP (180 menit)]",
         pendahuluan: {
-          durasi: { prompt: "Durasi pendahuluan, misal '30 menit'." },
-          kegiatan_guru: { prompt: "Array langkah kegiatan guru: salam+doa, presensi, apersepsi [MINDFUL], pertanyaan pemantik, penyampaian TP." },
-          kegiatan_peserta_didik: { prompt: "Array langkah kegiatan siswa paralel dengan kegiatan guru di atas." }
+          durasi: "[Misal: 15 menit]",
+          kegiatan_guru: [
+            "[Langkah 1 kegiatan guru]",
+            "[Langkah 2 kegiatan guru]"
+          ],
+          kegiatan_peserta_didik: [
+            "[Langkah 1 kegiatan siswa, respons terhadap guru langkah 1]",
+            "[Langkah 2 kegiatan siswa, respons terhadap guru langkah 2]"
+          ]
         },
         inti: {
-          durasi: { prompt: "Durasi inti, misal '165 menit'." },
-          kegiatan_guru: { prompt: "Array langkah kegiatan guru: sajikan materi minimal [MEANINGFUL], bagi kelompok, bagikan LKPD, fasilitasi aktivitas [JOYFUL], integrasikan nilai, konsolidasi." },
-          kegiatan_peserta_didik: { prompt: "Array langkah kegiatan siswa paralel dengan guru, aktif dan bervariasi." }
+          durasi: "[Misal: 150 menit]",
+          kegiatan_guru: [
+            "[Langkah eksplorasi/diskusi guru]"
+          ],
+          kegiatan_peserta_didik: [
+            "[Aktivitas aktif siswa]"
+          ]
         },
         penutup: {
-          durasi: { prompt: "Durasi penutup, misal '30 menit'." },
-          kegiatan_guru: { prompt: "Array langkah: penyimpulan bersama, asesmen formatif cepat, fasilitasi refleksi [MINDFUL], info tindak lanjut, doa+salam." },
-          kegiatan_peserta_didik: { prompt: "Array langkah siswa: susun kesimpulan, jawab formatif, isi refleksi, catat tugas, doa+salam." }
-        }
-      },
-      {
-        nomor: 2,
-        topik: { prompt: "Topik pertemuan kedua: pendalaman/penerapan dari pertemuan 1, menuju produk akhir." },
-        alokasi_waktu: { prompt: "Format: '[JP] JP ([menit] menit)'." },
-        pendahuluan: {
-          durasi: { prompt: "Durasi pendahuluan." },
-          kegiatan_guru: { prompt: "Array kegiatan guru pendahuluan pertemuan 2: review pertemuan 1, motivasi, sampaikan alur hari ini." },
-          kegiatan_peserta_didik: { prompt: "Array kegiatan siswa paralel." }
-        },
-        inti: {
-          durasi: { prompt: "Durasi inti pertemuan 2." },
-          kegiatan_guru: { prompt: "Array kegiatan guru inti: fokus pada pengerjaan produk bermakna, bimbing, fasilitasi presentasi/gallery walk." },
-          kegiatan_peserta_didik: { prompt: "Array kegiatan siswa: kerjakan produk, presentasi, berikan umpan balik." }
-        },
-        penutup: {
-          durasi: { prompt: "Durasi penutup pertemuan 2." },
-          kegiatan_guru: { prompt: "Array kegiatan guru: konsolidasi seluruh pembelajaran, asesmen sumatif, refleksi akhir modul, doa+salam." },
-          kegiatan_peserta_didik: { prompt: "Array kegiatan siswa paralel." }
+          durasi: "[Misal: 15 menit]",
+          kegiatan_guru: [
+            "[Langkah penyimpulan, refleksi, asesmen]"
+          ],
+          kegiatan_peserta_didik: [
+            "[Langkah kesimpulan, respon siswa]"
+          ]
         }
       }
     ]
@@ -105,61 +123,93 @@ const SCHEMA_STEP_3 = {
 const SCHEMA_STEP_4 = {
   asesmen: {
     diagnostik: {
-      teknik: { prompt: "Teknik asesmen di awal pembelajaran, 10-15 menit, tidak menimbulkan kecemasan." },
-      tindak_lanjut: { prompt: "2-3 skenario tindak lanjut: jika belum paham, sebagian paham, mayoritas paham." }
+      teknik: "[Deskripsikan teknik asesmen di awal, maks 15 menit]",
+      tindak_lanjut: "[Skenario tindak lanjut jika belum paham, sebagian paham, mayoritas paham]"
     },
     formatif: {
-      teknik: { prompt: "Min 3 teknik berbeda: observasi, lisan, tulisan. Format array string." },
-      instrumen: { prompt: "Instrumen konkret untuk setiap teknik formatif. Nama spesifik, bukan generik." },
-      tindak_lanjut: { prompt: "Format object: remediasi (belum IKTP), pengayaan (melampaui), penguatan (mendekati)." }
+      teknik: [
+        "[Teknik 1: observasi]",
+        "[Teknik 2: lisan]",
+        "[Teknik 3: tulisan]"
+      ],
+      instrumen: "[Sebutkan instrumen untuk teknik formatif tersebut]",
+      tindak_lanjut: {
+        remediasi: "[Tindak lanjut siswa yang belum capai IKTP]",
+        pengayaan: "[Tindak lanjut siswa yang melampaui]",
+        penguatan: "[Tindak lanjut siswa yang mendekati]"
+      }
     },
     sumatif: {
-      teknik: { prompt: "Teknik sumatif otentik, selaras dengan produk bermakna di rancangan pembelajaran." },
-      instrumen: { prompt: "Instrumen sumatif: rubrik (sebutkan aspek dan level), soal (sebutkan jumlah dan bentuk)." },
-      kktp: { prompt: "Format object: kriteria (string dengan min 2 kriteria spesifik terukur) dan nilai_minimum (number, 70-75)." },
-      dimensi_dinilai: { prompt: "Object: key nama dimensi PPP, value persentase (string %). Total harus 100%." }
+      teknik: "[Teknik sumatif otentik yang selaras dengan produk bermakna]",
+      instrumen: "[Instrumen sumatif, misal: rubrik 4 aspek]",
+      kktp: {
+        kriteria: "[Rumusan min 2 kriteria terukur yang menggunakan kata 'DAN']",
+        nilai_minimum: 75
+      },
+      dimensi_dinilai: {
+        "Penalaran Kritis": "50%",
+        "Komunikasi": "50%"
+      }
     }
   },
   materi_sumber: {
-    materi_pokok: { prompt: "3-6 topik esensial, urut dari dasar ke kompleks, konteks lokal. Format array string." },
-    materi_pengayaan: { prompt: "Materi lebih kompleks untuk siswa melampaui TP. Kedalaman, bukan volume." },
-    materi_remedial: { prompt: "Penyederhanaan konsep, pendekatan visual/konkret, bisa mandiri di luar jam." },
-    sumber_belajar_utama: { prompt: "2-4 sumber resmi, tersedia di SMK daerah, aktual 5 tahun terakhir. Format array string." },
-    sumber_belajar_pendukung: { prompt: "2-4 sumber pendukung kontekstual lokal, gratis, beragam media. Format array string." },
-    media_pembelajaran: { prompt: "Min 2 jenis media, realistis tersedia di SMK daerah. Spesifikasi singkat per media." },
-    alat_bahan: { prompt: "Alat/bahan fisik untuk pembelajaran. Semua harus ada di SMK. Format array string." },
-    lkpd: { prompt: "Daftar LKPD. Format array object: {kode: 'LKPD-01a', judul: '...', pertemuan: 1}." }
+    materi_pokok: [
+      "[Topik esensial 1]",
+      "[Topik esensial 2]"
+    ],
+    materi_pengayaan: "[Materi pendalaman bagi yang melampaui TP]",
+    materi_remedial: "[Materi sederhana dengan visual konkret]",
+    sumber_belajar_utama: [
+      "[Sumber resmi 1, maks 5 thn terakhir]",
+      "[Sumber resmi 2, maks 5 thn terakhir]"
+    ],
+    sumber_belajar_pendukung: [
+      "[Sumber kontekstual lokal, artikel/video 1]",
+      "[Sumber kontekstual lokal, artikel/video 2]"
+    ],
+    media_pembelajaran: "[Min 2 jenis media yang tersedia di SMK daerah]",
+    alat_bahan: [
+      "[Alat 1]",
+      "[Alat 2]"
+    ],
+    lkpd: [
+      {
+        kode: "[Misal: LKPD-01a]",
+        judul: "[Judul LKPD]",
+        pertemuan: 1
+      }
+    ]
   },
   rubrik_penilaian: {
-    objek_penilaian: { prompt: "Nama produk/karya yang dinilai. Konsisten dengan produk bermakna." },
+    objek_penilaian: "[Sebutkan produk karya yang dinilai]",
     aspek: [
       {
-        nama: { prompt: "Aspek 1 — PENGETAHUAN: format 'Pengetahuan: [Objek Penilaian]'." },
-        level_1: { deskriptor: { prompt: "Deskriptor spesifik, terukur, menghargai usaha." } },
-        level_2: { deskriptor: { prompt: "Deskriptor level Cukup, perbedaan nyata dari level 1." } },
-        level_3: { deskriptor: { prompt: "Deskriptor level Baik, perbedaan nyata dari level 2." } },
-        level_4: { deskriptor: { prompt: "Deskriptor Sangat Baik, ambisius namun mungkin dicapai." } }
+        nama: "Pengetahuan: [Aspek pengetahuan yang dinilai]",
+        level_1: { deskriptor: "[Deskriptor Perlu Bimbingan]" },
+        level_2: { deskriptor: "[Deskriptor Cukup]" },
+        level_3: { deskriptor: "[Deskriptor Baik]" },
+        level_4: { deskriptor: "[Deskriptor Sangat Baik]" }
       },
       {
-        nama: { prompt: "Aspek 2 — KETERAMPILAN: format 'Keterampilan: [Objek Penilaian]'." },
-        level_1: { deskriptor: { prompt: "Deskriptor spesifik terukur." } },
-        level_2: { deskriptor: { prompt: "Deskriptor Cukup." } },
-        level_3: { deskriptor: { prompt: "Deskriptor Baik." } },
-        level_4: { deskriptor: { prompt: "Deskriptor Sangat Baik." } }
+        nama: "Keterampilan: [Aspek keterampilan yang dinilai]",
+        level_1: { deskriptor: "[Deskriptor Perlu Bimbingan]" },
+        level_2: { deskriptor: "[Deskriptor Cukup]" },
+        level_3: { deskriptor: "[Deskriptor Baik]" },
+        level_4: { deskriptor: "[Deskriptor Sangat Baik]" }
       },
       {
-        nama: { prompt: "Aspek 3 — KOMUNIKASI: format 'Komunikasi: [Objek Penilaian]'." },
-        level_1: { deskriptor: { prompt: "Deskriptor spesifik terukur." } },
-        level_2: { deskriptor: { prompt: "Deskriptor Cukup." } },
-        level_3: { deskriptor: { prompt: "Deskriptor Baik." } },
-        level_4: { deskriptor: { prompt: "Deskriptor Sangat Baik." } }
+        nama: "Komunikasi: [Aspek komunikasi yang dinilai]",
+        level_1: { deskriptor: "[Deskriptor Perlu Bimbingan]" },
+        level_2: { deskriptor: "[Deskriptor Cukup]" },
+        level_3: { deskriptor: "[Deskriptor Baik]" },
+        level_4: { deskriptor: "[Deskriptor Sangat Baik]" }
       },
       {
-        nama: { prompt: "Aspek 4 — SIKAP: format 'Sikap: [Nilai Karakter]'." },
-        level_1: { deskriptor: { prompt: "Deskriptor spesifik terukur." } },
-        level_2: { deskriptor: { prompt: "Deskriptor Cukup." } },
-        level_3: { deskriptor: { prompt: "Deskriptor Baik." } },
-        level_4: { deskriptor: { prompt: "Deskriptor Sangat Baik." } }
+        nama: "Sikap: [Nilai Karakter yang dinilai]",
+        level_1: { deskriptor: "[Deskriptor Perlu Bimbingan]" },
+        level_2: { deskriptor: "[Deskriptor Cukup]" },
+        level_3: { deskriptor: "[Deskriptor Baik]" },
+        level_4: { deskriptor: "[Deskriptor Sangat Baik]" }
       }
     ]
   }
