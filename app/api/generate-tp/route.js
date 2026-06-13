@@ -48,11 +48,24 @@ export async function POST(request) {
       userPrompt = ``;
     }
 
+    // ── Siapkan data elemen dari CP yang diupload ──
+    const elemenList = data.elemenList || [];
+    const elemenBlock = elemenList.length > 0
+      ? `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n ELEMEN CP DARI FILE YANG DIUPLOAD GURU (GUNAKAN PERSIS INI)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${elemenList.map((el, i) => `ELEMEN ${i+1} — ${el.nama}:\n"${el.capaian}"`).join('\n\n')}`
+      : '';
+
     // ── Instruksi JSON output ditambahkan setelah user prompt ──
     const finalPrompt = `${userPrompt}
 
-Teks CP Asli yang menjadi rujukan:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ DOKUMEN CP ASLI YANG DIUPLOAD GURU — WAJIB DIJADIKAN ACUAN UTAMA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ PENTING: Rumusan TP, IKTP, dan materi ATP harus diturunkan LANGSUNG dari teks CP dan elemen di bawah ini.
+JANGAN mengganti atau mengabaikan elemen dan teks CP ini. Jika ada nama elemen yang sudah tertulis, gunakan PERSIS nama tersebut.
+
+Teks CP Umum (dari dokumen yang diupload):
 ${cpText}
+${elemenBlock}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  FORMAT OUTPUT — WAJIB DIIKUTI
@@ -64,20 +77,21 @@ SEMUA field wajib diisi — tidak boleh ada yang kosong atau null.
   "tujuanPembelajaran": [
     {
       "id": "TP-01",
-      "rumusanTp": "Peserta didik mampu … [kontekstual, spesifik, tidak generik]",
+      "rumusanTp": "Peserta didik mampu … [diturunkan dari elemen CP di atas, kontekstual, spesifik]",
       "levelKognitif": "C2 — Memahami",
       "dimensiProfil": "Penalaran Kritis, Kemandirian",
       "alokasiWaktu": "10 JP",
       "iktp": "IKTP-1: … \\nIKTP-2: … \\nIKTP-3: …",
       "bentukAsesmen": "Formatif lisan / Unjuk kerja / Portofolio",
       "instrumen": "Rubrik penilaian / Lembar observasi",
-      "semester": "Ganjil"
+      "semester": "Ganjil",
+      "elemenCpYangDirujuk": "[nama elemen CP yang menjadi sumber TP ini]"
     }
   ],
   "alurTujuanPembelajaran": [
     {
       "idTp": "TP-01",
-      "materi": "- Topik 1 (kontekstual)\\n- Topik 2 (nama tempat/produk lokal)\\n- Topik 3",
+      "materi": "- Topik 1 (langsung dari elemen CP)\\n- Topik 2 (nama tempat/produk lokal)\\n- Topik 3",
       "dimensiProfil": "Penalaran Kritis",
       "deepLearning": "Mindful: [aktivitas konkret] / Meaningful: [konteks DUDI lokal] / Joyful: [aktivitas seru]",
       "waktu": "10 JP",
@@ -94,11 +108,13 @@ SEMUA field wajib diisi — tidak boleh ada yang kosong atau null.
 }
 
 Catatan Penting:
-1. Buat TEPAT 12 TP: TP-01 s/d TP-06 untuk Semester Ganjil, TP-07 s/d TP-12 untuk Semester Genap.
-2. Level Bloom HARUS eskalatif: Ganjil C2→C5, Genap C4→C6 (sesuai pola ATP di atas).
-3. Total JP seluruh TP harus sesuai alokasi (Ganjil: 70 JP, Genap: 95 JP, Total: 165 JP).
-4. Setiap TP wajib mencantumkan field "semester" dengan nilai "Ganjil" atau "Genap".
-5. Minimal 60% TP menyebut nama/tempat/produk lokal Purbalingga secara eksplisit.`;
+1. TP harus DITURUNKAN dari elemen CP yang sudah diupload — bukan dibuat bebas dari pikiran AI.
+2. Buat TEPAT 12 TP: TP-01 s/d TP-06 untuk Semester Ganjil, TP-07 s/d TP-12 untuk Semester Genap.
+3. Level Bloom HARUS eskalatif: Ganjil C2→C5, Genap C4→C6 (sesuai pola ATP di atas).
+4. Total JP seluruh TP harus sesuai alokasi yang diberikan guru (${data.timeTotal ? data.timeTotal + ' JP' : 'sesuaikan dengan CP'}).
+5. Setiap TP wajib mencantumkan field "semester" dengan nilai "Ganjil" atau "Genap".
+6. Minimal 60% TP menyebut nama/tempat/produk lokal Purbalingga secara eksplisit.
+7. Field "elemenCpYangDirujuk" wajib diisi dengan nama elemen dari dokumen yang diupload.`;
 
     // ── Panggil Gemini API ──
     const response = await fetch(

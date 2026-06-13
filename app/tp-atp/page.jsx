@@ -6,11 +6,12 @@ import { Sparkles, Download, Loader2, ChevronDown, ChevronUp, FileUp, CheckCircl
 export default function TpAtpGenerator() {
   const [formData, setFormData] = useState({
     subject: '', program: '', phase: '', grade: '',
-    semester: 'Ganjil & Genap', year: '2025/2026', timeTotal: '',
+    semester: 'Ganjil dan Genap', year: '2025/2026', timeTotal: '',
     teacher: '', waka: '', principal: '', cpText: '',
   });
 
   const [openSection, setOpenSection]     = useState('identitas');
+  const [elemenList, setElemenList]       = useState([]);
   const [isLoading, setIsLoading]         = useState(false);
   const [isDocxLoading, setIsDocxLoading] = useState(false);
   const [docxStatus, setDocxStatus]       = useState(null);
@@ -47,6 +48,15 @@ export default function TpAtpGenerator() {
         cpText:  data.cpText        || prev.cpText,
       }));
 
+      // Simpan elemen CP jika tersedia
+      if (data.elemenList && Array.isArray(data.elemenList) && data.elemenList.length > 0) {
+        setElemenList(data.elemenList);
+      } else if (data.elemen1) {
+        const els = [{ nama: data.elemen1, capaian: data.capaian1 || '' }];
+        if (data.elemen2) els.push({ nama: data.elemen2, capaian: data.capaian2 || '' });
+        setElemenList(els);
+      }
+
       setDocxStatus('success');
       setDocxMessage(`✅ Format CP "${file.name}" berhasil dibaca! Kolom CP sudah terisi otomatis.`);
     } catch (error) {
@@ -66,7 +76,7 @@ export default function TpAtpGenerator() {
     try {
       const res = await fetch('/api/generate-tp', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ ...formData, elemenList })
       });
       if (!res.ok) { const err = await res.json(); throw new Error(err.error || "Gagal generate dari AI"); }
       const data = await res.json();
@@ -149,6 +159,14 @@ export default function TpAtpGenerator() {
                       <option value="X">X</option>
                       <option value="XI">XI</option>
                       <option value="XII">XII</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Semester <span className="required">*</span></label>
+                    <select name="semester" className="glass-input" onChange={handleChange} value={formData.semester} required>
+                      <option value="Ganjil dan Genap">Ganjil dan Genap</option>
+                      <option value="Ganjil">Ganjil</option>
+                      <option value="Genap">Genap</option>
                     </select>
                   </div>
                   <div className="form-group">
