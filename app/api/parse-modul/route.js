@@ -89,9 +89,32 @@ Berikut adalah teks yang diekstrak dari dokumen modul ajar:
 ${snippet}
 ---
 
-Ekstrak informasi berikut dan kembalikan sebagai JSON murni. Jika tidak ditemukan, isi dengan string kosong "".
+Ekstrak semua informasi berikut dari teks di atas dan kembalikan sebagai JSON murni. Jika suatu informasi tidak ditemukan secara eksplisit, coba simpulkan (infer) berdasarkan isi modul.
 
-{"namaSekolah":"","taglineSekolah":"","mataPelajaran":"","judulModul":"","kodeModul":"","faseKelas":"","semester":"","tahunPelajaran":"","kurikulum":"","tujuanPembelajaran":"","iktp":"","topikPertemuan1":"","metodePertemuan1":"","topikPertemuan2":"","dimensiKeterkaitan":"","konteksLokal":"","nilaiSekolah":"","jenisProdukSumatif":"","aspekPenilaianSumatif":"","kktp":"","jumlahSiswa":"","daftarLampiranYangDiminta":""}
+{
+  "namaSekolah": "nama sekolah yang tertera di modul",
+  "taglineSekolah": "motto/tagline sekolah jika ada",
+  "mataPelajaran": "nama mata pelajaran",
+  "judulModul": "judul modul ajar, biasanya muncul sebagai 'Judul Modul:' atau di header dokumen",
+  "kodeModul": "kode modul contoh MA-IPAS-01 atau TP-01",
+  "faseKelas": "fase dan kelas contoh 'Fase E / Kelas X'",
+  "semester": "semester contoh 'Ganjil' atau 'Genap'",
+  "tahunPelajaran": "tahun pelajaran contoh '2025/2026'",
+  "kurikulum": "nama kurikulum yang digunakan",
+  "tujuanPembelajaran": "teks tujuan pembelajaran yang lengkap",
+  "iktp": "indikator ketercapaian tujuan pembelajaran. Jika ada beberapa poin, gabungkan dengan \\n",
+  "topikPertemuan1": "topik atau materi pokok untuk pertemuan 1. Jika tidak dirinci per pertemuan, ambil dari materi utama modul.",
+  "metodePertemuan1": "metode/model pembelajaran pertemuan 1 (contoh: Gallery Walk, PBL). Jika tidak ditulis, isi dengan 'Diskusi dan Observasi'.",
+  "topikPertemuan2": "topik atau materi pokok lanjutan untuk pertemuan 2. Jika tidak ada, buatkan topik logis kelanjutan dari pertemuan 1.",
+  "dimensiKeterkaitan": "WAJIB DIISI! dimensi atau konsep yang dikaitkan pada pertemuan 2 (contoh: 'alam dan sosial', 'teori dan praktik', 'peluang dan risiko'). Rumuskan sendiri secara logis jika tidak tertulis eksplisit.",
+  "konteksLokal": "konteks lokal yang disebut dalam modul (contoh nama daerah/industri). Jika tidak ada, isi dengan 'Purbalingga'.",
+  "nilaiSekolah": "nilai/karakter yang ditekankan contoh 'Islami', 'Entrepreneur', 'Nasionalis'. Jika tidak tertulis, abaikan.",
+  "jenisProdukSumatif": "jenis produk atau karya yang dinilai di asesmen sumatif (contoh: 'Laporan Observasi', 'Poster', 'Presentasi'). Simpulkan jika tidak ada.",
+  "aspekPenilaianSumatif": "aspek penilaian sumatif (misal: 'Pengetahuan, Keterampilan, Sikap').",
+  "kktp": "nilai kriteria ketercapaian tujuan pembelajaran, angka saja contoh 70. Jika tidak ada, isi 70.",
+  "jumlahSiswa": "jumlah siswa dalam kelas, angka saja, default 32",
+  "daftarLampiranYangDiminta": "daftar lampiran yang sudah ada/disebutkan dalam modul, kosongkan jika tidak ada"
+}
 
 PENTING: Kembalikan JSON murni saja, tanpa markdown, tanpa backtick, tanpa penjelasan apapun.`;
 
