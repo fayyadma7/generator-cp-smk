@@ -73,74 +73,73 @@ async function extractModulWithGemini(rawText) {
     process.env.GEMINI_API_KEY_3, process.env.GEMINI_API_KEY
   ].filter(Boolean);
   if (apiKeys.length === 0) return null;
-  const key = apiKeys[Math.floor(Math.random() * apiKeys.length)];
 
-  const prompt = `Kamu adalah asisten AI yang membantu mengekstrak informasi dari dokumen Modul Ajar SMK/SMA Kurikulum Merdeka.
+  // Coba dengan konteks lebih kecil dulu agar tidak timeout, lalu retry jika gagal
+  const contextSizes = [20000, 10000, 5000];
 
-Berikut adalah teks yang diekstrak dari PDF modul ajar:
+  for (let attempt = 0; attempt < contextSizes.length; attempt++) {
+    const key = apiKeys[Math.floor(Math.random() * apiKeys.length)];
+    const contextSize = contextSizes[attempt];
+    const snippet = rawText.substring(0, contextSize);
+
+    const prompt = `Kamu adalah asisten AI yang membantu mengekstrak informasi dari dokumen Modul Ajar SMK/SMA Kurikulum Merdeka.
+
+Berikut adalah teks yang diekstrak dari dokumen modul ajar:
 ---
-${rawText.substring(0, 150000)}
+${snippet}
 ---
 
-Ekstrak semua informasi berikut dari teks di atas dan kembalikan sebagai JSON murni. Jika suatu informasi tidak ditemukan, isi dengan string kosong "".
+Ekstrak informasi berikut dan kembalikan sebagai JSON murni. Jika tidak ditemukan, isi dengan string kosong "".
 
-{
-  "namaSekolah": "nama sekolah yang tertera di modul",
-  "taglineSekolah": "motto/tagline sekolah jika ada",
-  "mataPelajaran": "nama mata pelajaran",
-  "judulModul": "judul modul ajar, biasanya muncul sebagai 'Judul Modul:' atau di header dokumen",
-  "kodeModul": "kode modul contoh MA-IPAS-01 atau TP-01 atau kombinasinya",
-  "faseKelas": "fase dan kelas contoh 'Fase E / Kelas X'",
-  "semester": "semester contoh 'Ganjil' atau 'Genap'",
-  "tahunPelajaran": "tahun pelajaran contoh '2025/2026'",
-  "kurikulum": "nama kurikulum yang digunakan",
-  "tujuanPembelajaran": "teks tujuan pembelajaran yang lengkap, biasanya ditandai 'Tujuan Pembelajaran:' atau 'TP:'",
-  "iktp": "indikator ketercapaian tujuan pembelajaran, biasanya ditandai 'IKTP:' atau 'Indikator:'. Jika ada beberapa poin, gabungkan dengan \\n",
-  "topikPertemuan1": "topik atau materi untuk pertemuan pertama/pertemuan ke-1",
-  "metodePertemuan1": "metode atau model pembelajaran di pertemuan pertama contoh 'Gallery Walk', 'Project Based Learning' dsb",
-  "topikPertemuan2": "topik atau materi untuk pertemuan kedua/pertemuan ke-2",
-  "dimensiKeterkaitan": "dimensi atau konsep yang dikaitkan pada pertemuan 2 (contoh: 'alam dan sosial' untuk IPAS, 'teori dan praktik' untuk kejuruan, 'peluang dan risiko' untuk kewirausahaan, dll). Jika tidak tertulis secara eksplisit, tentukan dimensi keterkaitan yang paling logis berdasarkan materi/TP modul ini",
-  "konteksLokal": "konteks lokal yang disebut dalam modul, bisa berupa nama daerah atau industri lokal",
-  "nilaiSekolah": "nilai/karakter yang ditekankan contoh 'Islami', 'Entrepreneur', 'Nasionalis'",
-  "jenisProdukSumatif": "jenis produk atau karya yang dinilai di asesmen sumatif contoh 'Laporan Observasi', 'Poster', 'Presentasi'",
-  "aspekPenilaianSumatif": "aspek-aspek penilaian sumatif, pisahkan dengan koma",
-  "kktp": "nilai kriteria ketercapaian tujuan pembelajaran, angka saja contoh 70",
-  "jumlahSiswa": "jumlah siswa dalam kelas, angka saja, default 32",
-  "daftarLampiranYangDiminta": "daftar lampiran yang sudah ada/disebutkan dalam modul, kosongkan jika tidak ada"
-}
+{"namaSekolah":"","taglineSekolah":"","mataPelajaran":"","judulModul":"","kodeModul":"","faseKelas":"","semester":"","tahunPelajaran":"","kurikulum":"","tujuanPembelajaran":"","iktp":"","topikPertemuan1":"","metodePertemuan1":"","topikPertemuan2":"","dimensiKeterkaitan":"","konteksLokal":"","nilaiSekolah":"","jenisProdukSumatif":"","aspekPenilaianSumatif":"","kktp":"","jumlahSiswa":"","daftarLampiranYangDiminta":""}
 
-PENTING: Kembalikan JSON murni tanpa markdown, tanpa backtick, tanpa penjelasan.`;
+PENTING: Kembalikan JSON murni saja, tanpa markdown, tanpa backtick, tanpa penjelasan apapun.`;
 
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.1,
-            responseMimeType: 'application/json'
-          }
-        })
-      }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) return null;
     try {
-      return JSON.parse(text);
-    } catch {
-      const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-      if (match) return JSON.parse(match[1]);
-      return null;
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.1,
+              responseMimeType: 'application/json',
+              maxOutputTokens: 1024
+            }
+          })
+        }
+      );
+
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error(`Gemini parse-modul attempt ${attempt + 1} error:`, res.status, errText.slice(0, 200));
+        // Jika rate limit, tunggu sebentar sebelum retry
+        if (res.status === 429) await new Promise(r => setTimeout(r, 3000));
+        continue; // coba ukuran konteks lebih kecil
+      }
+
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) { console.warn(`Attempt ${attempt + 1}: Gemini returned empty text`); continue; }
+
+      // Bersihkan markdown jika ada
+      const cleaned = text.replace(/```(?:json)?\s*/g, '').replace(/\s*```/g, '').trim();
+      try {
+        const parsed = JSON.parse(cleaned);
+        console.log(`Parse-modul berhasil pada attempt ${attempt + 1} (ctx ${contextSize} chars)`);
+        return parsed;
+      } catch {
+        console.warn(`Attempt ${attempt + 1}: JSON parse failed, preview: ${cleaned.slice(0, 100)}`);
+        continue;
+      }
+    } catch (err) {
+      console.error(`Gemini modul extract attempt ${attempt + 1} error:`, err.message);
     }
-  } catch (err) {
-    console.error('Gemini modul extract error:', err);
-    return null;
   }
+
+  return null;
 }
 
 export async function POST(request) {
