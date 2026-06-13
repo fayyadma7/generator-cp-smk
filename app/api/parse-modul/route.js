@@ -203,15 +203,44 @@ PENTING: Kembalikan JSON murni saja.`;
   console.log('Memulai ekstraksi AI paralel 5 bagian...');
   const results = await Promise.all(schemas.map(s => fetchPart(s)));
   
-  // Gabungkan hasil dari ke-4 array/objek menjadi satu
+  // Gabungkan hasil dari ke-5 array/objek menjadi satu
+  const debugParts = {};
   let mergedResult = {};
-  for (const res of results) {
+  for (let i = 0; i < schemas.length; i++) {
+    const res = results[i];
+    const name = schemas[i].name;
+    const filled = res && typeof res === 'object' ? Object.keys(res).filter(k => res[k] && res[k] !== '') : [];
+    debugParts[name] = filled.length > 0 
+      ? filled.length + ' field terisi: ' + filled.join(', ')
+      : 'GAGAL / KOSONG';
     if (res && typeof res === 'object') {
       mergedResult = { ...mergedResult, ...res };
     }
   }
+  console.log('Hasil ekstraksi per bagian:', debugParts);
 
-  return Object.keys(mergedResult).length > 0 ? mergedResult : null;
+  // Hybrid: untuk field yang masih kosong dari AI, coba isi dengan regex
+  const regexFallback = extractModulWithRegex(rawText);
+  for (const key of Object.keys(regexFallback)) {
+    if (key.startsWith('_')) continue; // skip _source
+    if (!mergedResult[key] || mergedResult[key] === '') {
+      if (regexFallback[key] && regexFallback[key] !== '') {
+        mergedResult[key] = regexFallback[key];
+      }
+    }
+  }
+
+  // Smart fallback: derive iktpRemediasi dari iktp (ambil indikator terakhir/sulit)
+  if (!mergedResult.iktpRemediasi && mergedResult.iktp) {
+    const lines = mergedResult.iktp.split('\n').filter(l => l.trim());
+    if (lines.length > 1) {
+      mergedResult.iktpRemediasi = lines[lines.length - 1].trim();
+    }
+  }
+
+  return Object.keys(mergedResult).length > 0 
+    ? { ...mergedResult, _debug: debugParts } 
+    : null;
 }
 
 // ── Fallback: Ekstrak via Regex (tanpa AI) ──

@@ -94,11 +94,12 @@ export default function LampiranGenerator() {
 
       // Log untuk debug: field apa saja yang berhasil diekstrak AI
       console.log('📄 Parse-modul response:', d ? Object.keys(d).filter(k => d[k] && d[k] !== '').length + ' field terisi' : 'KOSONG');
+      if (d?._debug) console.log('📊 Per-bagian:', d._debug);
       if (d) Object.entries(d).forEach(([k, v]) => { if (v && typeof v === 'string' && v.trim()) console.log(`  ✅ ${k}: "${v.slice(0, 60)}"`); });
 
       // Merge: data AI mengisi field yang KOSONG atau masih default bawaan
       // Logic: AI punya nilai → pake AI. Sisanya pertahankan form (default/input guru).
-      const { _source, ...cleanData } = d || {};
+      const { _source, _debug, ...cleanData } = d || {};
       setFormData(prev => {
         const aiValue = (key) => {
           const v = cleanData[key];
