@@ -10,7 +10,7 @@ import {
   PROMPT_MEDIA_PEMBELAJARAN,
   PROMPT_LEMBAR_REFLEKSI,
   PROMPT_BAHAN_PENGAYAAN,
-  PROMPT_BAHAN_REMEDIAL
+  PROMPT_BAHAN_REMEDIASI
 } from '../../../lampiranPrompts';
 
 export const runtime = 'nodejs';
@@ -92,7 +92,7 @@ export async function POST(request) {
       { key: 'mediaPembelajaran', prompt: PROMPT_MEDIA_PEMBELAJARAN(inputGuru) },
       { key: 'lembarRefleksi', prompt: PROMPT_LEMBAR_REFLEKSI(inputGuru) },
       { key: 'bahanPengayaan', prompt: PROMPT_BAHAN_PENGAYAAN(inputGuru) },
-      { key: 'bahanRemedial', prompt: PROMPT_BAHAN_REMEDIAL(inputGuru) }
+      { key: 'bahanRemediasi', prompt: PROMPT_BAHAN_REMEDIASI(inputGuru) }
     ];
 
     // Jalankan semua call secara paralel menggunakan Promise.all
