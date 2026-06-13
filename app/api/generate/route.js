@@ -36,6 +36,8 @@ export async function POST(request) {
     if (isInsersiMapel) {
       systemPrompt = buildInsersiSystemPrompt(isKIK ? "KIK" : "IPAS");
       const basePrompts = buildCPPrompt({
+        mataPelajaran: subject || 'Mata Pelajaran',
+        elemenList: data.elemenList || [],
         programKeahlian: program || 'Umum',
         konsentrasiKeahlian: subject || '',
         fase: phase?.replace('Fase ', '') || 'E',
@@ -48,6 +50,8 @@ export async function POST(request) {
       userPrompt = basePrompts.userPrompt + "\n\nPENTING: Terapkan prinsip Insersi Pendidikan Perkoperasian dari System Prompt ke dalam elemen CP, analisis, dan strategi di bawah ini!";
     } else {
       const basePrompts = buildCPPrompt({
+        mataPelajaran: subject || 'Mata Pelajaran',
+        elemenList: data.elemenList || [],
         programKeahlian: program || 'Umum',
         konsentrasiKeahlian: subject || '',
         fase: phase?.replace('Fase ', '') || 'E',

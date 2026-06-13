@@ -76,10 +76,10 @@ export const MODULE_SCHEMA = {
     _section: "A. IDENTITAS MODUL AJAR",
 
     nama_mata_pelajaran: {
-      value: "Projek Ilmu Pengetahuan Alam dan Sosial (Projek IPAS)",
+      value: "Mata Pelajaran (Contoh: Matematika / IPAS / dll)",
       prompt: `Tulis nama mata pelajaran lengkap sesuai nomenklatur Kurikulum Merdeka.
                Gunakan nama resmi dari Kepmendikbudristek.
-               Contoh: "Projek Ilmu Pengetahuan Alam dan Sosial (Projek IPAS)".`
+               Contoh: "Pendidikan Pancasila".`
     },
 
     program_keahlian: {
@@ -107,19 +107,19 @@ export const MODULE_SCHEMA = {
     },
 
     judul_modul: {
-      value: "Fenomena Alam dan Sosial di Purbalingga: Mengenal Ekosistem, Cuaca, dan Dinamika Sosial Melalui Kacamata Ilmiah",
+      value: "Judul Modul Kontekstual Sesuai Topik",
       prompt: `Buat judul modul yang:
                (1) Mencerminkan topik utama secara spesifik dan menarik,
                (2) Mengandung konteks lokal daerah sekolah jika relevan,
                (3) Tidak terlalu panjang (maks. 20 kata),
                (4) Menggunakan diksi yang memotivasi peserta didik.
-               Hindari judul generik seperti "Modul IPAS Kelas X".`
+               Hindari judul generik seperti "Modul Pelajaran Kelas X".`
     },
 
     nomor_modul: {
-      value: "MA-IPAS-01",
+      value: "MA-MAPEL-01",
       prompt: `Generate kode unik modul dengan format: "MA-[KODE_MAPEL]-[NOMOR_URUT]".
-               Kode mapel: IPAS, MTK, BIN, BIG, PKN, sesuai mata pelajaran.
+               Kode mapel: MTK, BIN, BIG, PKN, sesuai mata pelajaran.
                Nomor urut: 01, 02, dst. berdasarkan urutan ATP.`
     },
 
@@ -151,7 +151,7 @@ export const MODULE_SCHEMA = {
     _section: "B. KERANGKA KURIKULUM",
 
     capaian_pembelajaran: {
-      value: "Pada akhir Fase E, murid memiliki kemampuan untuk menjelaskan pengetahuan ilmiah, menyusun penyelidikan ilmiah, serta merefleksikan data dan bukti secara ilmiah. Pembelajaran dikemas dalam bentuk Project Based Learning yang mengintegrasikan seluruh aspek IPA dan IPS, dikontekskan dengan karakteristik masing-masing bidang keahlian.",
+      value: "Pada akhir Fase, murid memiliki kemampuan sesuai elemen capaian pembelajaran.",
       prompt: `Salin verbatim Capaian Pembelajaran (CP) resmi dari dokumen Kemendikbudristek
                yang sesuai dengan mata pelajaran dan fase yang dipilih.
                Jangan parafrase atau modifikasi — CP adalah dokumen resmi.
@@ -159,7 +159,7 @@ export const MODULE_SCHEMA = {
     },
 
     elemen_cp: {
-      value: ["Menjelaskan Fenomena secara Ilmiah", "Menyusun Penyelidikan Ilmiah", "Merefleksikan Data dan Bukti-bukti secara Ilmiah"],
+      value: ["Elemen 1", "Elemen 2"],
       prompt: `Daftarkan elemen-elemen CP yang relevan dengan modul ini.
                Ambil langsung dari dokumen CP resmi, bukan dibuat sendiri.
                Pilih hanya elemen yang benar-benar tercakup dalam modul ini.
@@ -167,7 +167,7 @@ export const MODULE_SCHEMA = {
     },
 
     tujuan_pembelajaran: {
-      value: "TP-01: Peserta didik mampu menjelaskan fenomena alam dan sosial di lingkungan Purbalingga (ekosistem, cuaca, dinamika sosial) menggunakan konsep dasar IPA dan IPS secara lisan maupun tulisan dengan tepat dan sistematis.",
+      value: "TP-01: Peserta didik mampu menjelaskan materi sesuai konteks lokal secara lisan maupun tulisan dengan tepat dan sistematis.",
       prompt: `Rumuskan Tujuan Pembelajaran (TP) yang:
                (1) Dimulai dengan "Peserta didik mampu..." atau "Peserta didik dapat...",
                (2) Mengandung kompetensi (kata kerja operasional), konten (materi), dan konteks (situasi/produk),
@@ -179,8 +179,8 @@ export const MODULE_SCHEMA = {
 
     indikator_ketercapaian_tp: {
       value: [
-        "IKTP 1.1: Peserta didik dapat menyebutkan minimal 5 fenomena alam dan sosial yang terjadi di Purbalingga dengan benar.",
-        "IKTP 1.2: Peserta didik dapat menjelaskan keterkaitan antar fenomena menggunakan konsep IPA/IPS secara lisan dengan runtut."
+        "IKTP 1.1: Peserta didik dapat menyebutkan materi secara lisan dengan benar.",
+        "IKTP 1.2: Peserta didik dapat mengaplikasikan materi ke dalam tugas praktikum secara runtut."
       ],
       prompt: `Buat 2–4 Indikator Ketercapaian Tujuan Pembelajaran (IKTP) yang:
                (1) Merupakan penjabaran spesifik dan terukur dari TP,
@@ -192,7 +192,7 @@ export const MODULE_SCHEMA = {
     },
 
     posisi_dalam_atp: {
-      value: "Urutan ke-1 dalam Alur Tujuan Pembelajaran Semester Ganjil. Merupakan modul pembuka yang membangun fondasi konseptual. Setelah modul ini: TP-02 (Ekosistem & Lingkungan Purbalingga).",
+      value: "Urutan ke-1 dalam Alur Tujuan Pembelajaran. Merupakan modul pembuka yang membangun fondasi konseptual. Setelah modul ini: TP-02.",
       prompt: `Jelaskan posisi modul ini dalam Alur Tujuan Pembelajaran (ATP) dengan menyebutkan:
                (1) Urutan ke berapa dalam ATP semester ini,
                (2) Peran modul (fondasi/pendalaman/penerapan/proyek),
@@ -202,9 +202,8 @@ export const MODULE_SCHEMA = {
 
     dimensi_profil_lulusan: {
       value: [
-        "Keimanan & Ketakwaan → Mengagumi ciptaan Allah melalui fenomena alam",
-        "Penalaran Kritis → Mengidentifikasi dan menghubungkan fenomena secara ilmiah",
-        "Komunikasi → Menyampaikan hasil pengamatan secara lisan dan tulisan"
+        "Keimanan & Ketakwaan → Mengagumi ciptaan Allah",
+        "Penalaran Kritis → Mengidentifikasi dan memecahkan masalah"
       ],
       prompt: `Pilih 2–4 dimensi Profil Pelajar Pancasila (atau Profil Lulusan SMK) yang
                benar-benar dikembangkan dalam modul ini, bukan sekadar dicantumkan.

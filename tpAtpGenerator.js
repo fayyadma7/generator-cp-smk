@@ -270,6 +270,7 @@ const POLA_ATP = {
  */
 function buildTPATPPrompt(input) {
   const {
+    mataPelajaran = "Mata Pelajaran",
     konsentrasiKeahlian,
     fase = "E",
     kelas = "X",
@@ -282,13 +283,7 @@ function buildTPATPPrompt(input) {
     jumlahTP = 12,
   } = input;
 
-  const ctx = KONTEKS_KONSENTRASI[konsentrasiKeahlian];
-  if (!ctx) {
-    throw new Error(
-      `Konsentrasi "${konsentrasiKeahlian}" belum ada di kamus. ` +
-      `Tersedia: ${Object.keys(KONTEKS_KONSENTRASI).join(", ")}`
-    );
-  }
+  const ctx = KONTEKS_KONSENTRASI[konsentrasiKeahlian] || _fallbackKonteks(konsentrasiKeahlian);
 
   const totalJP = alokasiTotal || ctx.alokasi.total;
   const konteksLokalFull = [ctx.konteks_lokal, konteksLokalTambahan].filter(Boolean).join(". ");
@@ -356,14 +351,14 @@ YANG TIDAK BOLEH KAMU LAKUKAN:
 
   // ── USER PROMPT ──────────────────────────────────────────
   const userPrompt = `
-Susunlah dokumen TP & ATP lengkap untuk mata pelajaran Projek IPAS di SMK Muhammadiyah 3 
+Susunlah dokumen TP & ATP lengkap untuk mata pelajaran ${mataPelajaran} di SMK Muhammadiyah 3 
 Purbalingga dengan konsentrasi keahlian ${ctx.label_pendek}. Ikuti SEMUA instruksi berikut 
 dengan cermat.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  IDENTITAS DOKUMEN
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-- Mata Pelajaran       : Projek Ilmu Pengetahuan Alam dan Sosial (Projek IPAS)
+- Mata Pelajaran       : ${mataPelajaran}
 - Konsentrasi Keahlian : ${konsentrasiKeahlian}
 - Fase / Kelas         : Fase ${fase} / Kelas ${kelas}
 - Semester             : ${semester}
@@ -596,6 +591,30 @@ async function generateTPATP(input) {
 //  BAGIAN 6: generateBothKonsentrasi
 //  Utility untuk generate dua konsentrasi sekaligus
 // ============================================================
+
+function _fallbackKonteks(konsentrasiKeahlian) {
+  const nama = konsentrasiKeahlian || "Umum";
+  return {
+    label_pendek: nama,
+    deskripsi_singkat: `Program keahlian di bidang ${nama}.`,
+    fenomena_ipas: {
+      makhluk_hidup: `fenomena biologi dan lingkungan terkait bidang ${nama}`,
+      zat_perubahan: `perubahan fisika dan kimia dalam bidang ${nama}`,
+      energi: `penggunaan energi dalam industri ${nama}`,
+      keruangan: `konektivitas ruang dan sosial di bidang ${nama}`,
+      dinamika_sosial: `dinamika masyarakat dan pekerja di bidang ${nama}`,
+      ekonomi: `potensi ekonomi dan UMKM di bidang ${nama}`,
+    },
+    produk_nyata: [`produk layanan atau barang terkait ${nama}`, `laporan analisis proyek ${nama}`],
+    tema_projek: [`Proyek pengembangan ${nama} berbasis lokal`, `Analisis studi kasus ${nama} di industri`],
+    konteks_lokal: `industri dan UMKM lokal di bidang ${nama} di sekitar Purbalingga`,
+    dudi_mitra: `perusahaan atau instansi terkait ${nama} di Purbalingga dan sekitarnya`,
+    nilai_karakter_spesifik: `profesionalisme, tanggung jawab, dan inovasi di bidang ${nama}`,
+    kata_kerja_dominan: ["menganalisis", "mengevaluasi", "merancang", "menerapkan", "menyusun"],
+    standar_industri: `standar operasional prosedur terkait ${nama}`,
+    alokasi: { ganjil: "70 JP", genap: "95 JP", total: "165 JP" },
+  };
+}
 
 /**
  * Generate TP & ATP untuk kedua konsentrasi sekolah sekaligus.

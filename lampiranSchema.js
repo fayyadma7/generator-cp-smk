@@ -13,7 +13,7 @@ export const dokumenHeader = {
   tagline: "",               // contoh: "Unggul • Islami • Berjiwa Entrepreneur"
   judulDokumen: "DOKUMEN LAMPIRAN",
   judulModul: "",
-  kodeModul: "",             // contoh: "MA-IPAS-01 │ TP-01"
+  kodeModul: "",             // contoh: "MA-MAPEL-01 │ TP-01"
   faseKelas: "",             // contoh: "Fase E / Kelas X"
   semester: "",              // contoh: "Ganjil — Tahun Pelajaran 2025/2026"
   mataPelajaran: "",

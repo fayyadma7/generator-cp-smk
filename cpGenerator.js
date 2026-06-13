@@ -180,6 +180,8 @@ const ELEMEN_CP_RESMI = {
  */
 function buildCPPrompt(input) {
   const {
+    mataPelajaran = "Mata Pelajaran",
+    elemenList = [],
     programKeahlian,
     konsentrasiKeahlian = "",
     fase = "E",
@@ -235,13 +237,13 @@ Yang TIDAK boleh kamu lakukan:
 
   // ── USER PROMPT ──────────────────────────────────────────
   const userPrompt = `
-Susunlah dokumen Capaian Pembelajaran (CP) lengkap untuk mata pelajaran Projek IPAS 
+Susunlah dokumen Capaian Pembelajaran (CP) lengkap untuk mata pelajaran ${mataPelajaran} 
 di SMK Muhammadiyah 3 Purbalingga dengan spesifikasi berikut:
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  DATA IDENTITAS DOKUMEN
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-- Nama Mata Pelajaran : Projek Ilmu Pengetahuan Alam dan Sosial (Projek IPAS)
+- Nama Mata Pelajaran : ${mataPelajaran}
 - Program Keahlian    : ${programKeahlian}
 - Konsentrasi Keahlian: ${konsentrasiKeahlian || "Semua Konsentrasi"}
 - Fase / Kelas        : Fase ${fase} / Kelas ${kelas}
@@ -254,20 +256,13 @@ di SMK Muhammadiyah 3 Purbalingga dengan spesifikasi berikut:
 - DUDI Mitra          : ${ctx.dudi_mitra}
 - Nilai Karakter      : ${nilaiKarakter}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${elemenList && elemenList.length > 0 ? `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  ELEMEN CP RESMI (jangan ubah substansinya)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ELEMEN 1 — ${ELEMEN_CP_RESMI.elemen1.nama}:
-"${ELEMEN_CP_RESMI.elemen1.deskripsi_resmi}"
-
-ELEMEN 2 — ${ELEMEN_CP_RESMI.elemen2.nama}:
-"${ELEMEN_CP_RESMI.elemen2.deskripsi_resmi}"
-
-ELEMEN 3 — ${ELEMEN_CP_RESMI.elemen3.nama}:
-"${ELEMEN_CP_RESMI.elemen3.deskripsi_resmi}"
+${elemenList.map((el, i) => `ELEMEN ${i + 1} — ${el.nama}:\n"${el.capaian}"\n`).join('\n')}` : ''}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- CONTOH FENOMENA IPAS SPESIFIK KEAHLIAN INI
+ CONTOH FENOMENA/KONTEKS SPESIFIK KEAHLIAN INI
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Gunakan fenomena-fenomena konkret berikut sebagai bahan kontekstualisasi:
 ${ctx.fenomena_ipas.map((f, i) => `${i + 1}. ${f}`).join("\n")}
@@ -288,13 +283,13 @@ Gunakan bahasa yang aktif dan terukur. Contoh BURUK: "Memahami konsep."
 Contoh BAIK: "Memahami cara kerja jaringan komputer dan pengaruh gangguan sinyal terhadap produktivitas industri digital."
 
 C.2 — Koneksi dengan DUDI
-Jelaskan relevansi Projek IPAS dengan minimal 3 jenis pekerjaan atau industri nyata di bidang ${namaKeahlian}. Gunakan nama industri/perusahaan yang realistis dan dekat dengan konteks lokal Purbalingga-Banyumas.
+Jelaskan relevansi ${mataPelajaran} dengan minimal 3 jenis pekerjaan atau industri nyata di bidang ${namaKeahlian}. Gunakan nama industri/perusahaan yang realistis dan dekat dengan konteks lokal Purbalingga-Banyumas.
 
 C.3 — Koneksi dengan Konteks Lokal Purbalingga
-Jabarkan 5–6 tema projek kontekstual yang bisa dikembangkan guru, masing-masing dikaitkan dengan aspek IPAS yang relevan. Gunakan detail geografis Purbalingga (Sungai Klawing, Gunung Slamet, Owabong, industri bulu mata, dll.) secara alami dan spesifik.
+Jabarkan 5–6 tema projek kontekstual yang bisa dikembangkan guru, masing-masing dikaitkan dengan aspek materi yang relevan. Gunakan detail geografis Purbalingga (Sungai Klawing, Gunung Slamet, Owabong, industri bulu mata, dll.) secara alami dan spesifik.
 
 ── BAGIAN D: KETERKAITAN DENGAN 8 DIMENSI PROFIL LULUSAN ──
-Untuk setiap dimensi, tulis 1–2 kalimat yang SPESIFIK menunjukkan bagaimana Projek IPAS di bidang ${namaKeahlian} mengembangkan dimensi tersebut.
+Untuk setiap dimensi, tulis 1–2 kalimat yang SPESIFIK menunjukkan bagaimana ${mataPelajaran} di bidang ${namaKeahlian} mengembangkan dimensi tersebut.
 ${dimensiProfilLulusan.length > 0 ? `Prioritaskan pendalaman pada: ${dimensiProfilLulusan.join(", ")}.` : ""}
 
 ── BAGIAN E: PENDEKATAN DEEP LEARNING ──
@@ -304,7 +299,7 @@ Uraikan implementasi 3 prinsip deep learning untuk bidang ${namaKeahlian}:
 Deskripsikan 3–4 aktivitas mindful yang SPESIFIK untuk bidang ini. Bukan hanya "refleksi diri" generik — sebutkan contoh konkret pertanyaan pemantik atau momen refleksi yang relevan.
 
 💡 Meaningful Learning  
-Deskripsikan 3–4 cara materi IPAS dikaitkan dengan kehidupan nyata siswa di bidang ini. Sebutkan minimal satu nama DUDI atau konteks lokal yang konkret.
+Deskripsikan 3–4 cara materi dikaitkan dengan kehidupan nyata siswa di bidang ini. Sebutkan minimal satu nama DUDI atau konteks lokal yang konkret.
 
 🎉 Joyful Learning
 Deskripsikan 3–4 aktivitas pembelajaran yang menyenangkan dan relevan secara kejuruan. Bukan sekadar "games" — tapi aktivitas seperti field study, simulasi industri, atau pameran karya.

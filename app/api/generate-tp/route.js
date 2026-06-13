@@ -29,6 +29,7 @@ export async function POST(request) {
     let systemPrompt, userPrompt;
     try {
       ({ systemPrompt, userPrompt } = buildTPATPPrompt({
+        mataPelajaran: subject || 'Mata Pelajaran',
         konsentrasiKeahlian: program || 'Teknologi Farmasi',
         fase: phase?.replace('Fase ', '') || 'E',
         kelas: grade || 'X',
