@@ -229,6 +229,7 @@ export default function ModulAjarGenerator() {
                       <option value="">-- Pilih Semester --</option>
                       <option value="Ganjil">Ganjil</option>
                       <option value="Genap">Genap</option>
+                      <option value="Ganjil dan Genap">Ganjil dan Genap</option>
                     </select>
                   </div>
                   <div className="form-group">
