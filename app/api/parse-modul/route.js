@@ -74,8 +74,8 @@ async function extractModulWithGemini(rawText) {
   ].filter(Boolean);
   if (apiKeys.length === 0) return null;
 
-  // Coba dengan konteks lebih kecil dulu agar tidak timeout, lalu retry jika gagal
-  const contextSizes = [20000, 10000, 5000];
+  // Coba dengan konteks besar dulu agar AI bisa baca seluruh halaman, lalu retry jika gagal
+  const contextSizes = [150000, 80000, 40000];
 
   for (let attempt = 0; attempt < contextSizes.length; attempt++) {
     const key = apiKeys[Math.floor(Math.random() * apiKeys.length)];
@@ -105,8 +105,7 @@ PENTING: Kembalikan JSON murni saja, tanpa markdown, tanpa backtick, tanpa penje
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {
               temperature: 0.1,
-              responseMimeType: 'application/json',
-              maxOutputTokens: 1024
+              responseMimeType: 'application/json'
             }
           })
         }
