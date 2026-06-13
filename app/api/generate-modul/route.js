@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { SYSTEM_PROMPT } from '../../../modul_ajar_ai_template.js';
 
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 120;
 
@@ -350,14 +351,18 @@ Kembalikan HANYA objek JSON yang memiliki struktur PERSIS sama dengan skema, tan
 SKEMA YANG HARUS DIISI:
 ${JSON.stringify(schema, null, 2)}`;
 
-    let apiKey;
-    if (step === 1) apiKey = process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
-    else if (step === 2 || step === 4) apiKey = process.env.GEMINI_API_KEY_2 || process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
-    else if (step === 3) apiKey = process.env.GEMINI_API_KEY_3 || process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
-    
-    if (!apiKey) {
-      return NextResponse.json({ error: 'API Key Gemini tidak dikonfigurasi pada environment (Step ' + step + ')' }, { status: 500 });
+    const apiKeys = [
+      process.env.GEMINI_API_KEY_1,
+      process.env.GEMINI_API_KEY_2,
+      process.env.GEMINI_API_KEY_3,
+      process.env.GEMINI_API_KEY
+    ].filter(Boolean);
+
+    if (apiKeys.length === 0) {
+      return NextResponse.json({ error: 'API Key Gemini belum diatur di environment (Step ' + step + ')' }, { status: 500 });
     }
+
+    const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
 
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',

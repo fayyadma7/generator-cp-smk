@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { buildTPATPPrompt } from '../../../tpAtpGenerator';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request) {
   try {
     const data = await request.json();

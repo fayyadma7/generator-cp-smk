@@ -13,6 +13,7 @@ import {
   PROMPT_BAHAN_REMEDIASI
 } from '../../../lampiranPrompts';
 
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 120; // 2 minutes, as generating all might take a while
 

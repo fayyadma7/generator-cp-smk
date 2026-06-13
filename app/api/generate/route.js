@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { buildCPPrompt } from '../../../cpGenerator';
 import { buildSystemPrompt as buildInsersiSystemPrompt } from '../../../cp_insersi_perkoperasian_prompt';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request) {
   try {
     const data = await request.json();
