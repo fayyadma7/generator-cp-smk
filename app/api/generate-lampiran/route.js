@@ -15,7 +15,7 @@ import {
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-export const maxDuration = 300; // Maksimalkan hingga 5 menit jika di Vercel Pro/Enterprise
+export const maxDuration = 60; // Vercel free tier maksimal 60 detik
 
 async function callGemini(systemPrompt, userPrompt, apiKey) {
   const payload = {
@@ -60,9 +60,10 @@ async function callGemini(systemPrompt, userPrompt, apiKey) {
     // Attempt to extract JSON if markdown wrapped
     const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
     if (match && match[1]) {
-      return JSON.parse(match[1]);
+      try { return JSON.parse(match[1]); } catch {}
     }
-    throw new Error('Failed to parse Gemini response as JSON');
+    // Coba perbaiki JSON yang terpotong dengan cara melempar sebagai retryable error
+    throw new Error(`PARSE_ERROR: Respons AI bukan JSON valid. Preview: ${text.slice(0, 80)}`);
   }
 }
 
@@ -120,14 +121,21 @@ export async function POST(request) {
             finalResults[item.key] = result;
             success = true;
           } catch (e) {
-            if (e.message.includes('429') || e.message.includes('Quota') || e.message.includes('503') || e.message.includes('500')) {
+            // Retry untuk: rate limit, server error, DAN parse error (JSON tidak valid)
+            const isRetryable = e.message.includes('429') || e.message.includes('Quota') ||
+              e.message.includes('503') || e.message.includes('500') ||
+              e.message.includes('PARSE_ERROR') || e.message.includes('did not return');
+
+            if (isRetryable) {
               retryCount++;
-              console.log(`Worker ${workerId} error pada ${item.key}. Menunggu ${3000 * retryCount}ms sebelum retry...`);
-              await delay(3000 * retryCount); // Backoff yang lebih panjang: 3s, 6s, 9s, dst.
+              const waitMs = 3000 * retryCount;
+              console.log(`Worker ${workerId} retry ke-${retryCount} untuk ${item.key}. Tunggu ${waitMs}ms...`);
+              await delay(waitMs);
             } else {
-              console.error(`Worker ${workerId} gagal permanen pada ${item.key}:`, e);
+              // Error tak terduga yang benar-benar permanen
+              console.error(`Worker ${workerId} gagal permanen pada ${item.key}:`, e.message);
               finalResults[item.key] = { error: e.message };
-              success = true; // Anggap "selesai" (gagal permanen) agar lanjut ke antrean berikutnya
+              success = true;
             }
           }
         }
