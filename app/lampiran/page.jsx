@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef } from 'react';
-import { Sparkles, Loader2, ChevronDown, ChevronUp, XCircle, FileUp, CheckCircle } from 'lucide-react';
+import { Sparkles, Loader2, ChevronDown, ChevronUp, XCircle, FileUp, CheckCircle, Download } from 'lucide-react';
 
 export default function LampiranGenerator() {
   const [formData, setFormData] = useState({
@@ -43,11 +43,13 @@ export default function LampiranGenerator() {
 
   const [openSection, setOpenSection] = useState('identitas');
   const [isLoading, setIsLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [pdfStatus, setPdfStatus] = useState(null); // 'success' | 'error' | null
   const [pdfMessage, setPdfMessage] = useState('');
   const [result, setResult] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showJsonPreview, setShowJsonPreview] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -118,6 +120,21 @@ export default function LampiranGenerator() {
     } finally {
       setIsPdfLoading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  // ── Download DOCX ──
+  const handleDownload = async () => {
+    if (!result) return;
+    setIsDownloading(true);
+    try {
+      const { generateAndDownloadLampiranDocx } = await import('../../lib/docxGeneratorLampiran');
+      await generateAndDownloadLampiranDocx(result, formData);
+    } catch (err) {
+      alert('Gagal membuat file Word: ' + err.message);
+      console.error(err);
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -428,23 +445,86 @@ export default function LampiranGenerator() {
       {/* ── HASIL GENERATE ── */}
       {result && (
         <div id="result-section" className="glass-panel result-panel">
-          <h2 style={{ marginBottom: '0.5rem' }}>✅ Hasil Generate Lampiran</h2>
-          <p className="subtitle" style={{ marginBottom: '1.25rem' }}>
-            Semua lampiran berhasil di-generate. Fitur ekspor ke Word (.docx) sedang dalam pengembangan.
-          </p>
-          <pre style={{
-            background: 'rgba(0,0,0,0.25)',
-            padding: '16px',
-            borderRadius: '10px',
-            overflowX: 'auto',
-            whiteSpace: 'pre-wrap',
-            wordWrap: 'break-word',
-            fontSize: '13px',
-            color: '#e2e8f0',
-            lineHeight: '1.6',
+          {/* Header sukses */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
+            <CheckCircle size={32} style={{ color: '#68d391', flexShrink: 0 }} />
+            <div>
+              <h2 style={{ margin: 0, fontSize: '1.4rem' }}>Semua Lampiran Berhasil Di-generate!</h2>
+              <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
+                {Object.keys(result).length} bagian lampiran siap diunduh sebagai file Word
+              </p>
+            </div>
+          </div>
+
+          {/* Ringkasan bagian yang digenerate */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+            gap: '8px', marginBottom: '1.5rem'
           }}>
-            {JSON.stringify(result, null, 2)}
-          </pre>
+            {[
+              { key: 'headerDanDaftar', label: '📋 Cover & Daftar Lampiran' },
+              { key: 'lkpd01a',         label: '📝 LKPD Pertemuan 1' },
+              { key: 'lkpd01b',         label: '📝 LKPD Pertemuan 2' },
+              { key: 'asesmenFormatif', label: '✏️ Asesmen Formatif' },
+              { key: 'asesmenSumatif',  label: '📊 Asesmen Sumatif' },
+              { key: 'rekapKelas',      label: '📈 Rekap Kelas' },
+              { key: 'mediaPembelajaran', label: '🎞️ Media Pembelajaran' },
+              { key: 'lembarRefleksi', label: '💭 Lembar Refleksi' },
+              { key: 'bahanPengayaan', label: '🚀 Bahan Pengayaan' },
+              { key: 'bahanRemediasi', label: '🔁 Bahan Remediasi' },
+            ].map(({ key, label }) => (
+              <div key={key} style={{
+                padding: '8px 12px', borderRadius: '8px',
+                background: result[key] && !result[key].error
+                  ? 'rgba(104,211,145,0.15)' : 'rgba(252,129,74,0.15)',
+                border: `1px solid ${ result[key] && !result[key].error ? 'rgba(104,211,145,0.4)' : 'rgba(252,129,74,0.4)' }`,
+                fontSize: '0.8rem', fontWeight: 500,
+                display: 'flex', alignItems: 'center', gap: '6px'
+              }}>
+                <span style={{ color: result[key] && !result[key].error ? '#68d391' : '#fc814a' }}>
+                  {result[key] && !result[key].error ? '✓' : '✗'}
+                </span>
+                {label}
+              </div>
+            ))}
+          </div>
+
+          {/* Tombol Download */}
+          <button
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="btn btn-primary"
+            style={{ width: '100%', height: '56px', fontSize: '17px', gap: '10px', marginBottom: '1rem' }}
+          >
+            {isDownloading
+              ? <><Loader2 className="spin" size={22}/> Membuat file Word…</>
+              : <><Download size={22}/> Unduh Dokumen Lampiran (.docx)</>
+            }
+          </button>
+
+          {/* JSON preview toggle */}
+          <button
+            type="button"
+            onClick={() => setShowJsonPreview(v => !v)}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem',
+              display: 'flex', alignItems: 'center', gap: '4px', margin: '0 auto'
+            }}
+          >
+            {showJsonPreview ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
+            {showJsonPreview ? 'Sembunyikan' : 'Lihat'} data JSON mentah
+          </button>
+
+          {showJsonPreview && (
+            <pre style={{
+              background: 'rgba(0,0,0,0.25)', padding: '16px', borderRadius: '10px',
+              overflowX: 'auto', whiteSpace: 'pre-wrap', wordWrap: 'break-word',
+              fontSize: '12px', color: '#e2e8f0', lineHeight: '1.6', marginTop: '1rem'
+            }}>
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          )}
         </div>
       )}
     </div>
