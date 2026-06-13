@@ -9,7 +9,7 @@ async function extractCPWithGemini(rawText) {
 
 Berikut adalah teks yang diekstrak dari dokumen DOCX:
 ---
-${rawText.substring(0, 10000)}
+${rawText}
 ---
 
 Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format JSON:
@@ -21,9 +21,9 @@ Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format J
   "semester": "semester (contoh: Ganjil, Genap, Ganjil dan Genap), kosong jika tidak ada",
   "year": "tahun pelajaran (contoh: 2025/2026), kosong jika tidak ada",
   "timeTotal": "alokasi waktu total dalam bentuk angka (contoh: 144), kosong jika tidak ada. Hanya angkanya saja.",
-  "teacher": "nama guru penyusun beserta NIP/NUPTK jika ada, kosong jika tidak ada",
-  "waka": "nama waka kurikulum, kosong jika tidak ada",
-  "principal": "nama kepala sekolah, kosong jika tidak ada",
+  "teacher": "nama guru penyusun beserta NIP/NUPTK jika ada, kosong jika tidak ada (biasanya di bagian tanda tangan akhir dokumen)",
+  "waka": "nama waka kurikulum, kosong jika tidak ada (biasanya di bagian tanda tangan akhir dokumen)",
+  "principal": "nama kepala sekolah, kosong jika tidak ada (biasanya di bagian tanda tangan akhir dokumen)",
   "cpText": "Ekstrak SEMUA teks Capaian Pembelajaran secara lengkap. JANGAN masukkan subjudul 'B.1', 'B.2', atau penomoran bagian sejenisnya. Susun menjadi satu kesatuan teks yang rapi.",
   "elemenList": [
     { "nama": "Nama Elemen 1", "capaian": "Teks capaian elemen 1" },
