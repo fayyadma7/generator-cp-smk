@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { buildCPPrompt } from '../../../cpGenerator';
+import { buildSystemPrompt as buildInsersiSystemPrompt } from '../../../cp_insersi_perkoperasian_prompt';
 
 export async function POST(request) {
   try {
@@ -25,29 +26,77 @@ export async function POST(request) {
     // Pilih random key untuk load balancing simpel
     const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
 
-    // Memanggil generator prompt dari cpGenerator.js
-    const { systemPrompt, userPrompt } = buildCPPrompt({
-      programKeahlian: program || 'Umum',
-      konsentrasiKeahlian: subject || '',
-      fase: phase?.replace('Fase ', '') || 'E',
-      kelas: grade || 'X',
-      semester: semester || 'Ganjil',
-      tahunPelajaran: year || '2025/2026',
-      namaGuru: teacher || 'Guru',
-      alokasiWaktu: time || '144 JP',
-    });
+    const lowerSubject = (subject || '').toLowerCase();
+    const isIPAS = lowerSubject.includes('ipas') || lowerSubject.includes('ilmu pengetahuan alam dan sosial');
+    const isKIK = lowerSubject.includes('kik') || lowerSubject.includes('kreativitas, inovasi');
+    const isInsersiMapel = isIPAS || isKIK;
 
-    const finalUserPrompt = `${userPrompt}
+    let systemPrompt, userPrompt;
 
-Teks CP Asli (sebagai bahan dasar):
-${cpText}
+    if (isInsersiMapel) {
+      systemPrompt = buildInsersiSystemPrompt(isKIK ? "KIK" : "IPAS");
+      const basePrompts = buildCPPrompt({
+        programKeahlian: program || 'Umum',
+        konsentrasiKeahlian: subject || '',
+        fase: phase?.replace('Fase ', '') || 'E',
+        kelas: grade || 'X',
+        semester: semester || 'Ganjil',
+        tahunPelajaran: year || '2025/2026',
+        namaGuru: teacher || 'Guru',
+        alokasiWaktu: time || '144 JP',
+      });
+      userPrompt = basePrompts.userPrompt + "\n\nPENTING: Terapkan prinsip Insersi Pendidikan Perkoperasian dari System Prompt ke dalam elemen CP, analisis, dan strategi di bawah ini!";
+    } else {
+      const basePrompts = buildCPPrompt({
+        programKeahlian: program || 'Umum',
+        konsentrasiKeahlian: subject || '',
+        fase: phase?.replace('Fase ', '') || 'E',
+        kelas: grade || 'X',
+        semester: semester || 'Ganjil',
+        tahunPelajaran: year || '2025/2026',
+        namaGuru: teacher || 'Guru',
+        alokasiWaktu: time || '144 JP',
+      });
+      systemPrompt = basePrompts.systemPrompt;
+      userPrompt = basePrompts.userPrompt;
+    }
 
-Output harus HANYA berupa JSON persis dengan struktur berikut. PASTIKAN SELURUH PROPERTY DIISI:
-{
+    const jsonFormat = isInsersiMapel ? `{
   "elemenList": [
-    { "nama": "Nama Elemen 1", "capaian": "Deskripsi kontekstual elemen 1" },
-    { "nama": "Nama Elemen 2", "capaian": "Deskripsi kontekstual elemen 2" }
+    { "nama": "Nama Elemen 1", "capaian": "Deskripsi CP per elemen yang DIINSERSI dengan nilai perkoperasian" },
+    { "nama": "Nama Elemen 2", "capaian": "Deskripsi CP per elemen yang DIINSERSI dengan nilai perkoperasian" }
   ],
+  "analisis": {
+    "kompetensiInti": "Sebutkan Pengetahuan, Keterampilan, dan Sikap secara spesifik",
+    "koneksiIndustri": "Relevansi CP dengan minimal 3 jenis pekerjaan/industri (termasuk Koperasi)",
+    "koneksiLokal": "5-6 tema projek kontekstual berkaitan potensi lokal dan koperasi"
+  },
+  "dimensiProfil": {
+    "dimensi1": "Kaitan dengan Keimanan...",
+    "dimensi2": "Kaitan dengan Kewargaan...",
+    "dimensi3": "Kaitan dengan Penalaran Kritis...",
+    "dimensi4": "Kaitan dengan Kreativitas...",
+    "dimensi5": "Kaitan dengan Kemandirian...",
+    "dimensi6": "Kaitan dengan Kolaborasi...",
+    "dimensi7": "Kaitan dengan Komunikasi...",
+    "dimensi8": "Kaitan dengan Kesehatan..."
+  },
+  "deepLearning": {
+    "mindful": "3-4 aktivitas mindful spesifik (termasuk nilai koperasi)",
+    "meaningful": "3-4 cara materi dikaitkan konteks DUDI lokal & Koperasi",
+    "joyful": "3-4 aktivitas pembelajaran menyenangkan (simulasi koperasi dll)"
+  },
+  "strategi": {
+    "model": "Model pembelajaran prioritas (misal PjBL koperasi)",
+    "asesmen": "Pendekatan asesmen",
+    "media": "Sumber & media belajar",
+    "alat": "Alat/perangkat tersedia"
+  },
+  "catatanPengembangan": {
+    "catatan": "Catatan kontekstualisasi CP dengan insersi perkoperasian",
+    "tantangan": "2-3 tantangan dan solusi"
+  }
+}` : `{
   "analisis": {
     "kompetensiInti": "Sebutkan Pengetahuan, Keterampilan, dan Sikap secara spesifik",
     "koneksiIndustri": "Relevansi CP dengan minimal 3 jenis pekerjaan/industri",
@@ -79,6 +128,14 @@ Output harus HANYA berupa JSON persis dengan struktur berikut. PASTIKAN SELURUH 
     "tantangan": "2-3 tantangan dan solusi"
   }
 }`;
+
+    const finalUserPrompt = \`\${userPrompt}
+
+Teks CP Asli (sebagai bahan dasar):
+\${cpText}
+
+Output harus HANYA berupa JSON persis dengan struktur berikut. PASTIKAN SELURUH PROPERTY DIISI:
+\${jsonFormat}\`;
 
     // Memanggil API Gemini
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {

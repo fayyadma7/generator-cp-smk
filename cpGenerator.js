@@ -281,32 +281,6 @@ Produk/hasil belajar nyata bidang ini:
 
 Hasilkan dokumen CP lengkap dengan SEMUA bagian berikut secara berurutan.
 
-── BAGIAN B.2: Capaian Pembelajaran Per Elemen (BAGIAN PALING KRITIS) ──
-Untuk SETIAP elemen, susun deskripsi CP yang DIKONTEKSTUALISASIKAN dengan cara ini:
-
-  [ELEMEN 1 — Menjelaskan Fenomena secara Ilmiah]
-  Tulis ulang elemen ini dalam 3–4 kalimat mengalir yang:
-  • Mempertahankan substansi CP resmi
-  • Menyebutkan minimal 2 fenomena konkret dari bidang ${namaKeahlian} 
-    (gunakan contoh dari daftar di atas)
-  • Menyebutkan konteks lokal Purbalingga secara eksplisit dan alami
-  • Menggunakan kalimat aktif-afirmatif ("murid mampu…" bukan "diharapkan mampu…")
-  • Terdengar seperti ditulis oleh guru yang benar-benar memahami muridnya
-
-  [ELEMEN 2 — Menyusun Penyelidikan Ilmiah]
-  Tulis ulang elemen ini dalam 2–3 kalimat yang:
-  • Mempertahankan substansi prosedur penyelidikan ilmiah
-  • Mengaitkan dengan produk nyata yang dihasilkan siswa bidang ${namaKeahlian}
-  • Menyebut satu contoh topik penyelidikan yang relevan dengan industri ini
-  • Tidak terkesan generik atau bisa dipakai untuk semua bidang keahlian
-
-  [ELEMEN 3 — Merefleksikan Data dan Bukti-bukti secara Ilmiah]
-  Tulis ulang elemen ini dalam 2–3 kalimat yang:
-  • Mempertahankan substansi refleksi data dan argumen ilmiah
-  • Menyebut jenis data/sumber data yang relevan dengan bidang ${namaKeahlian}
-  • Mengaitkan dengan kemampuan komunikasi yang dibutuhkan di dunia kerja ini
-  • Kalimat terakhir harus berkaitan dengan nilai ${nilaiKarakter}
-
 ── BAGIAN C: ANALISIS DAN KONTEKSTUALISASI CP ──
 C.1 — Kompetensi Inti (Knowledge/Skill/Attitude)
 Rincikan masing-masing 4 poin yang SPESIFIK untuk bidang ${namaKeahlian}.
