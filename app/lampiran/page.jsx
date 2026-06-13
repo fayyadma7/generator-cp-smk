@@ -182,6 +182,27 @@ export default function LampiranGenerator() {
     }
   };
 
+  // Eksekusi antrean dengan batasan concurrency (maksimal 3 proses bersamaan)
+  const processQueue = async (keysToProcess) => {
+    const concurrencyLimit = 3;
+    const activePromises = new Set();
+
+    for (const key of keysToProcess) {
+      // Tunggu jika sudah mencapai batas maksimal
+      if (activePromises.size >= concurrencyLimit) {
+        await Promise.race(activePromises);
+      }
+      
+      const promise = generateItem(key).finally(() => {
+        activePromises.delete(promise);
+      });
+      activePromises.add(promise);
+    }
+    
+    // Tunggu sisa promise selesai
+    await Promise.allSettled(Array.from(activePromises));
+  };
+
   // ── Generate semua lampiran ──
   const handleGenerate = async (e) => {
     e.preventDefault();
@@ -195,9 +216,8 @@ export default function LampiranGenerator() {
     setTimeout(() => document.getElementById('result-section')?.scrollIntoView({ behavior: 'smooth' }), 300);
 
     try {
-      // Jalankan 10 request secara paralel. 
-      // Vercel serverless akan membuat 10 instance, masing2 jalan cuma ~5-15 detik. Bebas dari timeout 60s!
-      await Promise.allSettled(allKeys.map(key => generateItem(key)));
+      // Jalankan dengan batch maksimal 3 bersamaan agar tidak kena Rate Limit (429) massal
+      await processQueue(allKeys);
     } catch (error) {
       setErrorMsg(`Terjadi kesalahan sistem: ${error.message}`);
     } finally {
@@ -213,12 +233,15 @@ export default function LampiranGenerator() {
     setIsLoading(true);
     setErrorMsg('');
     try {
-      // Retry paralel per item yang gagal
-      await Promise.allSettled(failedKeys.map(key => {
-        // Set item back to loading state before retry
-        setResult(prev => ({ ...prev, [key]: null }));
-        return generateItem(key);
-      }));
+      // Reset state yang gagal menjadi loading (null)
+      setResult(prev => {
+        const nextState = { ...prev };
+        failedKeys.forEach(k => nextState[k] = null);
+        return nextState;
+      });
+      
+      // Retry antrean yang gagal dengan batasan concurrency 3
+      await processQueue(failedKeys);
     } catch (error) {
       setErrorMsg(`Terjadi kesalahan saat retry: ${error.message}`);
     } finally {
