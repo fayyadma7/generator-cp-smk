@@ -16,7 +16,11 @@ Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format J
 {
   "mataPelajaran": "nama mata pelajaran yang ditemukan, string kosong jika tidak ada",
   "fase": "fase yang ditemukan contoh Fase E atau Fase F, string kosong jika tidak ada",
-  "cpText": "Ekstrak SEMUA teks Capaian Pembelajaran secara lengkap (biasanya ada di bagian B. CAPAIAN PEMBELAJARAN, termasuk B.1 dan B.2 elemen-elemennya jika ada). Susun menjadi satu kesatuan teks yang rapi."
+  "cpText": "Ekstrak SEMUA teks Capaian Pembelajaran secara lengkap. JANGAN masukkan subjudul 'B.1', 'B.2', atau penomoran bagian sejenisnya. Susun menjadi satu kesatuan teks yang rapi.",
+  "elemenList": [
+    { "nama": "Nama Elemen 1", "capaian": "Teks capaian elemen 1" },
+    { "nama": "Nama Elemen 2", "capaian": "Teks capaian elemen 2" }
+  ]
 }`;
 
   // Coba ambil dari multiple key, fallback ke GEMINI_API_KEY
