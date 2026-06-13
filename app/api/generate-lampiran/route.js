@@ -102,7 +102,6 @@ export async function POST(request) {
     }
 
     const finalResults = {};
-    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
     // Eksekusi tiap prompt yang diminta
     for (const item of prompts) {
