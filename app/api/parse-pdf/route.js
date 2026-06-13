@@ -47,13 +47,17 @@ if (typeof globalThis.Path2D === 'undefined') {
 
 // ── Ekstrak teks dari PDF via Gemini API (untuk PDF scan/gambar) ──
 async function extractTextViaGemini(buffer) {
-  const GEMINI_KEY = process.env.GEMINI_API_KEY;
-  if (!GEMINI_KEY) return null;
+  const apiKeys = [
+    process.env.GEMINI_API_KEY_1, process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3, process.env.GEMINI_API_KEY
+  ].filter(Boolean);
+  if (apiKeys.length === 0) return null;
+  const key = apiKeys[Math.floor(Math.random() * apiKeys.length)];
 
   try {
     const base64 = buffer.toString('base64');
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -89,7 +93,7 @@ async function extractCPWithGroq(rawText) {
 
 Berikut adalah teks yang diekstrak dari PDF:
 ---
-${rawText.substring(0, 8000)}
+${rawText.substring(0, 25000)}
 ---
 
 Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format JSON:

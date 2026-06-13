@@ -33,8 +33,12 @@ if (typeof globalThis.Path2D === 'undefined') {
 
 // ── Ekstrak teks via Gemini OCR (untuk PDF scan) ──
 async function extractTextViaGemini(buffer) {
-  const key = process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
-  if (!key) return null;
+  const apiKeys = [
+    process.env.GEMINI_API_KEY_1, process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3, process.env.GEMINI_API_KEY
+  ].filter(Boolean);
+  if (apiKeys.length === 0) return null;
+  const key = apiKeys[Math.floor(Math.random() * apiKeys.length)];
   try {
     const base64 = buffer.toString('base64');
     const res = await fetch(
@@ -64,14 +68,18 @@ async function extractTextViaGemini(buffer) {
 
 // ── Parse struktur modul ajar dari teks mentah via Gemini ──
 async function extractModulWithGemini(rawText) {
-  const key = process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
-  if (!key) return null;
+  const apiKeys = [
+    process.env.GEMINI_API_KEY_1, process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3, process.env.GEMINI_API_KEY
+  ].filter(Boolean);
+  if (apiKeys.length === 0) return null;
+  const key = apiKeys[Math.floor(Math.random() * apiKeys.length)];
 
   const prompt = `Kamu adalah asisten AI yang membantu mengekstrak informasi dari dokumen Modul Ajar SMK/SMA Kurikulum Merdeka.
 
 Berikut adalah teks yang diekstrak dari PDF modul ajar:
 ---
-${rawText.substring(0, 12000)}
+${rawText.substring(0, 150000)}
 ---
 
 Ekstrak semua informasi berikut dari teks di atas dan kembalikan sebagai JSON murni. Jika suatu informasi tidak ditemukan, isi dengan string kosong "".

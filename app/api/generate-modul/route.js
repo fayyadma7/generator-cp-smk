@@ -323,8 +323,8 @@ export async function POST(request) {
     const schema = SCHEMAS[step];
     const stepLabel = STEP_LABELS[step];
 
-    // Potong konteks agar tidak melebihi batas token
-    const contextText = data.tpText.substring(0, 8000);
+    // Potong konteks agar tidak melebihi batas token, perbesar jadi 80000 untuk Gemini
+    const contextText = data.tpText.substring(0, 80000);
 
     const userPrompt = `Kamu sedang mengisi Bagian ${step}/4 dari Modul Ajar: "${stepLabel}".
 

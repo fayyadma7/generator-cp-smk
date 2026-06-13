@@ -32,13 +32,18 @@ Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format J
   ]
 }`;
 
-  // Coba ambil dari multiple key, fallback ke GEMINI_API_KEY
-  const apiKey = process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
+  const apiKeys = [
+    process.env.GEMINI_API_KEY_1,
+    process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3,
+    process.env.GEMINI_API_KEY
+  ].filter(Boolean);
   
-  if (!apiKey) {
+  if (apiKeys.length === 0) {
     console.error('API Key Gemini tidak ditemukan.');
     return null;
   }
+  const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
 
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
     method: 'POST',
