@@ -142,6 +142,88 @@ PENTING: Kembalikan JSON murni saja, tanpa markdown, tanpa backtick, tanpa penje
   return null;
 }
 
+// ── Fallback: Ekstrak via Regex (tanpa AI) ──
+// Digunakan jika semua percobaan Gemini gagal
+function extractModulWithRegex(rawText) {
+  const pick = (patterns) => {
+    for (const re of patterns) {
+      const m = rawText.match(re);
+      if (m && m[1] && m[1].trim().length > 1) return m[1].trim();
+    }
+    return '';
+  };
+
+  const mataPelajaran = pick([
+    /(?:Mata Pelajaran|MATA PELAJARAN)\s*[:：]\s*(.+)/i,
+    /(?:Mapel)\s*[:：]\s*(.+)/i,
+  ]);
+  const faseKelas = pick([
+    /(?:Fase\s*\/\s*Kelas|Fase\/Kelas|Kelas\s*\/\s*Fase)\s*[:：]\s*(.+)/i,
+    /Fase\s+([A-F]\s*\/\s*(?:Kelas\s*)?(?:X|XI|XII))/i,
+    /(?:Kelas)\s*[:：]\s*((?:X|XI|XII)[^\n]{0,30})/i,
+  ]);
+  const semester = pick([
+    /(?:Semester)\s*[:：]\s*(Ganjil|Genap)/i,
+  ]);
+  const tahunPelajaran = pick([
+    /(?:Tahun Pelajaran|T\.P\.|TP)\s*[:：]\s*(\d{4}\/\d{4})/i,
+    /(\d{4})\s*\/\s*(\d{4})/,
+  ]);
+  const judulModul = pick([
+    /(?:Judul Modul|JUDUL MODUL)\s*[:：]\s*(.+)/i,
+    /(?:Modul Ajar)[\s:：]+(.{5,80})/i,
+  ]);
+  const kodeModul = pick([
+    /(?:Kode Modul|No\. Modul|Nomor Modul)\s*[:：]\s*(.+)/i,
+    /\b(MA-[A-Z]{2,}-\d+)\b/,
+  ]);
+  const namaSekolah = pick([
+    /(?:SMK|SMA|SMP|SD)\s+(?:Negeri|Swasta|Muhammadiyah)?\s*[\w\s]{2,40}/i,
+  ]);
+  const tujuanPembelajaran = pick([
+    /(?:Tujuan Pembelajaran|TUJUAN PEMBELAJARAN)\s*[:：]\s*([\s\S]{20,500}?)(?=\n\n|IKTP|Indikator|Alokasi|$)/i,
+    /(?:Peserta didik mampu[\s\S]{10,400}?)(?=\n\n|IKTP|$)/i,
+  ]);
+  const iktp = pick([
+    /(?:IKTP|Indikator Ketercapaian|Indikator TP)\s*[:：]\s*([\s\S]{10,500}?)(?=\n\n[A-Z]|Alokasi|Pertemuan|$)/i,
+  ]);
+  const kurikulum = pick([
+    /(?:Kurikulum)\s*[:：]\s*(.+)/i,
+  ]);
+  const kktp = pick([
+    /(?:KKTP|KKM|Nilai Minimum|Batas Lulus)\s*[:：]\s*(\d+)/i,
+  ]);
+  const konteksLokal = pick([
+    /Purbalingga|Banyumas|Cilacap|Kebumen|Wonosobo|Banjarnegara|Purwokerto/i,
+  ]);
+
+  return {
+    namaSekolah: namaSekolah || 'SMK Muhammadiyah 3 Purbalingga',
+    taglineSekolah: '',
+    mataPelajaran,
+    judulModul,
+    kodeModul,
+    faseKelas,
+    semester: semester || 'Ganjil',
+    tahunPelajaran: tahunPelajaran || '2025/2026',
+    kurikulum: kurikulum || 'Kurikulum Merdeka',
+    tujuanPembelajaran,
+    iktp,
+    topikPertemuan1: '',
+    metodePertemuan1: '',
+    topikPertemuan2: '',
+    dimensiKeterkaitan: '',
+    konteksLokal: konteksLokal || 'Purbalingga',
+    nilaiSekolah: 'Islami, Entrepreneur',
+    jenisProdukSumatif: '',
+    aspekPenilaianSumatif: 'Pengetahuan, Keterampilan, Sikap',
+    kktp: kktp || '70',
+    jumlahSiswa: '32',
+    daftarLampiranYangDiminta: '',
+    _source: 'regex_fallback' // penanda bahwa ini dari regex bukan AI
+  };
+}
+
 export async function POST(request) {
   try {
     const formData = await request.formData();
@@ -210,10 +292,14 @@ export async function POST(request) {
     const extracted = await extractModulWithGemini(rawText);
 
     if (!extracted) {
-      return NextResponse.json(
-        { error: 'Gagal menganalisis isi modul. Coba lagi atau isi form secara manual.' },
-        { status: 422 }
-      );
+      // Gemini gagal — gunakan regex fallback agar form tetap bisa terisi sebagian
+      console.log('Gemini gagal, menggunakan regex fallback...');
+      const regexResult = extractModulWithRegex(rawText);
+      return NextResponse.json({
+        success: true,
+        data: regexResult,
+        _warning: 'Analisis AI tidak tersedia. Beberapa field diisi otomatis dari pola teks dokumen. Silakan periksa dan lengkapi secara manual jika perlu.'
+      });
     }
 
     return NextResponse.json({ success: true, data: extracted });
