@@ -61,11 +61,22 @@ export async function POST(request) {
       userPrompt = basePrompts.userPrompt;
     }
 
-    const jsonFormat = isInsersiMapel ? `{
-  "elemenList": [
+    let insersiElemenFormat = `[
     { "nama": "Nama Elemen 1", "capaian": "Deskripsi CP per elemen yang DIINSERSI dengan nilai perkoperasian" },
     { "nama": "Nama Elemen 2", "capaian": "Deskripsi CP per elemen yang DIINSERSI dengan nilai perkoperasian" }
-  ],
+  ]`;
+    let originalElementsText = '';
+
+    if (isInsersiMapel && Array.isArray(data.elemenList) && data.elemenList.length > 0) {
+      const exactElements = data.elemenList.map(el => `{ "nama": "${(el.nama || '').replace(/"/g, '\\"')}", "capaian": "[Tulis ulang deskripsi elemen ini dengan menyisipkan nilai perkoperasian]" }`);
+      insersiElemenFormat = `[
+    ${exactElements.join(',\\n    ')}
+  ]`;
+      originalElementsText = `\\n\\nElemen CP Asli yang harus di-insersi:\\n` + data.elemenList.map(el => `- **${el.nama}**: ${el.capaian}`).join('\\n');
+    }
+
+    const jsonFormat = isInsersiMapel ? `{
+  "elemenList": ${insersiElemenFormat},
   "analisis": {
     "kompetensiInti": "Sebutkan Pengetahuan, Keterampilan, dan Sikap secara spesifik",
     "koneksiIndustri": "Relevansi CP dengan minimal 3 jenis pekerjaan/industri (termasuk Koperasi)",
@@ -132,7 +143,7 @@ export async function POST(request) {
     const finalUserPrompt = `${userPrompt}
 
 Teks CP Asli (sebagai bahan dasar):
-${cpText}
+${cpText}${originalElementsText}
 
 Output harus HANYA berupa JSON persis dengan struktur berikut. PASTIKAN SELURUH PROPERTY DIISI:
 ${jsonFormat}`;
