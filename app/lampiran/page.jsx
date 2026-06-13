@@ -170,6 +170,32 @@ export default function LampiranGenerator() {
     }
   };
 
+  const handleRetryFailed = async () => {
+    if (!result) return;
+    const failedKeys = Object.keys(result).filter(k => !result[k] || result[k].error);
+    if (failedKeys.length === 0) return;
+    
+    setIsLoading(true);
+    setErrorMsg('');
+    try {
+      const res = await fetch('/api/generate-lampiran', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, keysToGenerate: failedKeys })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Gagal retry dari AI');
+      }
+      const data = await res.json();
+      setResult(prev => ({ ...prev, ...data }));
+    } catch (error) {
+      setErrorMsg(`Terjadi kesalahan saat retry: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="container">
 
@@ -440,7 +466,7 @@ export default function LampiranGenerator() {
             style={{ marginTop: '2rem', width: '100%', height: '56px', fontSize: '17px', gap: '10px' }}
           >
             {isLoading
-              ? <><Loader2 className="spin" size={22} /> AI sedang membuat semua lampiran… (15–30 detik)</>
+              ? <><Loader2 className="spin" size={22} /> AI sedang membuat semua lampiran…</>
               : <><Sparkles size={22} /> Generate Semua Lampiran Sekaligus</>
             }
           </button>
@@ -448,15 +474,26 @@ export default function LampiranGenerator() {
       </div>
 
       {/* ── HASIL GENERATE ── */}
-      {result && (
+      {result && (() => {
+        const hasError = Object.keys(result).some(key => !result[key] || result[key].error);
+        return (
         <div id="result-section" className="glass-panel result-panel">
-          {/* Header sukses */}
+          {/* Header sukses / error */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
-            <CheckCircle size={32} style={{ color: '#68d391', flexShrink: 0 }} />
+            {hasError ? (
+              <XCircle size={32} style={{ color: '#fc814a', flexShrink: 0 }} />
+            ) : (
+              <CheckCircle size={32} style={{ color: '#68d391', flexShrink: 0 }} />
+            )}
             <div>
-              <h2 style={{ margin: 0, fontSize: '1.4rem' }}>Semua Lampiran Berhasil Di-generate!</h2>
+              <h2 style={{ margin: 0, fontSize: '1.4rem' }}>
+                {hasError ? 'Beberapa Lampiran Gagal Di-generate!' : 'Semua Lampiran Berhasil Di-generate!'}
+              </h2>
               <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
-                {Object.keys(result).length} bagian lampiran siap diunduh sebagai file Word
+                {hasError 
+                  ? 'Silakan klik "Coba Ulang yang Gagal" sebelum dapat mengunduh.'
+                  : `${Object.keys(result).length} bagian lampiran siap diunduh sebagai file Word`
+                }
               </p>
             </div>
           </div>
@@ -494,12 +531,28 @@ export default function LampiranGenerator() {
             ))}
           </div>
 
+          {/* Tombol Retry (jika ada error) */}
+          {hasError && (
+            <button
+              type="button"
+              onClick={handleRetryFailed}
+              disabled={isLoading}
+              className="btn"
+              style={{ width: '100%', height: '56px', fontSize: '16px', gap: '10px', marginBottom: '1rem', background: 'rgba(252,129,74,0.15)', border: '1px solid rgba(252,129,74,0.5)', color: '#fc814a', fontWeight: 'bold' }}
+            >
+              {isLoading
+                ? <><Loader2 className="spin" size={20}/> Mencoba ulang bagian yang gagal…</>
+                : <><Sparkles size={20}/> Coba Ulang yang Gagal</>
+              }
+            </button>
+          )}
+
           {/* Tombol Download */}
           <button
             onClick={handleDownload}
-            disabled={isDownloading}
+            disabled={isDownloading || hasError}
             className="btn btn-primary"
-            style={{ width: '100%', height: '56px', fontSize: '17px', gap: '10px', marginBottom: '1rem' }}
+            style={{ width: '100%', height: '56px', fontSize: '17px', gap: '10px', marginBottom: '1rem', opacity: hasError ? 0.5 : 1, cursor: hasError ? 'not-allowed' : 'pointer' }}
           >
             {isDownloading
               ? <><Loader2 className="spin" size={22}/> Membuat file Word…</>
@@ -531,7 +584,8 @@ export default function LampiranGenerator() {
             </pre>
           )}
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

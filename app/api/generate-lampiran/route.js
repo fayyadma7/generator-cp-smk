@@ -15,7 +15,7 @@ import {
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-export const maxDuration = 120; // 2 minutes, as generating all might take a while
+export const maxDuration = 300; // Maksimalkan hingga 5 menit jika di Vercel Pro/Enterprise
 
 async function callGemini(systemPrompt, userPrompt, apiKey) {
   const payload = {
@@ -83,7 +83,7 @@ export async function POST(request) {
 
     const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-    const prompts = [
+    let prompts = [
       { key: 'headerDanDaftar', prompt: PROMPT_HEADER_DAN_DAFTAR(inputGuru) },
       { key: 'lkpd01a', prompt: PROMPT_LKPD_PERTEMUAN_1(inputGuru) },
       { key: 'lkpd01b', prompt: PROMPT_LKPD_PERTEMUAN_2(inputGuru) },
@@ -95,6 +95,10 @@ export async function POST(request) {
       { key: 'bahanPengayaan', prompt: PROMPT_BAHAN_PENGAYAAN(inputGuru) },
       { key: 'bahanRemediasi', prompt: PROMPT_BAHAN_REMEDIASI(inputGuru) }
     ];
+
+    if (inputGuru.keysToGenerate && Array.isArray(inputGuru.keysToGenerate)) {
+      prompts = prompts.filter(p => inputGuru.keysToGenerate.includes(p.key));
+    }
 
     // Antrean tugas (queue)
     const queue = [...prompts];
@@ -109,7 +113,7 @@ export async function POST(request) {
         let retryCount = 0;
         let success = false;
 
-        while (retryCount < 3 && !success) {
+        while (retryCount < 7 && !success) {
           try {
             console.log(`Worker ${workerId} memproses ${item.key}...`);
             const result = await callGemini(SYSTEM_PROMPT_GLOBAL, item.prompt, apiKey);
@@ -118,8 +122,8 @@ export async function POST(request) {
           } catch (e) {
             if (e.message.includes('429') || e.message.includes('Quota') || e.message.includes('503') || e.message.includes('500')) {
               retryCount++;
-              console.log(`Worker ${workerId} error pada ${item.key}. Menunggu sebelum retry...`);
-              await delay(2000 * retryCount);
+              console.log(`Worker ${workerId} error pada ${item.key}. Menunggu ${3000 * retryCount}ms sebelum retry...`);
+              await delay(3000 * retryCount); // Backoff yang lebih panjang: 3s, 6s, 9s, dst.
             } else {
               console.error(`Worker ${workerId} gagal permanen pada ${item.key}:`, e);
               finalResults[item.key] = { error: e.message };
@@ -129,11 +133,11 @@ export async function POST(request) {
         }
 
         if (!success) {
-          finalResults[item.key] = { error: 'Gagal setelah 3x percobaan karena limit server.' };
+          finalResults[item.key] = { error: 'Gagal setelah 7x percobaan karena limit server AI.' };
         }
         
-        // Jeda kecil antar request pada worker yang sama
-        await delay(1000);
+        // Jeda santai antar request pada worker yang sama (3 detik) agar sangat aman dari rate limit
+        await delay(3000);
       }
     }
 
