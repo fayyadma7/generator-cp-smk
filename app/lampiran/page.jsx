@@ -149,11 +149,36 @@ export default function LampiranGenerator() {
     try {
       return JSON.parse(text);
     } catch {
-      // Server returned HTML (e.g. Vercel timeout/504 page)
       if (text.includes('FUNCTION_INVOCATION_TIMEOUT') || text.includes('504') || text.includes('timeout')) {
-        throw new Error('Server timeout — AI membutuhkan waktu terlalu lama. Silakan klik "Coba Ulang yang Gagal" untuk item yang masih X.');
+        throw new Error('Server timeout — AI membutuhkan waktu terlalu lama.');
       }
-      throw new Error('Server mengembalikan respons tidak valid. Silakan coba lagi.');
+      throw new Error('Server mengembalikan respons tidak valid.');
+    }
+  };
+
+  const allKeys = [
+    'headerDanDaftar', 'lkpd01a', 'lkpd01b', 'asesmenFormatif',
+    'asesmenSumatif', 'rekapKelas', 'mediaPembelajaran',
+    'lembarRefleksi', 'bahanPengayaan', 'bahanRemediasi'
+  ];
+
+  // Eksekusi per 1 item agar tidak kena Vercel 60s timeout
+  const generateItem = async (key) => {
+    try {
+      const res = await fetch('/api/generate-lampiran', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, keysToGenerate: [key] })
+      });
+      const data = await safeParseJson(res);
+      if (!res.ok) throw new Error(data.error || 'Gagal generate');
+      
+      // Update state incrementally
+      setResult(prev => ({ ...prev, [key]: data[key] }));
+      return data[key];
+    } catch (err) {
+      setResult(prev => ({ ...prev, [key]: { error: err.message } }));
+      return { error: err.message };
     }
   };
 
@@ -161,21 +186,20 @@ export default function LampiranGenerator() {
   const handleGenerate = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setResult(null);
+    // Inisialisasi semua key dengan state loading (null)
+    const initialResult = {};
+    allKeys.forEach(k => initialResult[k] = null);
+    setResult(initialResult);
     setErrorMsg('');
 
+    setTimeout(() => document.getElementById('result-section')?.scrollIntoView({ behavior: 'smooth' }), 300);
+
     try {
-      const res = await fetch('/api/generate-lampiran', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-      const data = await safeParseJson(res);
-      if (!res.ok) throw new Error(data.error || 'Gagal generate dari AI');
-      setResult(data);
-      setTimeout(() => document.getElementById('result-section')?.scrollIntoView({ behavior: 'smooth' }), 300);
+      // Jalankan 10 request secara paralel. 
+      // Vercel serverless akan membuat 10 instance, masing2 jalan cuma ~5-15 detik. Bebas dari timeout 60s!
+      await Promise.allSettled(allKeys.map(key => generateItem(key)));
     } catch (error) {
-      setErrorMsg(`Terjadi kesalahan: ${error.message}`);
+      setErrorMsg(`Terjadi kesalahan sistem: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -189,21 +213,14 @@ export default function LampiranGenerator() {
     setIsLoading(true);
     setErrorMsg('');
     try {
-      const res = await fetch('/api/generate-lampiran', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, keysToGenerate: failedKeys })
-      });
-      const data = await safeParseJson(res);
-      if (!res.ok) throw new Error(data.error || 'Gagal retry dari AI');
-      // Merge hanya key yang berhasil (tidak error), pertahankan hasil sukses sebelumnya
-      const mergedData = { ...result };
-      Object.keys(data).forEach(k => {
-        if (!data[k] || !data[k].error) mergedData[k] = data[k];
-      });
-      setResult(mergedData);
+      // Retry paralel per item yang gagal
+      await Promise.allSettled(failedKeys.map(key => {
+        // Set item back to loading state before retry
+        setResult(prev => ({ ...prev, [key]: null }));
+        return generateItem(key);
+      }));
     } catch (error) {
-      setErrorMsg(`Terjadi kesalahan: ${error.message}`);
+      setErrorMsg(`Terjadi kesalahan saat retry: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
