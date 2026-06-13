@@ -10,11 +10,11 @@ const STEP_LABELS = [
   { step: 4, icon: '🎯', label: 'Asesmen, Materi & Rubrik' },
 ];
 
-export default function ModulAjarGenerator() {
   const [formData, setFormData] = useState({
     subject: '', program: '', phase: '', grade: '',
     semester: 'Ganjil', year: '2025/2026',
-    teacher: '', cpText: '', targetTp: '', elemenCP: '', targetTpText: ''
+    teacher: '', cpText: '', targetTp: '', elemenCP: '', targetTpText: '',
+    waka: '', principal: ''
   });
 
   const [tpTextRaw, setTpTextRaw]         = useState('');
@@ -235,6 +235,14 @@ export default function ModulAjarGenerator() {
                   <div className="form-group">
                     <label>Guru Penyusun <span className="required">*</span></label>
                     <input required type="text" name="teacher" className="glass-input" placeholder="Nama Lengkap & NIP/NUPTK" onChange={handleChange} value={formData.teacher}/>
+                  </div>
+                  <div className="form-group">
+                    <label>Waka Kurikulum</label>
+                    <input type="text" name="waka" className="glass-input" placeholder="Nama Waka Kurikulum" onChange={handleChange} value={formData.waka}/>
+                  </div>
+                  <div className="form-group">
+                    <label>Kepala Sekolah</label>
+                    <input type="text" name="principal" className="glass-input" placeholder="Nama Kepala Sekolah" onChange={handleChange} value={formData.principal}/>
                   </div>
                 </div>
               </div>
