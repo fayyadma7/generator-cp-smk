@@ -15,7 +15,15 @@ ${rawText.substring(0, 10000)}
 Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format JSON:
 {
   "mataPelajaran": "nama mata pelajaran yang ditemukan, string kosong jika tidak ada",
-  "fase": "fase yang ditemukan contoh Fase E atau Fase F, string kosong jika tidak ada",
+  "program": "program keahlian (contoh: Teknik Komputer Jaringan, Layanan Perbankan Syariah), kosong jika tidak ada",
+  "fase": "fase yang ditemukan (contoh: Fase E, Fase F), kosong jika tidak ada",
+  "grade": "kelas (contoh: X, XI, XII), kosong jika tidak ada. Jika menyatu dengan fase misal 'Fase F / XI', ambil XI-nya saja",
+  "semester": "semester (contoh: Ganjil, Genap, Ganjil dan Genap), kosong jika tidak ada",
+  "year": "tahun pelajaran (contoh: 2025/2026), kosong jika tidak ada",
+  "timeTotal": "alokasi waktu total dalam bentuk angka (contoh: 144), kosong jika tidak ada. Hanya angkanya saja.",
+  "teacher": "nama guru penyusun beserta NIP/NUPTK jika ada, kosong jika tidak ada",
+  "waka": "nama waka kurikulum, kosong jika tidak ada",
+  "principal": "nama kepala sekolah, kosong jika tidak ada",
   "cpText": "Ekstrak SEMUA teks Capaian Pembelajaran secara lengkap. JANGAN masukkan subjudul 'B.1', 'B.2', atau penomoran bagian sejenisnya. Susun menjadi satu kesatuan teks yang rapi.",
   "elemenList": [
     { "nama": "Nama Elemen 1", "capaian": "Teks capaian elemen 1" },

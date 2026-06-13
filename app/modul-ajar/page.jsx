@@ -55,9 +55,17 @@ export default function ModulAjarGenerator() {
 
       setFormData(prev => ({
         ...prev,
-        subject: data.mataPelajaran && !prev.subject ? data.mataPelajaran : prev.subject,
-        phase:   data.fase          && !prev.phase   ? data.fase          : prev.phase,
-        cpText:  data.cpText        ? 'Teks CP berhasil diekstrak...' : prev.cpText,
+        subject:   data.mataPelajaran || prev.subject,
+        program:   data.program       || prev.program,
+        phase:     data.fase          || prev.phase,
+        grade:     data.grade         || prev.grade,
+        semester:  data.semester      || prev.semester,
+        year:      data.year          || prev.year,
+        timeTotal: data.timeTotal     || prev.timeTotal,
+        teacher:   data.teacher       || prev.teacher,
+        waka:      data.waka          || prev.waka,
+        principal: data.principal     || prev.principal,
+        cpText:    data.cpText        ? 'Teks CP berhasil diekstrak...' : prev.cpText,
       }));
 
       setDocxStatus('success');
