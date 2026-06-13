@@ -90,6 +90,7 @@ Ekstrak semua informasi berikut dari teks di atas dan kembalikan sebagai JSON mu
   "topikPertemuan1": "topik atau materi untuk pertemuan pertama/pertemuan ke-1",
   "metodePertemuan1": "metode atau model pembelajaran di pertemuan pertama contoh 'Gallery Walk', 'Project Based Learning' dsb",
   "topikPertemuan2": "topik atau materi untuk pertemuan kedua/pertemuan ke-2",
+  "dimensiKeterkaitan": "dimensi atau konsep yang dikaitkan pada pertemuan 2 (contoh: 'alam dan sosial' untuk IPAS, 'teori dan praktik' untuk kejuruan, 'peluang dan risiko' untuk kewirausahaan, dll). Jika tidak tertulis secara eksplisit, tentukan dimensi keterkaitan yang paling logis berdasarkan materi/TP modul ini",
   "konteksLokal": "konteks lokal yang disebut dalam modul, bisa berupa nama daerah atau industri lokal",
   "nilaiSekolah": "nilai/karakter yang ditekankan contoh 'Islami', 'Entrepreneur', 'Nasionalis'",
   "jenisProdukSumatif": "jenis produk atau karya yang dinilai di asesmen sumatif contoh 'Laporan Observasi', 'Poster', 'Presentasi'",

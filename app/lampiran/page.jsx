@@ -22,7 +22,7 @@ export default function LampiranGenerator() {
     nilaiSekolah: 'Islami, Entrepreneur',
     jumlahAspekAnalisis: '7',
     topikPertemuan2: '',
-    dimensiKeterkaitan: 'alam dan sosial',
+    dimensiKeterkaitan: '',
     jumlahPasanganKeterkaitan: '3',
     iktp: '',
     jumlahPertanyaanLisan: '3',
@@ -104,6 +104,7 @@ export default function LampiranGenerator() {
         topikPertemuan1:         d.topikPertemuan1           || prev.topikPertemuan1,
         metodePertemuan1:        d.metodePertemuan1          || prev.metodePertemuan1,
         topikPertemuan2:         d.topikPertemuan2           || prev.topikPertemuan2,
+        dimensiKeterkaitan:      d.dimensiKeterkaitan        || prev.dimensiKeterkaitan,
         konteksLokal:            d.konteksLokal              || prev.konteksLokal,
         nilaiSekolah:            d.nilaiSekolah              || prev.nilaiSekolah,
         jenisProdukSumatif:      d.jenisProdukSumatif        || prev.jenisProdukSumatif,
@@ -362,11 +363,11 @@ export default function LampiranGenerator() {
                   </div>
                   <div className="form-group">
                     <label>Topik Pertemuan 2</label>
-                    <input type="text" name="topikPertemuan2" className="glass-input" placeholder="Contoh: Keterkaitan Alam-Sosial" onChange={handleChange} value={formData.topikPertemuan2}/>
+                    <input type="text" name="topikPertemuan2" className="glass-input" placeholder="Contoh: Teori & Praktik Industri, Keterkaitan Alam-Sosial" onChange={handleChange} value={formData.topikPertemuan2}/>
                   </div>
                   <div className="form-group">
                     <label>Dimensi Keterkaitan (Pertemuan 2)</label>
-                    <input type="text" name="dimensiKeterkaitan" className="glass-input" placeholder="Contoh: alam dan sosial" onChange={handleChange} value={formData.dimensiKeterkaitan}/>
+                    <input type="text" name="dimensiKeterkaitan" className="glass-input" placeholder="Contoh: teori & praktik, peluang & risiko, alam & sosial" onChange={handleChange} value={formData.dimensiKeterkaitan}/>
                   </div>
                   <div className="form-group">
                     <label>Jumlah Pasangan Keterkaitan</label>
