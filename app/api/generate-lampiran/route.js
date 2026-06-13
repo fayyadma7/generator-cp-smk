@@ -5,11 +5,17 @@ import {
   PROMPT_LKPD_PERTEMUAN_1,
   PROMPT_LKPD_PERTEMUAN_2,
   PROMPT_ASESMEN_FORMATIF,
+  PROMPT_FORMATIF_LISAN,
+  PROMPT_FORMATIF_KUIS,
   PROMPT_ASESMEN_SUMATIF,
   PROMPT_REKAP_KELAS,
   PROMPT_MEDIA_PEMBELAJARAN,
+  PROMPT_MEDIA_SLIDE,
+  PROMPT_MEDIA_REFERENSI,
   PROMPT_LEMBAR_REFLEKSI,
   PROMPT_BAHAN_PENGAYAAN,
+  PROMPT_PENGAYAAN_MATERI,
+  PROMPT_PENGAYAAN_TUGAS,
   PROMPT_BAHAN_REMEDIASI
 } from '../../../lampiranPrompts';
 
@@ -85,15 +91,22 @@ export async function POST(request) {
     const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
     let prompts = [
+      // Item ringkas (langsung)
       { key: 'headerDanDaftar', prompt: PROMPT_HEADER_DAN_DAFTAR(inputGuru) },
       { key: 'lkpd01a', prompt: PROMPT_LKPD_PERTEMUAN_1(inputGuru) },
       { key: 'lkpd01b', prompt: PROMPT_LKPD_PERTEMUAN_2(inputGuru) },
-      { key: 'asesmenFormatif', prompt: PROMPT_ASESMEN_FORMATIF(inputGuru) },
+      // Asesmen Formatif dipecah jadi 2 bagian ringan
+      { key: 'formatifLisan', prompt: PROMPT_FORMATIF_LISAN(inputGuru) },
+      { key: 'formatifKuis', prompt: PROMPT_FORMATIF_KUIS(inputGuru) },
       { key: 'asesmenSumatif', prompt: PROMPT_ASESMEN_SUMATIF(inputGuru) },
       { key: 'rekapKelas', prompt: PROMPT_REKAP_KELAS(inputGuru) },
-      { key: 'mediaPembelajaran', prompt: PROMPT_MEDIA_PEMBELAJARAN(inputGuru) },
+      // Media dipecah jadi slide + referensi
+      { key: 'mediaSlide', prompt: PROMPT_MEDIA_SLIDE(inputGuru) },
+      { key: 'mediaReferensi', prompt: PROMPT_MEDIA_REFERENSI(inputGuru) },
       { key: 'lembarRefleksi', prompt: PROMPT_LEMBAR_REFLEKSI(inputGuru) },
-      { key: 'bahanPengayaan', prompt: PROMPT_BAHAN_PENGAYAAN(inputGuru) },
+      // Pengayaan dipecah jadi materi + tugas
+      { key: 'pengayaanMateri', prompt: PROMPT_PENGAYAAN_MATERI(inputGuru) },
+      { key: 'pengayaanTugas', prompt: PROMPT_PENGAYAAN_TUGAS(inputGuru) },
       { key: 'bahanRemediasi', prompt: PROMPT_BAHAN_REMEDIASI(inputGuru) }
     ];
 

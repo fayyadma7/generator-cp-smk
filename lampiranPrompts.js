@@ -874,6 +874,249 @@ export const inputGuruTemplate = {
 };
 
 
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PROMPT SPLIT — FORMATIF LISAN (bagian A saja)
+// Lebih ringan dari PROMPT_ASESMEN_FORMATIF yang mencakup 2 bagian
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const PROMPT_FORMATIF_LISAN = (inputGuru) => `
+Kamu diminta membuat PERTANYAAN LISAN untuk asesmen formatif Pertemuan 1.
+
+KONTEKS MODUL:
+- Sekolah              : ${inputGuru.namaSekolah}
+- Mata Pelajaran       : ${inputGuru.mataPelajaran}
+- Kelas                : ${inputGuru.faseKelas}
+- Tujuan Pembelajaran  : ${inputGuru.tujuanPembelajaran}
+- IKTP                 : ${inputGuru.iktp}
+- Materi Pertemuan 1   : ${inputGuru.topikPertemuan1}
+- Konteks Lokal        : ${inputGuru.konteksLokal}
+- Nilai Sekolah        : ${inputGuru.nilaiSekolah}
+- Jumlah Pertanyaan    : ${inputGuru.jumlahPertanyaanLisan || 3}
+
+INSTRUKSI:
+1. Buat ${inputGuru.jumlahPertanyaanLisan || 3} pertanyaan lisan yang menguji pemahaman KONSEPTUAL (bukan hafalan), menggunakan konteks lokal spesifik, terdistribusi di level C2-C4.
+2. Kunci jawaban berupa POIN-POIN REFERENSI guru (kata kunci yang harus muncul).
+
+OUTPUT JSON:
+{
+  "judulLampiran": "Instrumen Asesmen Formatif — Pertanyaan Lisan",
+  "identitas": { "sekolah": "", "mataPelajaran": "", "kelas": "", "tp": "" },
+  "bagianA": {
+    "judul": "A. PERTANYAAN LISAN",
+    "keterangan": "",
+    "pertemuan": "Pertemuan ke-1",
+    "kolomHeader": ["No.", "Pertanyaan Lisan", "Kunci Jawaban (Referensi Guru)"],
+    "pertanyaan": [
+      { "no": 1, "pertanyaan": "", "kunciJawaban": "" }
+    ]
+  }
+}
+`;
+
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PROMPT SPLIT — FORMATIF KUIS (bagian B saja)
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const PROMPT_FORMATIF_KUIS = (inputGuru) => `
+Kamu diminta membuat SOAL KUIS TULIS pilihan ganda untuk asesmen formatif Pertemuan 2.
+
+KONTEKS MODUL:
+- Sekolah              : ${inputGuru.namaSekolah}
+- Mata Pelajaran       : ${inputGuru.mataPelajaran}
+- Kelas                : ${inputGuru.faseKelas}
+- Tujuan Pembelajaran  : ${inputGuru.tujuanPembelajaran}
+- IKTP                 : ${inputGuru.iktp}
+- Materi Pertemuan 2   : ${inputGuru.topikPertemuan2}
+- Konteks Lokal        : ${inputGuru.konteksLokal}
+- Nilai Sekolah        : ${inputGuru.nilaiSekolah}
+- Jumlah Soal          : ${inputGuru.jumlahSoalKuis || 5}
+
+INSTRUKSI:
+1. Buat ${inputGuru.jumlahSoalKuis || 5} soal pilihan ganda (A,B,C,D) yang mengukur IKTP secara merata, kontekstual, pengecoh plausibel.
+2. Cantumkan kunci jawaban (satu huruf: A/B/C/D) untuk setiap soal.
+
+OUTPUT JSON:
+{
+  "judulLampiran": "Instrumen Asesmen Formatif — Kuis Tulis",
+  "identitas": { "sekolah": "", "mataPelajaran": "", "kelas": "", "tp": "" },
+  "bagianB": {
+    "judul": "B. SOAL KUIS TULIS",
+    "jumlahSoal": ${inputGuru.jumlahSoalKuis || 5},
+    "petunjuk": "",
+    "headerForm": { "namaLabel": "Nama:", "kelasLabel": "Kelas:", "tanggalLabel": "Tanggal:" },
+    "soal": [
+      { "no": 1, "pertanyaan": "", "opsi": [
+        { "huruf": "A", "teks": "" }, { "huruf": "B", "teks": "" },
+        { "huruf": "C", "teks": "" }, { "huruf": "D", "teks": "" }
+      ], "kunci": "" }
+    ]
+  }
+}
+`;
+
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PROMPT SPLIT — MEDIA SLIDE (bagian A saja)
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const PROMPT_MEDIA_SLIDE = (inputGuru) => `
+Kamu diminta membuat RINCIAN SLIDE PRESENTASI untuk media pembelajaran.
+
+KONTEKS MODUL:
+- Sekolah              : ${inputGuru.namaSekolah}
+- Mata Pelajaran       : ${inputGuru.mataPelajaran}
+- Kelas                : ${inputGuru.faseKelas}
+- Tujuan Pembelajaran  : ${inputGuru.tujuanPembelajaran}
+- Topik Pertemuan 1    : ${inputGuru.topikPertemuan1}
+- Topik Pertemuan 2    : ${inputGuru.topikPertemuan2}
+- Konteks Lokal        : ${inputGuru.konteksLokal}
+- Nilai Sekolah        : ${inputGuru.nilaiSekolah}
+- Jumlah Slide Total   : ${inputGuru.jumlahSlide || 15}
+
+INSTRUKSI:
+1. Distribusi slide: Pembukaan ~3, Materi P1 ~4, Aktivitas P1 1, Materi P2 ~3, Aktivitas P2 1, Penutup ~3.
+2. Setiap slide: judulSlide menarik, kontenUtama spesifik, catatanGuru berisi TIP PEDAGOGIS actionable.
+3. Slide pemantik WAJIB menyebut fenomena/konteks lokal konkret.
+4. Jika sekolah Islami, satu slide integrasikan ayat/dalil relevan.
+
+OUTPUT JSON:
+{
+  "judulLampiran": "Media Pembelajaran — Slide Presentasi",
+  "identitas": { "sekolah": "", "mataPelajaran": "", "kelas": "", "tp": "" },
+  "bagianA": {
+    "judul": "A. RINCIAN SLIDE PRESENTASI",
+    "jumlahSlide": ${inputGuru.jumlahSlide || 15},
+    "kolomHeader": ["Slide", "Judul Slide", "Konten Utama", "Catatan Guru"],
+    "slide": [
+      { "no": 1, "judulSlide": "", "kontenUtama": "", "catatanGuru": "" }
+    ]
+  }
+}
+`;
+
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PROMPT SPLIT — MEDIA REFERENSI (bagian B saja)
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const PROMPT_MEDIA_REFERENSI = (inputGuru) => `
+Kamu diminta membuat DAFTAR REFERENSI VIDEO & SUMBER DIGITAL untuk media pembelajaran.
+
+KONTEKS MODUL:
+- Sekolah              : ${inputGuru.namaSekolah}
+- Mata Pelajaran       : ${inputGuru.mataPelajaran}
+- Kelas                : ${inputGuru.faseKelas}
+- Tujuan Pembelajaran  : ${inputGuru.tujuanPembelajaran}
+- Topik Pertemuan 1    : ${inputGuru.topikPertemuan1}
+- Topik Pertemuan 2    : ${inputGuru.topikPertemuan2}
+- Konteks Lokal        : ${inputGuru.konteksLokal}
+- Jumlah Referensi     : ${inputGuru.jumlahReferensi || 5}
+
+INSTRUKSI:
+1. Referensi video: berikan kata kunci pencarian YouTube yang SPESIFIK, jangan URL palsu.
+2. Referensi data: sebutkan instansi resmi (BPS, BPBD, Dinas) beserta URL domain.
+
+OUTPUT JSON:
+{
+  "judulLampiran": "Media Pembelajaran — Referensi Digital",
+  "identitas": { "sekolah": "", "mataPelajaran": "", "kelas": "", "tp": "" },
+  "bagianB": {
+    "judul": "B. REFERENSI VIDEO & SUMBER DIGITAL",
+    "kolomHeader": ["No.", "Judul Video / Sumber", "Keterangan Penggunaan", "Durasi / Halaman"],
+    "referensi": [
+      { "no": 1, "judul": "", "keterangan": "", "durasi": "" }
+    ]
+  },
+  "catatanTeknis": []
+}
+`;
+
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PROMPT SPLIT — PENGAYAAN MATERI (materi bacaan + studi kasus)
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const PROMPT_PENGAYAAN_MATERI = (inputGuru) => `
+Kamu diminta membuat MATERI BACAAN dan STUDI KASUS untuk bahan pengayaan.
+
+KONTEKS MODUL:
+- Sekolah              : ${inputGuru.namaSekolah}
+- Mata Pelajaran       : ${inputGuru.mataPelajaran}
+- Kelas                : ${inputGuru.faseKelas}
+- Tujuan Pembelajaran  : ${inputGuru.tujuanPembelajaran}
+- Konteks Lokal        : ${inputGuru.konteksLokal}
+- Nilai KKTP           : ${inputGuru.kktp || 70}
+- Nilai Sekolah        : ${inputGuru.nilaiSekolah}
+- Topik Pengayaan      : ${inputGuru.topikPengayaan}
+
+INSTRUKSI:
+1. Materi bacaan harus MELAMPAUI modul utama (konsep lebih kompleks, multi-variabel, global-lokal).
+2. Studi kasus harus SPESIFIK dan LOKAL — gunakan isu nyata dari konteks lokal.
+3. Analisis berlapis minimal 4 level (Alam → Ekosistem → Ekonomi → Sosial).
+
+OUTPUT JSON:
+{
+  "judulLampiran": "Bahan Pengayaan — Materi & Studi Kasus",
+  "subjudul": "",
+  "identitas": { "sekolah": "", "mataPelajaran": "", "kelas": "", "tp": "" },
+  "targetPesertaDidik": "",
+  "deskripsiUmum": "",
+  "bagianMateriBacaan": [
+    {
+      "judul": "",
+      "narasiBacaan": "",
+      "tabelAnalisis": { "kolomHeader": [], "baris": [] }
+    }
+  ],
+  "studyCase": {
+    "judul": "",
+    "narasiPengantar": "",
+    "levelAnalisis": [
+      { "label": "", "deskripsi": "" }
+    ]
+  }
+}
+`;
+
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PROMPT SPLIT — PENGAYAAN TUGAS (tugas pengayaan saja)
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const PROMPT_PENGAYAAN_TUGAS = (inputGuru) => `
+Kamu diminta membuat TUGAS PENGAYAAN untuk peserta didik yang telah melampaui KKTP.
+
+KONTEKS MODUL:
+- Sekolah              : ${inputGuru.namaSekolah}
+- Mata Pelajaran       : ${inputGuru.mataPelajaran}
+- Kelas                : ${inputGuru.faseKelas}
+- Tujuan Pembelajaran  : ${inputGuru.tujuanPembelajaran}
+- Konteks Lokal        : ${inputGuru.konteksLokal}
+- Nilai Sekolah        : ${inputGuru.nilaiSekolah}
+- Jenis Tugas          : ${inputGuru.jenisTugasPengayaan}
+- Batas Waktu          : ${inputGuru.batasWaktuPengayaan || "1 minggu"}
+
+INSTRUKSI:
+1. Tugas harus menuntut kreativitas dan sintesis (C5/C6 Bloom).
+2. Produk nyata yang bisa dipajang/dibagikan.
+3. Poin tugas mencakup: data, analisis, solusi, dan dimensi nilai.
+
+OUTPUT JSON:
+{
+  "judulLampiran": "Bahan Pengayaan — Tugas",
+  "identitas": { "sekolah": "", "mataPelajaran": "", "kelas": "", "tp": "" },
+  "tugasPengayaan": {
+    "instruksi": "",
+    "format": "",
+    "poin": [],
+    "batasWaktu": ""
+  }
+}
+`;
+
+
 // ═════════════════════════════════════════════════════════════════════════════
 // EXPORT BUNDLE SEMUA PROMPT
 // ═════════════════════════════════════════════════════════════════════════════
@@ -884,11 +1127,17 @@ export const allPrompts = {
   lkpdPertemuan1:     PROMPT_LKPD_PERTEMUAN_1,
   lkpdPertemuan2:     PROMPT_LKPD_PERTEMUAN_2,
   asesmenFormatif:    PROMPT_ASESMEN_FORMATIF,
+  formatifLisan:      PROMPT_FORMATIF_LISAN,
+  formatifKuis:       PROMPT_FORMATIF_KUIS,
   asesmenSumatif:     PROMPT_ASESMEN_SUMATIF,
   rekapKelas:         PROMPT_REKAP_KELAS,
   mediaPembelajaran:  PROMPT_MEDIA_PEMBELAJARAN,
+  mediaSlide:         PROMPT_MEDIA_SLIDE,
+  mediaReferensi:     PROMPT_MEDIA_REFERENSI,
   lembarRefleksi:     PROMPT_LEMBAR_REFLEKSI,
   bahanPengayaan:     PROMPT_BAHAN_PENGAYAAN,
+  pengayaanMateri:    PROMPT_PENGAYAAN_MATERI,
+  pengayaanTugas:     PROMPT_PENGAYAAN_TUGAS,
   bahanRemediasi:     PROMPT_BAHAN_REMEDIASI,
   inputGuruTemplate,
 };

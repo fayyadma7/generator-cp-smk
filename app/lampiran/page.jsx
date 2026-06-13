@@ -175,8 +175,24 @@ export default function LampiranGenerator() {
     if (!result) return;
     setIsDownloading(true);
     try {
+      // Merge hasil split agar kompatibel dengan docxGenerator yang pakai key lama
+      const mergedResult = {
+        ...result,
+        // Gabung formatifLisan + formatifKuis -> asesmenFormatif
+        asesmenFormatif: (result.formatifLisan || result.formatifKuis)
+          ? { ...(result.formatifLisan || {}), ...(result.formatifKuis || {}) }
+          : result.asesmenFormatif,
+        // Gabung mediaSlide + mediaReferensi -> mediaPembelajaran
+        mediaPembelajaran: (result.mediaSlide || result.mediaReferensi)
+          ? { ...(result.mediaSlide || {}), ...(result.mediaReferensi || {}) }
+          : result.mediaPembelajaran,
+        // Gabung pengayaanMateri + pengayaanTugas -> bahanPengayaan
+        bahanPengayaan: (result.pengayaanMateri || result.pengayaanTugas)
+          ? { ...(result.pengayaanMateri || {}), ...(result.pengayaanTugas || {}) }
+          : result.bahanPengayaan,
+      };
       const { generateAndDownloadLampiranDocx } = await import('../../lib/docxGeneratorLampiran');
-      await generateAndDownloadLampiranDocx(result, formData);
+      await generateAndDownloadLampiranDocx(mergedResult, formData);
     } catch (err) {
       alert('Gagal membuat file Word: ' + err.message);
       console.error(err);
@@ -199,9 +215,13 @@ export default function LampiranGenerator() {
   };
 
   const allKeys = [
-    'headerDanDaftar', 'lkpd01a', 'lkpd01b', 'asesmenFormatif',
-    'asesmenSumatif', 'rekapKelas', 'mediaPembelajaran',
-    'lembarRefleksi', 'bahanPengayaan', 'bahanRemediasi'
+    'headerDanDaftar', 'lkpd01a', 'lkpd01b',
+    'formatifLisan', 'formatifKuis',      // split dari asesmenFormatif
+    'asesmenSumatif', 'rekapKelas',
+    'mediaSlide', 'mediaReferensi',       // split dari mediaPembelajaran
+    'lembarRefleksi',
+    'pengayaanMateri', 'pengayaanTugas',  // split dari bahanPengayaan
+    'bahanRemediasi'
   ];
 
   // Eksekusi per 1 item agar tidak kena Vercel 60s timeout
@@ -224,12 +244,15 @@ export default function LampiranGenerator() {
     }
   };
 
-  // Eksekusi antrean dalam batch untuk menjaga concurrency maksimal 3
+  // Eksekusi antrean dalam batch — concurrency 2 + jeda antar batch hindari rate limit
+  const delay = (ms) => new Promise(r => setTimeout(r, ms));
   const processQueue = async (keysToProcess) => {
-    const concurrencyLimit = 3;
+    const concurrencyLimit = 2;
     for (let i = 0; i < keysToProcess.length; i += concurrencyLimit) {
       const batch = keysToProcess.slice(i, i + concurrencyLimit);
       await Promise.allSettled(batch.map(key => generateItem(key)));
+      // Jeda 500ms antar batch biar API key gak kena limit
+      if (i + concurrencyLimit < keysToProcess.length) await delay(500);
     }
   };
 
@@ -246,7 +269,7 @@ export default function LampiranGenerator() {
     setTimeout(() => document.getElementById('result-section')?.scrollIntoView({ behavior: 'smooth' }), 300);
 
     try {
-      // Jalankan dengan batch maksimal 3 bersamaan agar tidak kena Rate Limit (429) massal
+      // Jalankan dengan batch 2 bersamaan + jeda agar tidak kena Rate Limit (429)
       await processQueue(allKeys);
     } catch (error) {
       setErrorMsg(`Terjadi kesalahan sistem: ${error.message}`);
@@ -620,13 +643,16 @@ export default function LampiranGenerator() {
               { key: 'headerDanDaftar', label: '📋 Cover & Daftar Lampiran' },
               { key: 'lkpd01a',         label: '📝 LKPD Pertemuan 1' },
               { key: 'lkpd01b',         label: '📝 LKPD Pertemuan 2' },
-              { key: 'asesmenFormatif', label: '✏️ Asesmen Formatif' },
+              { key: 'formatifLisan',   label: '✏️ Formatif — Lisan' },
+              { key: 'formatifKuis',    label: '✏️ Formatif — Kuis' },
               { key: 'asesmenSumatif',  label: '📊 Asesmen Sumatif' },
               { key: 'rekapKelas',      label: '📈 Rekap Kelas' },
-              { key: 'mediaPembelajaran', label: '🎞️ Media Pembelajaran' },
-              { key: 'lembarRefleksi', label: '💭 Lembar Refleksi' },
-              { key: 'bahanPengayaan', label: '🚀 Bahan Pengayaan' },
-              { key: 'bahanRemediasi', label: '🔁 Bahan Remediasi' },
+              { key: 'mediaSlide',      label: '🎞️ Media — Slide' },
+              { key: 'mediaReferensi',  label: '🎞️ Media — Referensi' },
+              { key: 'lembarRefleksi',  label: '💭 Lembar Refleksi' },
+              { key: 'pengayaanMateri', label: '🚀 Pengayaan — Materi' },
+              { key: 'pengayaanTugas',  label: '🚀 Pengayaan — Tugas' },
+              { key: 'bahanRemediasi',  label: '🔁 Bahan Remediasi' },
             ].map(({ key, label }) => {
               const statusData = result[key];
               const status = statusData === null ? 'loading' : (statusData.error ? 'error' : 'success');
