@@ -143,6 +143,20 @@ export default function LampiranGenerator() {
     }
   };
 
+  // Helper: safely parse JSON from response, handles HTML error pages
+  const safeParseJson = async (res) => {
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      // Server returned HTML (e.g. Vercel timeout/504 page)
+      if (text.includes('FUNCTION_INVOCATION_TIMEOUT') || text.includes('504') || text.includes('timeout')) {
+        throw new Error('Server timeout — AI membutuhkan waktu terlalu lama. Silakan klik "Coba Ulang yang Gagal" untuk item yang masih X.');
+      }
+      throw new Error('Server mengembalikan respons tidak valid. Silakan coba lagi.');
+    }
+  };
+
   // ── Generate semua lampiran ──
   const handleGenerate = async (e) => {
     e.preventDefault();
@@ -156,11 +170,8 @@ export default function LampiranGenerator() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Gagal generate dari AI');
-      }
-      const data = await res.json();
+      const data = await safeParseJson(res);
+      if (!res.ok) throw new Error(data.error || 'Gagal generate dari AI');
       setResult(data);
       setTimeout(() => document.getElementById('result-section')?.scrollIntoView({ behavior: 'smooth' }), 300);
     } catch (error) {
@@ -183,14 +194,16 @@ export default function LampiranGenerator() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, keysToGenerate: failedKeys })
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Gagal retry dari AI');
-      }
-      const data = await res.json();
-      setResult(prev => ({ ...prev, ...data }));
+      const data = await safeParseJson(res);
+      if (!res.ok) throw new Error(data.error || 'Gagal retry dari AI');
+      // Merge hanya key yang berhasil (tidak error), pertahankan hasil sukses sebelumnya
+      const mergedData = { ...result };
+      Object.keys(data).forEach(k => {
+        if (!data[k] || !data[k].error) mergedData[k] = data[k];
+      });
+      setResult(mergedData);
     } catch (error) {
-      setErrorMsg(`Terjadi kesalahan saat retry: ${error.message}`);
+      setErrorMsg(`Terjadi kesalahan: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
