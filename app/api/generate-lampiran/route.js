@@ -81,7 +81,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'API Key Gemini belum diatur di Vercel Environment Variables' }, { status: 500 });
     }
 
-    const getRandomKey = () => apiKeys[Math.floor(Math.random() * apiKeys.length)];
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
     const prompts = [
       { key: 'headerDanDaftar', prompt: PROMPT_HEADER_DAN_DAFTAR(inputGuru) },
@@ -96,21 +96,54 @@ export async function POST(request) {
       { key: 'bahanRemediasi', prompt: PROMPT_BAHAN_REMEDIASI(inputGuru) }
     ];
 
-    // Jalankan semua call secara paralel menggunakan Promise.all
-    const results = await Promise.all(prompts.map(async (item) => {
-      try {
-        const result = await callGemini(SYSTEM_PROMPT_GLOBAL, item.prompt, getRandomKey());
-        return { [item.key]: result };
-      } catch (e) {
-        console.error(`Error generating ${item.key}:`, e);
-        return { [item.key]: { error: e.message } };
+    // Antrean tugas (queue)
+    const queue = [...prompts];
+    const finalResults = {};
+
+    // Worker akan memproses antrean satu per satu menggunakan API key yang ditugaskan kepadanya
+    async function worker(apiKey, workerId) {
+      while (queue.length > 0) {
+        const item = queue.shift();
+        if (!item) break;
+
+        let retryCount = 0;
+        let success = false;
+
+        while (retryCount < 3 && !success) {
+          try {
+            console.log(`Worker ${workerId} memproses ${item.key}...`);
+            const result = await callGemini(SYSTEM_PROMPT_GLOBAL, item.prompt, apiKey);
+            finalResults[item.key] = result;
+            success = true;
+          } catch (e) {
+            if (e.message.includes('429') || e.message.includes('Quota') || e.message.includes('503') || e.message.includes('500')) {
+              retryCount++;
+              console.log(`Worker ${workerId} error pada ${item.key}. Menunggu sebelum retry...`);
+              await delay(2000 * retryCount);
+            } else {
+              console.error(`Worker ${workerId} gagal permanen pada ${item.key}:`, e);
+              finalResults[item.key] = { error: e.message };
+              success = true; // Anggap "selesai" (gagal permanen) agar lanjut ke antrean berikutnya
+            }
+          }
+        }
+
+        if (!success) {
+          finalResults[item.key] = { error: 'Gagal setelah 3x percobaan karena limit server.' };
+        }
+        
+        // Jeda kecil antar request pada worker yang sama
+        await delay(1000);
       }
-    }));
+    }
 
-    // Gabungkan array of objects menjadi satu object besar
-    const finalData = results.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+    // Jalankan worker secara paralel sebanyak jumlah API Key yang tersedia
+    const workers = apiKeys.map((key, index) => worker(key, index + 1));
+    
+    // Tunggu semua worker menyelesaikan semua tugas di antrean
+    await Promise.all(workers);
 
-    return NextResponse.json(finalData);
+    return NextResponse.json(finalResults);
   } catch (error) {
     console.error('Error in /api/generate-lampiran:', error);
     return NextResponse.json({ error: error.message || 'Terjadi kesalahan saat memproses permintaan' }, { status: 500 });
