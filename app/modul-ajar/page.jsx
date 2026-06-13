@@ -10,6 +10,7 @@ const STEP_LABELS = [
   { step: 4, icon: '🎯', label: 'Asesmen, Materi & Rubrik' },
 ];
 
+export default function ModulAjarGenerator() {
   const [formData, setFormData] = useState({
     subject: '', program: '', phase: '', grade: '',
     semester: 'Ganjil', year: '2025/2026',
