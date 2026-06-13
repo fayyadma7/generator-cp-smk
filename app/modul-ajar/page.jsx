@@ -253,7 +253,7 @@ export default function ModulAjarGenerator() {
               <div className="accordion-body">
                 <div className="form-group">
                   <label>Pilih/Ketik TP yang akan dibuatkan Modul Ajar <span className="required">*</span></label>
-                  <p style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
+                  <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>
                     Tulis secara spesifik TP yang ingin difokuskan (misalnya: &quot;TP-01: Menerapkan K3LH&quot;). AI akan mengekstrak detailnya dari file yang Anda upload.
                   </p>
                   <input required type="text" name="targetTp" className="glass-input"
