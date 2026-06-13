@@ -25,8 +25,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'API Key Gemini belum diatur di Vercel Environment Variables' }, { status: 500 });
     }
 
-    // Pilih random key untuk load balancing simpel
-    const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
+    // Pilih random key (ini dipindah ke dalam loop retry)
 
     const lowerSubject = (subject || '').toLowerCase();
     const isIPAS = lowerSubject.includes('ipas') || lowerSubject.includes('ilmu pengetahuan alam dan sosial');
@@ -154,40 +153,59 @@ ${cpText}${originalElementsText}
 Output harus HANYA berupa JSON persis dengan struktur berikut. PASTIKAN SELURUH PROPERTY DIISI:
 ${jsonFormat}`;
 
-    // Memanggil API Gemini
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: systemPrompt }]
-        },
-        contents: [
-          { parts: [{ text: finalUserPrompt }] }
-        ],
-        generationConfig: {
-          responseMimeType: 'application/json',
-          temperature: 0.4
+    // Memanggil API Gemini dengan Retry dan Key Rotation
+    let retryCount = 0;
+    let success = false;
+    let aiData = null;
+    let textOutput = '';
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    while (retryCount < 5 && !success) {
+      const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
+      
+      try {
+        console.log(`Generate CP attempt ${retryCount + 1} dengan key acak...`);
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ parts: [{ text: finalUserPrompt }] }],
+            generationConfig: { responseMimeType: 'application/json', temperature: 0.4 }
+          })
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Gemini API Error (attempt ${retryCount + 1}):`, response.status, errorText.slice(0, 100));
+          if (response.status === 429 || response.status >= 500) {
+            throw new Error(`RETRYABLE_${response.status}`);
+          }
+          // Error 400 atau 403, gagal permanen
+          return NextResponse.json({ error: 'Gagal menghubungi Gemini AI: ' + response.statusText }, { status: response.status });
         }
-      })
-    });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Gemini API Error Response:", errorText);
-      if (response.status === 429) {
-        return NextResponse.json({ error: 'Batas request API tercapai (Rate Limit). Silakan coba lagi.' }, { status: 429 });
+        aiData = await response.json();
+        textOutput = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if (!textOutput) {
+          throw new Error('RETRYABLE_EMPTY');
+        }
+
+        // Coba parse untuk memastikan JSON valid
+        JSON.parse(textOutput);
+        success = true;
+      } catch (err) {
+        if (err.message.includes('RETRYABLE') || err.message.includes('Unexpected')) { // Unexpected token = JSON parse error
+          retryCount++;
+          if (retryCount >= 5) {
+            return NextResponse.json({ error: 'Batas request API tercapai (Rate Limit). Semua key sedang sibuk. Silakan tunggu 1 menit dan coba lagi.' }, { status: 429 });
+          }
+          await delay(3000 * retryCount);
+        } else {
+          throw err;
+        }
       }
-      return NextResponse.json({ error: 'Gagal menghubungi Gemini AI' }, { status: 500 });
-    }
-
-    const aiData = await response.json();
-    const textOutput = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!textOutput) {
-      return NextResponse.json({ error: 'AI mengembalikan respon kosong.' }, { status: 500 });
     }
 
     const result = JSON.parse(textOutput);
