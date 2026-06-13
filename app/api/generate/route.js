@@ -129,13 +129,13 @@ export async function POST(request) {
   }
 }`;
 
-    const finalUserPrompt = \`\${userPrompt}
+    const finalUserPrompt = `${userPrompt}
 
 Teks CP Asli (sebagai bahan dasar):
-\${cpText}
+${cpText}
 
 Output harus HANYA berupa JSON persis dengan struktur berikut. PASTIKAN SELURUH PROPERTY DIISI:
-\${jsonFormat}\`;
+${jsonFormat}`;
 
     // Memanggil API Gemini
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
