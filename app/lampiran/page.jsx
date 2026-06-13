@@ -59,9 +59,13 @@ export default function LampiranGenerator() {
   const handleModulUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.type !== 'application/pdf') {
+
+    const isPdf = file.name.endsWith('.pdf') || file.type === 'application/pdf';
+    const isDocx = file.name.endsWith('.docx') || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+    if (!isPdf && !isDocx) {
       setPdfStatus('error');
-      setPdfMessage('File harus berformat PDF.');
+      setPdfMessage('File harus berformat PDF atau DOCX.');
       return;
     }
     if (file.size > 15 * 1024 * 1024) {
@@ -186,10 +190,10 @@ export default function LampiranGenerator() {
         }}>
           <FileUp size={36} style={{ margin: '0 auto 0.75rem', color: '#63b3ed' }} />
           <p style={{ fontWeight: 600, marginBottom: '0.4rem', fontSize: '1rem' }}>
-            Upload Modul Ajar (PDF)
+            Upload Modul Ajar (PDF / DOCX)
           </p>
           <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', marginBottom: '1rem' }}>
-            AI akan membaca modul Anda dan mengisi form di bawah secara otomatis.
+            AI akan membaca modul Anda (.pdf / .docx) dan mengisi form di bawah secara otomatis.
             Anda tetap bisa mengedit hasilnya.
           </p>
 
@@ -208,7 +212,7 @@ export default function LampiranGenerator() {
               {isPdfLoading ? (
                 <><Loader2 className="spin" size={16} /> Sedang membaca modul…</>
               ) : (
-                <><FileUp size={16} /> Pilih File PDF Modul</>
+                <><FileUp size={16} /> Pilih File Modul</>
               )}
             </div>
           </label>
@@ -216,7 +220,7 @@ export default function LampiranGenerator() {
           <input
             id="modul-upload"
             type="file"
-            accept="application/pdf"
+            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             style={{ display: 'none' }}
             onChange={handleModulUpload}
             ref={fileInputRef}

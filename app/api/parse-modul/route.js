@@ -145,31 +145,56 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Ukuran file maksimal 15 MB' }, { status: 400 });
     }
 
+    const name = file.name || '';
+    const isDocx = name.toLowerCase().endsWith('.docx') || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // ── Langkah 1: Ekstrak teks dari PDF ──
+    // ── Langkah 1: Ekstrak teks dari dokumen ──
     let rawText = '';
-    try {
-      const pdfParse = (await import('pdf-parse')).default;
-      const pdfData = await pdfParse(buffer);
-      rawText = pdfData.text || '';
-    } catch (parseErr) {
-      console.warn('pdf-parse gagal, fallback ke Gemini OCR:', parseErr.message);
-    }
 
-    // Jika teks terlalu sedikit, fallback ke Gemini OCR
-    if (!rawText || rawText.trim().length < 100) {
-      console.log('Teks sedikit, fallback ke Gemini OCR...');
-      const geminiText = await extractTextViaGemini(buffer);
-      if (geminiText && geminiText.length >= 100) {
-        rawText = geminiText;
-      } else {
+    if (isDocx) {
+      try {
+        const mammoth = (await import('mammoth')).default;
+        const result = await mammoth.extractRawText({ buffer });
+        rawText = result.value || '';
+      } catch (parseErr) {
+        console.warn('Mammoth parse error:', parseErr.message);
         return NextResponse.json(
-          { error: 'Gagal membaca isi PDF. Pastikan PDF berbasis teks, bukan hasil scan gambar.' },
+          { error: 'Gagal membaca isi DOCX. Pastikan file valid.' },
           { status: 400 }
         );
       }
+    } else {
+      try {
+        const pdfParse = (await import('pdf-parse')).default;
+        const pdfData = await pdfParse(buffer);
+        rawText = pdfData.text || '';
+      } catch (parseErr) {
+        console.warn('pdf-parse gagal, fallback ke Gemini OCR:', parseErr.message);
+      }
+
+      // Jika teks terlalu sedikit, fallback ke Gemini OCR
+      if (!rawText || rawText.trim().length < 100) {
+        console.log('Teks sedikit, fallback ke Gemini OCR...');
+        const geminiText = await extractTextViaGemini(buffer);
+        if (geminiText && geminiText.length >= 100) {
+          rawText = geminiText;
+        } else {
+          return NextResponse.json(
+            { error: 'Gagal membaca isi PDF. Pastikan PDF berbasis teks, bukan hasil scan gambar.' },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
+    if (!rawText || rawText.trim().length < 20) {
+      return NextResponse.json(
+        { error: 'Teks di dalam dokumen terlalu sedikit atau kosong.' },
+        { status: 400 }
+      );
     }
 
     // ── Langkah 2: Ekstrak struktur modul dengan Gemini ──
