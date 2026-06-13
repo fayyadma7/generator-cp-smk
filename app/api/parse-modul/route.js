@@ -74,94 +74,121 @@ async function extractModulWithGemini(rawText) {
   ].filter(Boolean);
   if (apiKeys.length === 0) return null;
 
-  // Coba dengan konteks besar dulu agar AI bisa baca seluruh halaman, lalu retry jika gagal
-  const contextSizes = [150000, 80000, 40000];
+  // Batasi ukuran teks agar tidak kena limit payload
+  const snippet = rawText.substring(0, 150000);
 
-  for (let attempt = 0; attempt < contextSizes.length; attempt++) {
-    const key = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-    const contextSize = contextSizes[attempt];
-    const snippet = rawText.substring(0, contextSize);
+  // Bagi skema menjadi 4 bagian agar AI lebih fokus dan tidak skip field
+  const schemas = [
+    {
+      name: "Identitas",
+      schema: `{
+        "namaSekolah": "nama sekolah yang tertera",
+        "taglineSekolah": "motto/tagline sekolah jika ada",
+        "mataPelajaran": "nama mata pelajaran",
+        "judulModul": "judul modul ajar",
+        "kodeModul": "kode modul contoh MA-IPAS-01 atau TP-01",
+        "faseKelas": "fase dan kelas contoh 'Fase E / Kelas X'",
+        "semester": "semester contoh 'Ganjil' atau 'Genap'",
+        "tahunPelajaran": "tahun pelajaran contoh '2025/2026'",
+        "kurikulum": "nama kurikulum yang digunakan"
+      }`
+    },
+    {
+      name: "Tujuan",
+      schema: `{
+        "tujuanPembelajaran": "teks tujuan pembelajaran yang lengkap",
+        "iktp": "indikator ketercapaian tujuan pembelajaran. Jika ada beberapa poin, gabungkan dengan \\n",
+        "kktp": "nilai kriteria ketercapaian tujuan pembelajaran, angka saja contoh 70. Jika tidak ada, isi 70.",
+        "jumlahSiswa": "jumlah siswa dalam kelas, angka saja, default 32"
+      }`
+    },
+    {
+      name: "Skenario",
+      schema: `{
+        "topikPertemuan1": "topik atau materi pokok untuk pertemuan 1. Jika tidak dirinci, ambil dari materi utama modul.",
+        "metodePertemuan1": "metode pembelajaran pertemuan 1. Jika tidak ada, isi dengan 'Diskusi dan Observasi'.",
+        "topikPertemuan2": "topik atau materi pokok lanjutan untuk pertemuan 2. Jika tidak ada, rumuskan kelanjutan logis.",
+        "dimensiKeterkaitan": "WAJIB DIISI! konsep yang dikaitkan di pertemuan 2 (contoh: 'alam dan sosial', 'teori dan praktik'). Rumuskan jika tidak ada.",
+        "konteksLokal": "konteks lokal daerah/industri. Jika tidak ada, isi 'Purbalingga'.",
+        "nilaiSekolah": "nilai/karakter ditekankan contoh 'Islami', 'Entrepreneur'. Jika tidak tertulis, abaikan."
+      }`
+    },
+    {
+      name: "Asesmen",
+      schema: `{
+        "jenisProdukSumatif": "jenis produk sumatif (contoh: 'Laporan Observasi', 'Poster'). Simpulkan jika tidak ada.",
+        "aspekPenilaianSumatif": "aspek penilaian sumatif (misal: 'Pengetahuan, Keterampilan').",
+        "daftarLampiranYangDiminta": "daftar lampiran yang ada dalam modul, kosongkan jika tidak ada"
+      }`
+    }
+  ];
 
-    const prompt = `Kamu adalah asisten AI yang membantu mengekstrak informasi dari dokumen Modul Ajar SMK/SMA Kurikulum Merdeka.
+  const fetchPart = async (schemaDef, attempt = 0) => {
+    // Gunakan API key yang berbeda untuk tiap percobaan/bagian
+    const keyIndex = (schemas.indexOf(schemaDef) + attempt) % apiKeys.length;
+    const apiKey = apiKeys[keyIndex];
 
-Berikut adalah teks yang diekstrak dari dokumen modul ajar:
+    const prompt = `Ekstrak informasi berikut dari teks modul ajar di bawah ini dan kembalikan sebagai JSON murni. Jika tidak eksplisit, simpulkan berdasarkan isi modul.
+
+Schema JSON yang diminta:
+${schemaDef.schema}
+
+Teks Modul:
 ---
-${snippet}
+${snippet.substring(0, 80000)}
 ---
-
-Ekstrak semua informasi berikut dari teks di atas dan kembalikan sebagai JSON murni. Jika suatu informasi tidak ditemukan secara eksplisit, coba simpulkan (infer) berdasarkan isi modul.
-
-{
-  "namaSekolah": "nama sekolah yang tertera di modul",
-  "taglineSekolah": "motto/tagline sekolah jika ada",
-  "mataPelajaran": "nama mata pelajaran",
-  "judulModul": "judul modul ajar, biasanya muncul sebagai 'Judul Modul:' atau di header dokumen",
-  "kodeModul": "kode modul contoh MA-IPAS-01 atau TP-01",
-  "faseKelas": "fase dan kelas contoh 'Fase E / Kelas X'",
-  "semester": "semester contoh 'Ganjil' atau 'Genap'",
-  "tahunPelajaran": "tahun pelajaran contoh '2025/2026'",
-  "kurikulum": "nama kurikulum yang digunakan",
-  "tujuanPembelajaran": "teks tujuan pembelajaran yang lengkap",
-  "iktp": "indikator ketercapaian tujuan pembelajaran. Jika ada beberapa poin, gabungkan dengan \\n",
-  "topikPertemuan1": "topik atau materi pokok untuk pertemuan 1. Jika tidak dirinci per pertemuan, ambil dari materi utama modul.",
-  "metodePertemuan1": "metode/model pembelajaran pertemuan 1 (contoh: Gallery Walk, PBL). Jika tidak ditulis, isi dengan 'Diskusi dan Observasi'.",
-  "topikPertemuan2": "topik atau materi pokok lanjutan untuk pertemuan 2. Jika tidak ada, buatkan topik logis kelanjutan dari pertemuan 1.",
-  "dimensiKeterkaitan": "WAJIB DIISI! dimensi atau konsep yang dikaitkan pada pertemuan 2 (contoh: 'alam dan sosial', 'teori dan praktik', 'peluang dan risiko'). Rumuskan sendiri secara logis jika tidak tertulis eksplisit.",
-  "konteksLokal": "konteks lokal yang disebut dalam modul (contoh nama daerah/industri). Jika tidak ada, isi dengan 'Purbalingga'.",
-  "nilaiSekolah": "nilai/karakter yang ditekankan contoh 'Islami', 'Entrepreneur', 'Nasionalis'. Jika tidak tertulis, abaikan.",
-  "jenisProdukSumatif": "jenis produk atau karya yang dinilai di asesmen sumatif (contoh: 'Laporan Observasi', 'Poster', 'Presentasi'). Simpulkan jika tidak ada.",
-  "aspekPenilaianSumatif": "aspek penilaian sumatif (misal: 'Pengetahuan, Keterampilan, Sikap').",
-  "kktp": "nilai kriteria ketercapaian tujuan pembelajaran, angka saja contoh 70. Jika tidak ada, isi 70.",
-  "jumlahSiswa": "jumlah siswa dalam kelas, angka saja, default 32",
-  "daftarLampiranYangDiminta": "daftar lampiran yang sudah ada/disebutkan dalam modul, kosongkan jika tidak ada"
-}
-
-PENTING: Kembalikan JSON murni saja, tanpa markdown, tanpa backtick, tanpa penjelasan apapun.`;
+PENTING: Kembalikan JSON murni saja.`;
 
     try {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: 0.1,
-              responseMimeType: 'application/json'
-            }
+            generationConfig: { temperature: 0.1, responseMimeType: 'application/json' }
           })
         }
       );
 
-      if (!res.ok) {
-        const errText = await res.text();
-        console.error(`Gemini parse-modul attempt ${attempt + 1} error:`, res.status, errText.slice(0, 200));
-        // Jika rate limit, tunggu sebentar sebelum retry
-        if (res.status === 429) await new Promise(r => setTimeout(r, 3000));
-        continue; // coba ukuran konteks lebih kecil
-      }
-
+      if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) { console.warn(`Attempt ${attempt + 1}: Gemini returned empty text`); continue; }
-
-      // Bersihkan markdown jika ada
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+      
+      // Bersihkan dan parse JSON
       const cleaned = text.replace(/```(?:json)?\s*/g, '').replace(/\s*```/g, '').trim();
       try {
         const parsed = JSON.parse(cleaned);
-        console.log(`Parse-modul berhasil pada attempt ${attempt + 1} (ctx ${contextSize} chars)`);
+        console.log(`Berhasil ekstrak bagian ${schemaDef.name} (attempt ${attempt + 1})`);
         return parsed;
-      } catch {
-        console.warn(`Attempt ${attempt + 1}: JSON parse failed, preview: ${cleaned.slice(0, 100)}`);
-        continue;
+      } catch (e) {
+        console.warn(`JSON parse failed untuk ${schemaDef.name}:`, e.message);
+        throw new Error('Parse failed');
       }
     } catch (err) {
-      console.error(`Gemini modul extract attempt ${attempt + 1} error:`, err.message);
+      if (attempt < 2) {
+        await new Promise(r => setTimeout(r, 2000 * (attempt + 1))); // Retry delay
+        return fetchPart(schemaDef, attempt + 1);
+      }
+      console.error(`Gagal total bagian ${schemaDef.name}:`, err.message.slice(0, 100));
+      return {}; // Fallback ke objek kosong agar bagian lain tetap berjalan
+    }
+  };
+
+  // Jalankan keempat bagian secara paralel
+  console.log('Memulai ekstraksi AI paralel 4 bagian...');
+  const results = await Promise.all(schemas.map(s => fetchPart(s)));
+  
+  // Gabungkan hasil dari ke-4 array/objek menjadi satu
+  let mergedResult = {};
+  for (const res of results) {
+    if (res && typeof res === 'object') {
+      mergedResult = { ...mergedResult, ...res };
     }
   }
 
-  return null;
+  return Object.keys(mergedResult).length > 0 ? mergedResult : null;
 }
 
 // ── Fallback: Ekstrak via Regex (tanpa AI) ──
