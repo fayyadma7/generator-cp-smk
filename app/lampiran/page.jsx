@@ -92,52 +92,66 @@ export default function LampiranGenerator() {
 
       const d = json.data;
 
-      // Merge: prioritas field yang sudah diisi guru prev, baru dari PDF, baru default
+      // Log untuk debug: field apa saja yang berhasil diekstrak AI
+      console.log('📄 Parse-modul response:', d ? Object.keys(d).filter(k => d[k] && d[k] !== '').length + ' field terisi' : 'KOSONG');
+      if (d) Object.entries(d).forEach(([k, v]) => { if (v && typeof v === 'string' && v.trim()) console.log(`  ✅ ${k}: "${v.slice(0, 60)}"`); });
+
+      // Merge: data AI mengisi field yang KOSONG atau masih default bawaan
+      // Logic: AI punya nilai → pake AI. Sisanya pertahankan form (default/input guru).
       const { _source, ...cleanData } = d || {};
       setFormData(prev => {
-        const fallback = (key) => prev[key] ?? cleanData[key] ?? prev[key];
+        const aiValue = (key) => {
+          const v = cleanData[key];
+          // Skip kalau AI gak ngembaliin apa-apa (undefined/null)
+          if (v === undefined || v === null) return undefined;
+          // Skip kalau AI cuma ngasih string kosong (artinya gak ketemu di dokumen)
+          if (typeof v === 'string' && v.trim() === '') return undefined;
+          // Skip kalau AI ngasih objek (bukan tipe field biasa)
+          if (typeof v === 'object') return undefined;
+          return v;
+        };
         return {
           ...prev,
-          namaSekolah:                fallback('namaSekolah'),
-          taglineSekolah:             fallback('taglineSekolah'),
-          mataPelajaran:              fallback('mataPelajaran'),
-          judulModul:                 fallback('judulModul'),
-          kodeModul:                  fallback('kodeModul'),
-          faseKelas:                  fallback('faseKelas'),
-          semester:                   fallback('semester'),
-          tahunPelajaran:             fallback('tahunPelajaran'),
-          kurikulum:                  fallback('kurikulum'),
-          pendekatanPembelajaran:     fallback('pendekatanPembelajaran'),
-          daftarLampiranYangDiminta:  fallback('daftarLampiranYangDiminta'),
-          tujuanPembelajaran:         fallback('tujuanPembelajaran'),
-          topikPertemuan1:            fallback('topikPertemuan1'),
-          metodePertemuan1:           fallback('metodePertemuan1'),
-          metodePertemuan2:           fallback('metodePertemuan2'),
-          konteksLokal:               fallback('konteksLokal'),
-          nilaiSekolah:               fallback('nilaiSekolah'),
-          jumlahAspekAnalisis:        fallback('jumlahAspekAnalisis'),
-          topikPertemuan2:            fallback('topikPertemuan2'),
-          dimensiKeterkaitan:         fallback('dimensiKeterkaitan'),
-          jumlahPasanganKeterkaitan:  fallback('jumlahPasanganKeterkaitan'),
-          iktp:                       fallback('iktp'),
-          iktpRemediasi:              fallback('iktpRemediasi'),
-          jumlahPertanyaanLisan:      fallback('jumlahPertanyaanLisan'),
-          jumlahSoalKuis:             fallback('jumlahSoalKuis'),
-          jenisProdukSumatif:         fallback('jenisProdukSumatif'),
-          aspekPenilaianSumatif:      fallback('aspekPenilaianSumatif'),
-          bobotAspek:                 fallback('bobotAspek'),
-          kktp:                       fallback('kktp'),
-          jumlahSiswa:                fallback('jumlahSiswa'),
-          jumlahSlide:                fallback('jumlahSlide'),
-          jumlahReferensi:            fallback('jumlahReferensi'),
-          teknikRefleksi:             fallback('teknikRefleksi'),
-          jumlahPertemuan:            fallback('jumlahPertemuan'),
-          kutipanPenutup:             fallback('kutipanPenutup'),
-          nilaiAmbangPengayaan:       fallback('nilaiAmbangPengayaan'),
-          topikPengayaan:             fallback('topikPengayaan'),
-          jenisTugasPengayaan:        fallback('jenisTugasPengayaan'),
-          batasWaktuPengayaan:        fallback('batasWaktuPengayaan'),
-          gayaBelajarRemediasi:       fallback('gayaBelajarRemediasi'),
+          namaSekolah:                aiValue('namaSekolah') ?? prev.namaSekolah,
+          taglineSekolah:             aiValue('taglineSekolah') ?? prev.taglineSekolah,
+          mataPelajaran:              aiValue('mataPelajaran') ?? prev.mataPelajaran,
+          judulModul:                 aiValue('judulModul') ?? prev.judulModul,
+          kodeModul:                  aiValue('kodeModul') ?? prev.kodeModul,
+          faseKelas:                  aiValue('faseKelas') ?? prev.faseKelas,
+          semester:                   aiValue('semester') ?? prev.semester,
+          tahunPelajaran:             aiValue('tahunPelajaran') ?? prev.tahunPelajaran,
+          kurikulum:                  aiValue('kurikulum') ?? prev.kurikulum,
+          pendekatanPembelajaran:     aiValue('pendekatanPembelajaran') ?? prev.pendekatanPembelajaran,
+          daftarLampiranYangDiminta:  aiValue('daftarLampiranYangDiminta') ?? prev.daftarLampiranYangDiminta,
+          tujuanPembelajaran:         aiValue('tujuanPembelajaran') ?? prev.tujuanPembelajaran,
+          topikPertemuan1:            aiValue('topikPertemuan1') ?? prev.topikPertemuan1,
+          metodePertemuan1:           aiValue('metodePertemuan1') ?? prev.metodePertemuan1,
+          metodePertemuan2:           aiValue('metodePertemuan2') ?? prev.metodePertemuan2,
+          konteksLokal:               aiValue('konteksLokal') ?? prev.konteksLokal,
+          nilaiSekolah:               aiValue('nilaiSekolah') ?? prev.nilaiSekolah,
+          jumlahAspekAnalisis:        aiValue('jumlahAspekAnalisis') ?? prev.jumlahAspekAnalisis,
+          topikPertemuan2:            aiValue('topikPertemuan2') ?? prev.topikPertemuan2,
+          dimensiKeterkaitan:         aiValue('dimensiKeterkaitan') ?? prev.dimensiKeterkaitan,
+          jumlahPasanganKeterkaitan:  aiValue('jumlahPasanganKeterkaitan') ?? prev.jumlahPasanganKeterkaitan,
+          iktp:                       aiValue('iktp') ?? prev.iktp,
+          iktpRemediasi:              aiValue('iktpRemediasi') ?? prev.iktpRemediasi,
+          jumlahPertanyaanLisan:      aiValue('jumlahPertanyaanLisan') ?? prev.jumlahPertanyaanLisan,
+          jumlahSoalKuis:             aiValue('jumlahSoalKuis') ?? prev.jumlahSoalKuis,
+          jenisProdukSumatif:         aiValue('jenisProdukSumatif') ?? prev.jenisProdukSumatif,
+          aspekPenilaianSumatif:      aiValue('aspekPenilaianSumatif') ?? prev.aspekPenilaianSumatif,
+          bobotAspek:                 aiValue('bobotAspek') ?? prev.bobotAspek,
+          kktp:                       aiValue('kktp') ?? prev.kktp,
+          jumlahSiswa:                aiValue('jumlahSiswa') ?? prev.jumlahSiswa,
+          jumlahSlide:                aiValue('jumlahSlide') ?? prev.jumlahSlide,
+          jumlahReferensi:            aiValue('jumlahReferensi') ?? prev.jumlahReferensi,
+          teknikRefleksi:             aiValue('teknikRefleksi') ?? prev.teknikRefleksi,
+          jumlahPertemuan:            aiValue('jumlahPertemuan') ?? prev.jumlahPertemuan,
+          kutipanPenutup:             aiValue('kutipanPenutup') ?? prev.kutipanPenutup,
+          nilaiAmbangPengayaan:       aiValue('nilaiAmbangPengayaan') ?? prev.nilaiAmbangPengayaan,
+          topikPengayaan:             aiValue('topikPengayaan') ?? prev.topikPengayaan,
+          jenisTugasPengayaan:        aiValue('jenisTugasPengayaan') ?? prev.jenisTugasPengayaan,
+          batasWaktuPengayaan:        aiValue('batasWaktuPengayaan') ?? prev.batasWaktuPengayaan,
+          gayaBelajarRemediasi:       aiValue('gayaBelajarRemediasi') ?? prev.gayaBelajarRemediasi,
         };
       });
 
