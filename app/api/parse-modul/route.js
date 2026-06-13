@@ -82,24 +82,25 @@ async function extractModulWithGemini(rawText) {
     {
       name: "Identitas",
       schema: `{
-        "namaSekolah": "nama sekolah yang tertera",
+        "namaSekolah": "nama sekolah yang tertera, jangan disingkat",
         "taglineSekolah": "motto/tagline sekolah jika ada",
-        "mataPelajaran": "nama mata pelajaran",
-        "judulModul": "judul modul ajar",
+        "mataPelajaran": "nama mata pelajaran dengan lengkap",
+        "judulModul": "judul modul ajar secara penuh sesuai yang tertulis di dokumen",
         "kodeModul": "kode modul contoh MA-IPAS-01 atau TP-01",
         "faseKelas": "fase dan kelas contoh 'Fase E / Kelas X'",
         "semester": "semester contoh 'Ganjil' atau 'Genap'",
         "tahunPelajaran": "tahun pelajaran contoh '2025/2026'",
-        "kurikulum": "nama kurikulum yang digunakan"
+        "kurikulum": "nama kurikulum yang digunakan secara lengkap"
       }`
     },
     {
       name: "Tujuan",
       schema: `{
-        "tujuanPembelajaran": "teks tujuan pembelajaran yang lengkap",
-        "iktp": "indikator ketercapaian tujuan pembelajaran. Jika ada beberapa poin, gabungkan dengan \\n",
-        "kktp": "nilai kriteria ketercapaian tujuan pembelajaran, angka saja contoh 70. Jika tidak ada, isi 70.",
-        "jumlahSiswa": "jumlah siswa dalam kelas, angka saja, default 32"
+        "tujuanPembelajaran": "EKSTRAK TEKS PENUH: tuliskan seluruh kalimat tujuan pembelajaran tanpa diringkas sama sekali",
+        "iktp": "EKSTRAK TEKS PENUH: indikator ketercapaian tujuan pembelajaran (IKTP/KKTP kualitatif). WAJIB tulis semua poinnya secara utuh, gabungkan dengan \\n",
+        "kktp": "nilai kriteria (angka KKM) ketercapaian tujuan pembelajaran, contoh 70. Jika tidak ada, isi 70.",
+        "jumlahSiswa": "jumlah siswa dalam kelas, angka saja, default 32",
+        "daftarLampiranYangDiminta": "tuliskan secara lengkap daftar nama-nama lampiran yang disebutkan atau dibutuhkan modul ini"
       }`
     },
     {
@@ -117,8 +118,7 @@ async function extractModulWithGemini(rawText) {
       name: "Asesmen",
       schema: `{
         "jenisProdukSumatif": "jenis produk sumatif (contoh: 'Laporan Observasi', 'Poster'). Simpulkan jika tidak ada.",
-        "aspekPenilaianSumatif": "aspek penilaian sumatif (misal: 'Pengetahuan, Keterampilan').",
-        "daftarLampiranYangDiminta": "daftar lampiran yang ada dalam modul, kosongkan jika tidak ada"
+        "aspekPenilaianSumatif": "aspek penilaian sumatif (misal: 'Pengetahuan, Keterampilan')."
       }`
     }
   ];
