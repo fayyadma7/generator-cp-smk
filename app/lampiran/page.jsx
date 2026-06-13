@@ -18,6 +18,7 @@ export default function LampiranGenerator() {
     tujuanPembelajaran: '',
     topikPertemuan1: '',
     metodePertemuan1: '',
+    metodePertemuan2: '',
     konteksLokal: 'Purbalingga',
     nilaiSekolah: 'Islami, Entrepreneur',
     jumlahAspekAnalisis: '7',
@@ -25,6 +26,7 @@ export default function LampiranGenerator() {
     dimensiKeterkaitan: '',
     jumlahPasanganKeterkaitan: '3',
     iktp: '',
+    iktpRemediasi: '',
     jumlahPertanyaanLisan: '3',
     jumlahSoalKuis: '5',
     jenisProdukSumatif: 'Laporan Proyek',
@@ -37,8 +39,11 @@ export default function LampiranGenerator() {
     teknikRefleksi: '3-2-1',
     jumlahPertemuan: '2',
     kutipanPenutup: '',
-    kegiatanPengayaan: 'Tugas Proyek Lanjutan',
-    kegiatanRemedial: 'Bimbingan Tutor Sebaya',
+    nilaiAmbangPengayaan: '85',
+    topikPengayaan: '',
+    jenisTugasPengayaan: '',
+    batasWaktuPengayaan: '1 minggu',
+    gayaBelajarRemediasi: 'visual + tekstual',
   });
 
   const [openSection, setOpenSection] = useState('identitas');
@@ -87,32 +92,54 @@ export default function LampiranGenerator() {
 
       const d = json.data;
 
-      // Merge hanya field yang ada nilainya dari PDF, jangan overwrite field yang sudah diisi guru
-      setFormData(prev => ({
-        ...prev,
-        namaSekolah:             d.namaSekolah              || prev.namaSekolah,
-        taglineSekolah:          d.taglineSekolah            || prev.taglineSekolah,
-        mataPelajaran:           d.mataPelajaran             || prev.mataPelajaran,
-        judulModul:              d.judulModul                || prev.judulModul,
-        kodeModul:               d.kodeModul                 || prev.kodeModul,
-        faseKelas:               d.faseKelas                 || prev.faseKelas,
-        semester:                d.semester                  || prev.semester,
-        tahunPelajaran:          d.tahunPelajaran            || prev.tahunPelajaran,
-        kurikulum:               d.kurikulum                 || prev.kurikulum,
-        tujuanPembelajaran:      d.tujuanPembelajaran        || prev.tujuanPembelajaran,
-        iktp:                    d.iktp                      || prev.iktp,
-        topikPertemuan1:         d.topikPertemuan1           || prev.topikPertemuan1,
-        metodePertemuan1:        d.metodePertemuan1          || prev.metodePertemuan1,
-        topikPertemuan2:         d.topikPertemuan2           || prev.topikPertemuan2,
-        dimensiKeterkaitan:      d.dimensiKeterkaitan        || prev.dimensiKeterkaitan,
-        konteksLokal:            d.konteksLokal              || prev.konteksLokal,
-        nilaiSekolah:            d.nilaiSekolah              || prev.nilaiSekolah,
-        jenisProdukSumatif:      d.jenisProdukSumatif        || prev.jenisProdukSumatif,
-        aspekPenilaianSumatif:   d.aspekPenilaianSumatif     || prev.aspekPenilaianSumatif,
-        kktp:                    d.kktp                      || prev.kktp,
-        jumlahSiswa:             d.jumlahSiswa               || prev.jumlahSiswa,
-        daftarLampiranYangDiminta: d.daftarLampiranYangDiminta || prev.daftarLampiranYangDiminta,
-      }));
+      // Merge: prioritas field yang sudah diisi guru prev, baru dari PDF, baru default
+      const { _source, ...cleanData } = d || {};
+      setFormData(prev => {
+        const fallback = (key) => prev[key] ?? cleanData[key] ?? prev[key];
+        return {
+          ...prev,
+          namaSekolah:                fallback('namaSekolah'),
+          taglineSekolah:             fallback('taglineSekolah'),
+          mataPelajaran:              fallback('mataPelajaran'),
+          judulModul:                 fallback('judulModul'),
+          kodeModul:                  fallback('kodeModul'),
+          faseKelas:                  fallback('faseKelas'),
+          semester:                   fallback('semester'),
+          tahunPelajaran:             fallback('tahunPelajaran'),
+          kurikulum:                  fallback('kurikulum'),
+          pendekatanPembelajaran:     fallback('pendekatanPembelajaran'),
+          daftarLampiranYangDiminta:  fallback('daftarLampiranYangDiminta'),
+          tujuanPembelajaran:         fallback('tujuanPembelajaran'),
+          topikPertemuan1:            fallback('topikPertemuan1'),
+          metodePertemuan1:           fallback('metodePertemuan1'),
+          metodePertemuan2:           fallback('metodePertemuan2'),
+          konteksLokal:               fallback('konteksLokal'),
+          nilaiSekolah:               fallback('nilaiSekolah'),
+          jumlahAspekAnalisis:        fallback('jumlahAspekAnalisis'),
+          topikPertemuan2:            fallback('topikPertemuan2'),
+          dimensiKeterkaitan:         fallback('dimensiKeterkaitan'),
+          jumlahPasanganKeterkaitan:  fallback('jumlahPasanganKeterkaitan'),
+          iktp:                       fallback('iktp'),
+          iktpRemediasi:              fallback('iktpRemediasi'),
+          jumlahPertanyaanLisan:      fallback('jumlahPertanyaanLisan'),
+          jumlahSoalKuis:             fallback('jumlahSoalKuis'),
+          jenisProdukSumatif:         fallback('jenisProdukSumatif'),
+          aspekPenilaianSumatif:      fallback('aspekPenilaianSumatif'),
+          bobotAspek:                 fallback('bobotAspek'),
+          kktp:                       fallback('kktp'),
+          jumlahSiswa:                fallback('jumlahSiswa'),
+          jumlahSlide:                fallback('jumlahSlide'),
+          jumlahReferensi:            fallback('jumlahReferensi'),
+          teknikRefleksi:             fallback('teknikRefleksi'),
+          jumlahPertemuan:            fallback('jumlahPertemuan'),
+          kutipanPenutup:             fallback('kutipanPenutup'),
+          nilaiAmbangPengayaan:       fallback('nilaiAmbangPengayaan'),
+          topikPengayaan:             fallback('topikPengayaan'),
+          jenisTugasPengayaan:        fallback('jenisTugasPengayaan'),
+          batasWaktuPengayaan:        fallback('batasWaktuPengayaan'),
+          gayaBelajarRemediasi:       fallback('gayaBelajarRemediasi'),
+        };
+      });
 
       setPdfStatus('success');
       setPdfMessage(`✅ Modul "${file.name}" berhasil dibaca! Field yang ditemukan sudah terisi otomatis.`);
@@ -182,25 +209,13 @@ export default function LampiranGenerator() {
     }
   };
 
-  // Eksekusi antrean dengan batasan concurrency (maksimal 3 proses bersamaan)
+  // Eksekusi antrean dalam batch untuk menjaga concurrency maksimal 3
   const processQueue = async (keysToProcess) => {
     const concurrencyLimit = 3;
-    const activePromises = new Set();
-
-    for (const key of keysToProcess) {
-      // Tunggu jika sudah mencapai batas maksimal
-      if (activePromises.size >= concurrencyLimit) {
-        await Promise.race(activePromises);
-      }
-      
-      const promise = generateItem(key).finally(() => {
-        activePromises.delete(promise);
-      });
-      activePromises.add(promise);
+    for (let i = 0; i < keysToProcess.length; i += concurrencyLimit) {
+      const batch = keysToProcess.slice(i, i + concurrencyLimit);
+      await Promise.allSettled(batch.map(key => generateItem(key)));
     }
-    
-    // Tunggu sisa promise selesai
-    await Promise.allSettled(Array.from(activePromises));
   };
 
   // ── Generate semua lampiran ──
@@ -437,6 +452,10 @@ export default function LampiranGenerator() {
                     <input type="text" name="metodePertemuan1" className="glass-input" placeholder="Contoh: Gallery Walk, Observasi Lapangan" onChange={handleChange} value={formData.metodePertemuan1}/>
                   </div>
                   <div className="form-group">
+                    <label>Metode / Aktivitas Pertemuan 2</label>
+                    <input type="text" name="metodePertemuan2" className="glass-input" placeholder="Contoh: Diskusi, Presentasi" onChange={handleChange} value={formData.metodePertemuan2}/>
+                  </div>
+                  <div className="form-group">
                     <label>Jumlah Aspek Analisis LKPD 1</label>
                     <input type="number" name="jumlahAspekAnalisis" className="glass-input" min="3" max="10" onChange={handleChange} value={formData.jumlahAspekAnalisis}/>
                   </div>
@@ -499,12 +518,28 @@ export default function LampiranGenerator() {
                     <input type="number" name="jumlahSlide" className="glass-input" min="5" max="30" onChange={handleChange} value={formData.jumlahSlide}/>
                   </div>
                   <div className="form-group">
-                    <label>Kegiatan Pengayaan</label>
-                    <input type="text" name="kegiatanPengayaan" className="glass-input" onChange={handleChange} value={formData.kegiatanPengayaan}/>
+                    <label>Nilai Ambang Pengayaan</label>
+                    <input type="number" name="nilaiAmbangPengayaan" className="glass-input" min="0" max="100" onChange={handleChange} value={formData.nilaiAmbangPengayaan}/>
                   </div>
                   <div className="form-group">
-                    <label>Kegiatan Remedial</label>
-                    <input type="text" name="kegiatanRemedial" className="glass-input" onChange={handleChange} value={formData.kegiatanRemedial}/>
+                    <label>Topik Pengayaan</label>
+                    <input type="text" name="topikPengayaan" className="glass-input" placeholder="Contoh: dampak perubahan iklim global → ekosistem lokal" onChange={handleChange} value={formData.topikPengayaan}/>
+                  </div>
+                  <div className="form-group">
+                    <label>Jenis Tugas Pengayaan</label>
+                    <input type="text" name="jenisTugasPengayaan" className="glass-input" placeholder="Contoh: mini-infografis, esai ilmiah" onChange={handleChange} value={formData.jenisTugasPengayaan}/>
+                  </div>
+                  <div className="form-group">
+                    <label>Batas Waktu Pengayaan</label>
+                    <input type="text" name="batasWaktuPengayaan" className="glass-input" placeholder="Contoh: 1 minggu" onChange={handleChange} value={formData.batasWaktuPengayaan}/>
+                  </div>
+                  <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                    <label>IKTP yang Jadi Fokus Remediasi</label>
+                    <textarea name="iktpRemediasi" className="glass-input" style={{ minHeight: '70px' }} placeholder="Indikator ketercapaian yang belum tercapai oleh siswa remediasi" onChange={handleChange} value={formData.iktpRemediasi}/>
+                  </div>
+                  <div className="form-group">
+                    <label>Gaya Belajar Remediasi</label>
+                    <input type="text" name="gayaBelajarRemediasi" className="glass-input" placeholder="Contoh: visual + tekstual" onChange={handleChange} value={formData.gayaBelajarRemediasi}/>
                   </div>
                 </div>
               </div>

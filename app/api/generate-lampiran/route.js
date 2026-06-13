@@ -108,7 +108,7 @@ export async function POST(request) {
       let retryCount = 0;
       let success = false;
 
-      while (retryCount < 7 && !success) {
+      while (retryCount < 3 && !success) {
         // Pilih API key secara acak untuk setiap percobaan
         const randomKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
         
@@ -125,8 +125,9 @@ export async function POST(request) {
 
           if (isRetryable) {
             retryCount++;
-            const waitMs = 3000 * retryCount;
-            console.log(`Gagal pada ${item.key} (attempt ${retryCount}). Tunggu ${waitMs}ms sebelum ganti key...`);
+            // Exponential backoff with jitter: 1-2s, 2-3s, 4-5s
+            const waitMs = 1000 * Math.pow(2, retryCount) + Math.random() * 1000;
+            console.log(`Gagal pada ${item.key} (attempt ${retryCount}). Tunggu ${Math.round(waitMs)}ms sebelum ganti key...`);
             await delay(waitMs);
           } else {
             // Error tak terduga yang benar-benar permanen (contoh: 400 Bad Request, 403 Forbidden)
@@ -138,7 +139,7 @@ export async function POST(request) {
       }
 
       if (!success) {
-        finalResults[item.key] = { error: 'Gagal setelah 7x percobaan karena limit server AI.' };
+        finalResults[item.key] = { error: 'Gagal setelah 3x percobaan karena limit server AI.' };
       }
     }
 

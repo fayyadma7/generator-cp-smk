@@ -77,7 +77,7 @@ async function extractModulWithGemini(rawText) {
   // Batasi ukuran teks agar tidak kena limit payload
   const snippet = rawText.substring(0, 150000);
 
-  // Bagi skema menjadi 4 bagian agar AI lebih fokus dan tidak skip field
+  // Bagi skema menjadi 5 bagian agar AI lebih fokus dan tidak skip field
   const schemas = [
     {
       name: "Identitas",
@@ -90,7 +90,8 @@ async function extractModulWithGemini(rawText) {
         "faseKelas": "fase dan kelas contoh 'Fase E / Kelas X'",
         "semester": "semester contoh 'Ganjil' atau 'Genap'",
         "tahunPelajaran": "tahun pelajaran contoh '2025/2026'",
-        "kurikulum": "nama kurikulum yang digunakan secara lengkap"
+        "kurikulum": "nama kurikulum yang digunakan secara lengkap",
+        "pendekatanPembelajaran": "pendekatan pembelajaran yang digunakan, contoh 'Pendekatan Deep Learning (Mindful, Meaningful, Joyful)' atau 'Saintifik'"
       }`
     },
     {
@@ -98,6 +99,7 @@ async function extractModulWithGemini(rawText) {
       schema: `{
         "tujuanPembelajaran": "EKSTRAK TEKS PENUH: tuliskan seluruh kalimat tujuan pembelajaran tanpa diringkas sama sekali",
         "iktp": "EKSTRAK TEKS PENUH: indikator ketercapaian tujuan pembelajaran (IKTP/KKTP kualitatif). WAJIB tulis semua poinnya secara utuh, gabungkan dengan \\n",
+        "iktpRemediasi": "IKTP yang menjadi fokus remediasi (biasanya indikator yang paling sulit dicapai siswa). Jika tidak disebut, isi string kosong.",
         "kktp": "nilai kriteria (angka KKM) ketercapaian tujuan pembelajaran, contoh 70. Jika tidak ada, isi 70.",
         "jumlahSiswa": "jumlah siswa dalam kelas, angka saja, default 32",
         "daftarLampiranYangDiminta": "tuliskan secara lengkap daftar nama-nama lampiran yang disebutkan atau dibutuhkan modul ini"
@@ -108,17 +110,38 @@ async function extractModulWithGemini(rawText) {
       schema: `{
         "topikPertemuan1": "topik atau materi pokok untuk pertemuan 1. Jika tidak dirinci, ambil dari materi utama modul.",
         "metodePertemuan1": "metode pembelajaran pertemuan 1. Jika tidak ada, isi dengan 'Diskusi dan Observasi'.",
+        "metodePertemuan2": "metode pembelajaran pertemuan 2. Jika tidak ada, isi dengan 'Diskusi dan Presentasi'.",
         "topikPertemuan2": "topik atau materi pokok lanjutan untuk pertemuan 2. Jika tidak ada, rumuskan kelanjutan logis.",
         "dimensiKeterkaitan": "WAJIB DIISI! konsep yang dikaitkan di pertemuan 2 (contoh: 'alam dan sosial', 'teori dan praktik'). Rumuskan jika tidak ada.",
         "konteksLokal": "konteks lokal daerah/industri. Jika tidak ada, isi 'Purbalingga'.",
-        "nilaiSekolah": "nilai/karakter ditekankan contoh 'Islami', 'Entrepreneur'. Jika tidak tertulis, abaikan."
+        "nilaiSekolah": "nilai/karakter ditekankan contoh 'Islami', 'Entrepreneur'. Jika tidak tertulis, abaikan.",
+        "jumlahPertemuan": "jumlah total pertemuan dalam modul, angka, default 2"
       }`
     },
     {
       name: "Asesmen",
       schema: `{
         "jenisProdukSumatif": "jenis produk sumatif (contoh: 'Laporan Observasi', 'Poster'). Simpulkan jika tidak ada.",
-        "aspekPenilaianSumatif": "aspek penilaian sumatif (misal: 'Pengetahuan, Keterampilan')."
+        "aspekPenilaianSumatif": "aspek penilaian sumatif (misal: 'Pengetahuan, Keterampilan').",
+        "bobotAspek": "bobot persentase tiap aspek penilaian sumatif, contoh 'Pengetahuan 40%, Keterampilan 40%, Sikap 20%'",
+        "jumlahPertanyaanLisan": "jumlah pertanyaan lisan untuk asesmen formatif, angka, default 3",
+        "jumlahSoalKuis": "jumlah soal kuis tulis untuk asesmen formatif, angka, default 5"
+      }`
+    },
+    {
+      name: "Parameter",
+      schema: `{
+        "jumlahAspekAnalisis": "jumlah aspek analisis yang diminta di LKPD, angka, default 7",
+        "jumlahPasanganKeterkaitan": "jumlah pasangan keterkaitan di LKPD pertemuan 2, angka, default 3",
+        "jumlahSlide": "perkiraan jumlah slide presentasi, angka, default 15",
+        "jumlahReferensi": "jumlah referensi yang dibutuhkan, angka, default 5",
+        "teknikRefleksi": "teknik refleksi, contoh '3-2-1'. Jika tidak ada, isi '3-2-1'.",
+        "kutipanPenutup": "kutipan/ayat penutup untuk lembar refleksi jika disebut. Jika tidak ada, isi string kosong.",
+        "nilaiAmbangPengayaan": "nilai ambang batas untuk pengayaan, angka, default 85",
+        "topikPengayaan": "topik untuk bahan pengayaan (lebih dalam dari TP). Jika tidak dirinci, rumuskan dari konteks modul.",
+        "jenisTugasPengayaan": "jenis tugas pengayaan yang diminta (contoh: 'mini-infografis', 'esai ilmiah'). Jika tidak ada, isi 'Tugas Proyek'.",
+        "batasWaktuPengayaan": "batas waktu pengerjaan tugas pengayaan, default '1 minggu'",
+        "gayaBelajarRemediasi": "gaya belajar yang difasilitasi untuk remediasi, default 'visual + tekstual'"
       }`
     }
   ];
@@ -176,8 +199,8 @@ PENTING: Kembalikan JSON murni saja.`;
     }
   };
 
-  // Jalankan keempat bagian secara paralel
-  console.log('Memulai ekstraksi AI paralel 4 bagian...');
+  // Jalankan kelima bagian secara paralel
+  console.log('Memulai ekstraksi AI paralel 5 bagian...');
   const results = await Promise.all(schemas.map(s => fetchPart(s)));
   
   // Gabungkan hasil dari ke-4 array/objek menjadi satu
@@ -256,19 +279,37 @@ function extractModulWithRegex(rawText) {
     semester: semester || 'Ganjil',
     tahunPelajaran: tahunPelajaran || '2025/2026',
     kurikulum: kurikulum || 'Kurikulum Merdeka',
+    pendekatanPembelajaran: 'Kurikulum Merdeka — Pendekatan Deep Learning',
     tujuanPembelajaran,
     iktp,
+    iktpRemediasi: '',
     topikPertemuan1: '',
     metodePertemuan1: '',
+    metodePertemuan2: '',
     topikPertemuan2: '',
     dimensiKeterkaitan: '',
     konteksLokal: konteksLokal || 'Purbalingga',
     nilaiSekolah: 'Islami, Entrepreneur',
+    jumlahAspekAnalisis: '7',
+    jumlahPasanganKeterkaitan: '3',
+    jumlahPertanyaanLisan: '3',
+    jumlahSoalKuis: '5',
     jenisProdukSumatif: '',
     aspekPenilaianSumatif: 'Pengetahuan, Keterampilan, Sikap',
+    bobotAspek: 'Pengetahuan 40%, Keterampilan 40%, Sikap 20%',
     kktp: kktp || '70',
     jumlahSiswa: '32',
+    jumlahSlide: '15',
+    jumlahReferensi: '5',
+    teknikRefleksi: '3-2-1',
+    jumlahPertemuan: '2',
+    kutipanPenutup: '',
     daftarLampiranYangDiminta: '',
+    nilaiAmbangPengayaan: '85',
+    topikPengayaan: '',
+    jenisTugasPengayaan: '',
+    batasWaktuPengayaan: '1 minggu',
+    gayaBelajarRemediasi: 'visual + tekstual',
     _source: 'regex_fallback' // penanda bahwa ini dari regex bukan AI
   };
 }
