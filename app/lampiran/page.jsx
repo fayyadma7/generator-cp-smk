@@ -519,7 +519,7 @@ export default function LampiranGenerator() {
             style={{ marginTop: '2rem', width: '100%', height: '56px', fontSize: '17px', gap: '10px' }}
           >
             {isLoading
-              ? <><Loader2 className="spin" size={22} /> AI sedang membuat semua lampiran…</>
+              ? <><Loader2 className="spin" size={22} /> AI sedang memproses lampiran…</>
               : <><Sparkles size={22} /> Generate Semua Lampiran Sekaligus</>
             }
           </button>
@@ -528,24 +528,34 @@ export default function LampiranGenerator() {
 
       {/* ── HASIL GENERATE ── */}
       {result && (() => {
-        const hasError = Object.keys(result).some(key => !result[key] || result[key].error);
+        const hasError = Object.keys(result).some(key => result[key] && result[key].error);
+        const isDone = Object.keys(result).every(key => result[key] !== null);
+        
         return (
         <div id="result-section" className="glass-panel result-panel">
-          {/* Header sukses / error */}
+          {/* Header sukses / error / loading */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
-            {hasError ? (
+            {!isDone ? (
+              <Loader2 className="spin" size={32} style={{ color: '#63b3ed', flexShrink: 0 }} />
+            ) : hasError ? (
               <XCircle size={32} style={{ color: '#fc814a', flexShrink: 0 }} />
             ) : (
               <CheckCircle size={32} style={{ color: '#68d391', flexShrink: 0 }} />
             )}
             <div>
               <h2 style={{ margin: 0, fontSize: '1.4rem' }}>
-                {hasError ? 'Beberapa Lampiran Gagal Di-generate!' : 'Semua Lampiran Berhasil Di-generate!'}
+                {!isDone 
+                  ? 'Sedang Memproses Dokumen AI...' 
+                  : hasError 
+                    ? 'Beberapa Lampiran Gagal Di-generate!' 
+                    : 'Semua Lampiran Berhasil Di-generate!'}
               </h2>
               <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
-                {hasError 
-                  ? 'Silakan klik "Coba Ulang yang Gagal" sebelum dapat mengunduh.'
-                  : `${Object.keys(result).length} bagian lampiran siap diunduh sebagai file Word`
+                {!isDone 
+                  ? 'Mohon tunggu, setiap kotak akan berubah hijau jika selesai diproses.'
+                  : hasError 
+                    ? 'Silakan klik "Coba Ulang yang Gagal" sebelum dapat mengunduh.'
+                    : `${Object.keys(result).length} bagian lampiran siap diunduh sebagai file Word`
                 }
               </p>
             </div>
@@ -567,21 +577,38 @@ export default function LampiranGenerator() {
               { key: 'lembarRefleksi', label: '💭 Lembar Refleksi' },
               { key: 'bahanPengayaan', label: '🚀 Bahan Pengayaan' },
               { key: 'bahanRemediasi', label: '🔁 Bahan Remediasi' },
-            ].map(({ key, label }) => (
-              <div key={key} style={{
+            ].map(({ key, label }) => {
+              const statusData = result[key];
+              const status = statusData === null ? 'loading' : (statusData.error ? 'error' : 'success');
+              
+              return (
+              <div key={key} title={status === 'error' ? statusData.error : ''} style={{
                 padding: '8px 12px', borderRadius: '8px',
-                background: result[key] && !result[key].error
-                  ? 'rgba(104,211,145,0.15)' : 'rgba(252,129,74,0.15)',
-                border: `1px solid ${ result[key] && !result[key].error ? 'rgba(104,211,145,0.4)' : 'rgba(252,129,74,0.4)' }`,
+                background: status === 'loading' ? 'rgba(99,179,237,0.1)' 
+                          : status === 'success' ? 'rgba(104,211,145,0.15)' 
+                          : 'rgba(252,129,74,0.15)',
+                border: `1px solid ${ status === 'loading' ? 'rgba(99,179,237,0.3)' 
+                                   : status === 'success' ? 'rgba(104,211,145,0.4)' 
+                                   : 'rgba(252,129,74,0.4)' }`,
                 fontSize: '0.8rem', fontWeight: 500,
                 display: 'flex', alignItems: 'center', gap: '6px'
               }}>
-                <span style={{ color: result[key] && !result[key].error ? '#68d391' : '#fc814a' }}>
-                  {result[key] && !result[key].error ? '✓' : '✗'}
+                <span style={{ 
+                  color: status === 'loading' ? '#63b3ed' 
+                       : status === 'success' ? '#68d391' : '#fc814a',
+                  display: 'flex', alignItems: 'center'
+                }}>
+                  {status === 'loading' ? <Loader2 size={14} className="spin" /> 
+                   : status === 'success' ? '✓' : '✗'}
                 </span>
                 {label}
+                {status === 'error' && (
+                  <span style={{ fontSize: '0.65rem', color: '#fc814a', marginLeft: '4px', fontStyle: 'italic', maxWidth: '80px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    (Error)
+                  </span>
+                )}
               </div>
-            ))}
+            )})}
           </div>
 
           {/* Tombol Retry (jika ada error) */}

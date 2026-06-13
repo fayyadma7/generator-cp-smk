@@ -101,59 +101,47 @@ export async function POST(request) {
       prompts = prompts.filter(p => inputGuru.keysToGenerate.includes(p.key));
     }
 
-    // Antrean tugas (queue)
-    const queue = [...prompts];
     const finalResults = {};
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-    // Worker akan memproses antrean satu per satu menggunakan API key yang ditugaskan kepadanya
-    async function worker(apiKey, workerId) {
-      while (queue.length > 0) {
-        const item = queue.shift();
-        if (!item) break;
+    // Eksekusi tiap prompt yang diminta
+    for (const item of prompts) {
+      let retryCount = 0;
+      let success = false;
 
-        let retryCount = 0;
-        let success = false;
+      while (retryCount < 7 && !success) {
+        // Pilih API key secara acak untuk setiap percobaan
+        const randomKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
+        
+        try {
+          console.log(`Memproses ${item.key} dengan key acak (attempt ${retryCount + 1})...`);
+          const result = await callGemini(SYSTEM_PROMPT_GLOBAL, item.prompt, randomKey);
+          finalResults[item.key] = result;
+          success = true;
+        } catch (e) {
+          // Retry untuk: rate limit, server error, DAN parse error (JSON tidak valid)
+          const isRetryable = e.message.includes('429') || e.message.includes('Quota') ||
+            e.message.includes('503') || e.message.includes('500') ||
+            e.message.includes('PARSE_ERROR') || e.message.includes('did not return');
 
-        while (retryCount < 7 && !success) {
-          try {
-            console.log(`Worker ${workerId} memproses ${item.key}...`);
-            const result = await callGemini(SYSTEM_PROMPT_GLOBAL, item.prompt, apiKey);
-            finalResults[item.key] = result;
-            success = true;
-          } catch (e) {
-            // Retry untuk: rate limit, server error, DAN parse error (JSON tidak valid)
-            const isRetryable = e.message.includes('429') || e.message.includes('Quota') ||
-              e.message.includes('503') || e.message.includes('500') ||
-              e.message.includes('PARSE_ERROR') || e.message.includes('did not return');
-
-            if (isRetryable) {
-              retryCount++;
-              const waitMs = 3000 * retryCount;
-              console.log(`Worker ${workerId} retry ke-${retryCount} untuk ${item.key}. Tunggu ${waitMs}ms...`);
-              await delay(waitMs);
-            } else {
-              // Error tak terduga yang benar-benar permanen
-              console.error(`Worker ${workerId} gagal permanen pada ${item.key}:`, e.message);
-              finalResults[item.key] = { error: e.message };
-              success = true;
-            }
+          if (isRetryable) {
+            retryCount++;
+            const waitMs = 3000 * retryCount;
+            console.log(`Gagal pada ${item.key} (attempt ${retryCount}). Tunggu ${waitMs}ms sebelum ganti key...`);
+            await delay(waitMs);
+          } else {
+            // Error tak terduga yang benar-benar permanen (contoh: 400 Bad Request, 403 Forbidden)
+            console.error(`Gagal permanen pada ${item.key}:`, e.message);
+            finalResults[item.key] = { error: e.message };
+            success = true; // Anggap "selesai" agar loop berhenti
           }
         }
+      }
 
-        if (!success) {
-          finalResults[item.key] = { error: 'Gagal setelah 7x percobaan karena limit server AI.' };
-        }
-        
-        // Jeda santai antar request pada worker yang sama (3 detik) agar sangat aman dari rate limit
-        await delay(3000);
+      if (!success) {
+        finalResults[item.key] = { error: 'Gagal setelah 7x percobaan karena limit server AI.' };
       }
     }
-
-    // Jalankan worker secara paralel sebanyak jumlah API Key yang tersedia
-    const workers = apiKeys.map((key, index) => worker(key, index + 1));
-    
-    // Tunggu semua worker menyelesaikan semua tugas di antrean
-    await Promise.all(workers);
 
     return NextResponse.json(finalResults);
   } catch (error) {
