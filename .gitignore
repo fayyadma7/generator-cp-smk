@@ -1,6 +1,13 @@
-node_modules/ 
-.next/ 
+node_modules/
+.next/
 .env.local
-~$*.docx  
-~$*  
-.env  
+.env
+~$*.docx
+~$*
+
+# Editor & tool configs (lokal saja)
+.opencode/
+opencode.json
+
+# Script upload lama
+upload.bat
