@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { SECTION_META, DEFAULT_DATA, SECTION_COMPONENTS } from './section-forms';
 import { DocPreviewWrap, renderSectionPreview } from './preview-utils';
-import { ChevronLeft, ChevronRight, Eye, Download, X, Check, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, Download, X, Check, Lock, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════
    MAIN PAGE COMPONENT
@@ -37,6 +37,9 @@ export default function LampiranGeneratorPage() {
 
   const [activeKey, setActiveKey] = useState('lkpd');
   const [modalOpen, setModalOpen] = useState(false);
+  const [aiLoading, setAiLoading] = useState({});   // { sectionKey: true/false }
+  const [aiError, setAiError] = useState('');         // global error message
+  const [aiSuccess, setAiSuccess] = useState('');     // global success message
 
   /* ── Derived ── */
   const headerData = header;
@@ -85,7 +88,103 @@ export default function LampiranGeneratorPage() {
 
   const navigateTo = useCallback((key) => {
     setActiveKey(key);
+    setAiError('');
+    setAiSuccess('');
   }, []);
+
+  /* ── AI Generation ── */
+  const handleAIGenerate = useCallback(async (sectionKey) => {
+    // Check header completeness
+    const h = header;
+    if (!h.mataPelajaran || !h.judulModul) {
+      setAiError('Isi dulu Mata Pelajaran dan Judul Modul di sidebar sebelum generate AI.');
+      setAiSuccess('');
+      return;
+    }
+
+    setAiLoading(prev => ({ ...prev, [sectionKey]: true }));
+    setAiError('');
+    setAiSuccess('');
+
+    try {
+      const res = await fetch('/api/generate-lampiran-section', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          header: h,
+          sectionKey,
+          existingData: sections[sectionKey]?.data || {},
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Gagal generate');
+
+      // Fill the section with AI data
+      if (json.data) {
+        updateSectionData(sectionKey, json.data);
+      }
+
+      setAiSuccess(`✅ "${SECTION_META.find(s => s.key === sectionKey)?.judul || sectionKey}" berhasil di-generate AI!`);
+    } catch (err) {
+      setAiError(`❌ ${err.message}`);
+    } finally {
+      setAiLoading(prev => ({ ...prev, [sectionKey]: false }));
+    }
+  }, [header, sections, updateSectionData]);
+
+  const handleAIGenerateAll = useCallback(async () => {
+    const h = header;
+    if (!h.mataPelajaran || !h.judulModul) {
+      setAiError('Isi dulu Mata Pelajaran dan Judul Modul di sidebar sebelum generate AI.');
+      setAiSuccess('');
+      return;
+    }
+
+    setAiError('');
+    setAiSuccess('');
+
+    const enabledKeys = SECTION_META.filter(s => sections[s.key]?.enabled).map(s => s.key);
+    let successCount = 0;
+    let failCount = 0;
+    let lastError = '';
+
+    for (const key of enabledKeys) {
+      setAiLoading(prev => ({ ...prev, [key]: true }));
+
+      try {
+        const res = await fetch('/api/generate-lampiran-section', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            header: h,
+            sectionKey: key,
+            existingData: sections[key]?.data || {},
+          }),
+        });
+
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Gagal generate');
+
+        if (json.data) {
+          updateSectionData(key, json.data);
+        }
+        successCount++;
+      } catch (err) {
+        failCount++;
+        lastError = err.message;
+      } finally {
+        setAiLoading(prev => ({ ...prev, [key]: false }));
+      }
+    }
+
+    if (successCount > 0) {
+      setAiSuccess(`✅ ${successCount} section berhasil di-generate AI${failCount > 0 ? `, ${failCount} gagal` : ''}!`);
+    }
+    if (failCount > 0) {
+      setAiError(`❌ ${failCount} section gagal. ${lastError}`);
+    }
+  }, [header, sections, updateSectionData]);
 
   /* ── Active section data ── */
   const activeSection = sections[activeKey];
@@ -136,6 +235,12 @@ export default function LampiranGeneratorPage() {
         </div>
         <div className="lgn-topbar-right">
           <span className="lgn-badge">{completionCount}/{SECTION_META.length} Lampiran</span>
+          <button className="btn btn-accent btn-sm" onClick={handleAIGenerateAll} disabled={Object.values(aiLoading).some(Boolean)}>
+            {Object.values(aiLoading).some(Boolean)
+              ? <><Loader2 size={15} className="spin" /> Memproses…</>
+              : <><Sparkles size={15} /> Generate Semua</>
+            }
+          </button>
           <button className="btn btn-secondary btn-sm" onClick={toggleModal}>
             <Eye size={15} /> Preview Semua
           </button>
@@ -219,7 +324,9 @@ export default function LampiranGeneratorPage() {
                     <div className="lgn-nav-title">{sec.sublabel}</div>
                     <div className="lgn-nav-sub">{sec.judul}</div>
                   </div>
-                  <div className="lgn-nav-est">{sec.est}</div>
+                  <div className="lgn-nav-est">
+                    {aiLoading[sec.key] ? <Loader2 size={12} className="spin" /> : sec.est}
+                  </div>
                   <div className={`lgn-status-dot ${isDone ? 'done' : ''}`} />
                 </div>
               );
@@ -229,6 +336,20 @@ export default function LampiranGeneratorPage() {
 
         {/* ── MAIN CONTENT ── */}
         <main className="lgn-content">
+          {/* AI Status Messages */}
+          {aiError && (
+            <div className="lgn-ai-msg lgn-ai-error">
+              <AlertCircle size={16} /> {aiError}
+              <button className="lgn-ai-close" onClick={() => setAiError('')}>✕</button>
+            </div>
+          )}
+          {aiSuccess && (
+            <div className="lgn-ai-msg lgn-ai-success">
+              <Check size={16} /> {aiSuccess}
+              <button className="lgn-ai-close" onClick={() => setAiSuccess('')}>✕</button>
+            </div>
+          )}
+
           {(!activeSection || !activeSection.enabled) ? (
             /* DISABLED VIEW */
             <div className="lgn-section-disabled">
@@ -265,16 +386,32 @@ export default function LampiranGeneratorPage() {
               <div className="lgn-body">
                 {/* LEFT: FORM */}
                 <div className="lgn-form-panel">
-                  {(() => {
-                    const Comp = SECTION_COMPONENTS[activeKey];
-                    if (!Comp) return <p>Unknown section: {activeKey}</p>;
-                    return (
-                      <Comp
-                        data={activeData}
-                        onChange={(key, newData) => updateSectionData(key, newData)}
-                      />
-                    );
-                  })()}
+                  <div className="lgn-form-scroll">
+                    {(() => {
+                      const Comp = SECTION_COMPONENTS[activeKey];
+                      if (!Comp) return <p>Unknown section: {activeKey}</p>;
+                      return (
+                        <Comp
+                          data={activeData}
+                          onChange={(key, newData) => updateSectionData(key, newData)}
+                          onAIGenerate={handleAIGenerate}
+                          aiLoading={aiLoading[activeKey] || false}
+                        />
+                      );
+                    })()}
+                  </div>
+                  {/* AI Generate Button */}
+                  <button
+                    className="lgn-ai-btn"
+                    onClick={() => handleAIGenerate(activeKey)}
+                    disabled={aiLoading[activeKey]}
+                  >
+                    {aiLoading[activeKey] ? (
+                      <><Loader2 size={16} className="spin" /> AI sedang memproses…</>
+                    ) : (
+                      <><Sparkles size={16} /> Generate dengan AI</>
+                    )}
+                  </button>
                 </div>
 
                 {/* RIGHT: PREVIEW */}
