@@ -89,18 +89,18 @@ async function extractCPWithGroq(rawText) {
 
 Berikut adalah teks yang diekstrak dari PDF:
 ---
-${rawText.substring(0, 8000)}
+${rawText.substring(0, 15000)}
 ---
 
 Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format JSON:
 {
   "mataPelajaran": "nama mata pelajaran yang ditemukan, string kosong jika tidak ada",
   "fase": "fase yang ditemukan contoh Fase E atau Fase F, string kosong jika tidak ada",
-  "cpText": "teks lengkap deskripsi Capaian Pembelajaran utama WAJIB DIISI ambil bagian inti CP yang substantif",
+  "cpText": "SALIN PERSIS DAN UTUH teks lengkap deskripsi Capaian Pembelajaran utama. JANGAN diringkas, JANGAN dikurangi kalimatnya.",
   "elemenList": [
     {
       "nama": "nama elemen (misal: Observasi dan eksplorasi)",
-      "capaian": "deskripsi capaian untuk elemen tersebut"
+      "capaian": "SALIN PERSIS DAN UTUH deskripsi capaian untuk elemen tersebut tanpa diringkas"
     }
   ]
 }

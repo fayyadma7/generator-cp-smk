@@ -25,10 +25,9 @@ Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format J
   "teacher": "nama guru penyusun beserta NIP/NUPTK jika ada, kosong jika tidak ada (biasanya di bagian tanda tangan akhir dokumen)",
   "waka": "nama waka kurikulum, kosong jika tidak ada (biasanya di bagian tanda tangan akhir dokumen)",
   "principal": "nama kepala sekolah, kosong jika tidak ada (biasanya di bagian tanda tangan akhir dokumen)",
-  "cpText": "Ekstrak TEKS UTUH Capaian Pembelajaran secara lengkap (Gabungan dari DESKRIPSI CP UMUM dan DESKRIPSI CP PER ELEMEN). JANGAN diringkas. Buang subjudul 'B.1', 'B.2' agar rapi, tetapi pertahankan semua isi teks capaian umum dan elemen-elemennya.",
+  "cpText": "SALIN PERSIS DAN UTUH Capaian Pembelajaran secara lengkap (Gabungan dari DESKRIPSI CP UMUM dan DESKRIPSI CP PER ELEMEN). JANGAN diringkas, JANGAN dikurangi, dan JANGAN mengubah kata-katanya. Salin persis apa adanya dari teks sumber.",
   "elemenList": [
-    { "nama": "Nama Elemen 1", "capaian": "Teks capaian elemen 1" },
-    { "nama": "Nama Elemen 2", "capaian": "Teks capaian elemen 2" }
+    { "nama": "Nama Elemen persis seperti di dokumen", "capaian": "Salin persis dan utuh deskripsi capaian elemen tersebut tanpa diringkas sedikit pun" }
   ]
 }`;
 
