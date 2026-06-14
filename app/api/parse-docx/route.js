@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { generate, parseAIResult } from '../../../lib/aiClient';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -32,41 +33,17 @@ Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format J
 }`;
 
   // Coba ambil dari multiple key, fallback ke GEMINI_API_KEY
-  const apiKey = process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
-  
-  if (!apiKey) {
-    console.error('API Key Gemini tidak ditemukan.');
+  try {
+    const aiResult = await generate({
+      system: "Anda adalah asisten ekstraksi data. Keluarkan HANYA JSON murni tanpa markdown.",
+      user: prompt,
+      jsonMode: true,
+    });
+    return parseAIResult(aiResult.text);
+  } catch (err) {
+    console.error('AI extraction error:', err.message);
     return null;
   }
-
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: "Anda adalah asisten ekstraksi data. Keluarkan HANYA JSON murni tanpa markdown." }]
-      },
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        temperature: 0.1
-      }
-    })
-  });
-
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error('Gemini API Error:', errorText);
-    return null;
-  }
-
-  const aiData = await res.json();
-  const content = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!content) return null;
-  
-  return JSON.parse(content);
 }
 
 export async function POST(request) {
@@ -101,16 +78,14 @@ export async function POST(request) {
       );
     }
 
-    if (process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY) {
-      try {
-        const extracted = await extractCPWithGemini(rawText);
-        if (extracted && extracted.cpText) {
-          extracted.rawText = rawText; // IMPORTANT: include raw text for Modul Ajar generator
-          return NextResponse.json(extracted);
-        }
-      } catch (aiErr) {
-        console.warn('Gemini extraction gagal, fallback ke teks mentah:', aiErr.message);
+    try {
+      const extracted = await extractCPWithGemini(rawText);
+      if (extracted && extracted.cpText) {
+        extracted.rawText = rawText;
+        return NextResponse.json(extracted);
       }
+    } catch (aiErr) {
+      console.warn('AI extraction gagal, fallback ke teks mentah:', aiErr.message);
     }
 
     // Fallback: kirim teks mentah jika AI gagal

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { buildTPATPPrompt } from '../../../tpAtpGenerator';
+import { generate, parseAIResult } from '../../../lib/aiClient';
 
 export async function POST(request) {
   try {
@@ -10,20 +11,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Teks CP tidak boleh kosong' }, { status: 400 });
     }
 
-    // ── Load Balancer: Rotasi API Key ──
-    const apiKeys = [
-      process.env.GEMINI_API_KEY_1,
-      process.env.GEMINI_API_KEY_2,
-      process.env.GEMINI_API_KEY_3,
-      process.env.GEMINI_API_KEY,
-    ].filter(Boolean);
-
-    if (apiKeys.length === 0) {
-      return NextResponse.json({ error: 'API Key Gemini belum diatur di Environment Variables' }, { status: 500 });
-    }
-
-    // Pilih key secara acak untuk distribusi beban
-    const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
+    // Pakai aiClient: otomatis failover Gemini → NVIDIA → Groq
 
     // ── Bangun prompt kontekstual dari tpAtpGenerator.js ──
     let systemPrompt, userPrompt;
@@ -116,43 +104,10 @@ Catatan Penting:
 6. Minimal 60% TP menyebut nama/tempat/produk lokal Purbalingga secara eksplisit.
 7. Field "elemenCpYangDirujuk" wajib diisi dengan nama elemen dari dokumen yang diupload.`;
 
-    // ── Panggil Gemini API ──
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          contents: [{ parts: [{ text: finalPrompt }] }],
-          generationConfig: {
-            responseMimeType: 'application/json',
-            temperature: 0.4,
-          },
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini API Error:', errorText);
-      if (response.status === 429) {
-        return NextResponse.json(
-          { error: 'Rate limit tercapai. Coba lagi sebentar.' },
-          { status: 429 }
-        );
-      }
-      return NextResponse.json({ error: 'Gagal menghubungi Gemini AI' }, { status: 500 });
-    }
-
-    const aiData = await response.json();
-    const textOutput = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!textOutput) {
-      return NextResponse.json({ error: 'AI mengembalikan respon kosong.' }, { status: 500 });
-    }
-
-    const result = JSON.parse(textOutput);
+    // Panggil AI dengan failover otomatis Gemini → NVIDIA → Groq
+    const aiResult = await generate({ system: systemPrompt, user: finalPrompt, jsonMode: true });
+    const result = parseAIResult(aiResult.text);
+    console.log(`[generate-tp] Berhasil via ${aiResult.provider}`);
 
     return NextResponse.json(result);
 
@@ -161,4 +116,3 @@ Catatan Penting:
     return NextResponse.json({ error: error.message || 'Terjadi kesalahan di server' }, { status: 500 });
   }
 }
-

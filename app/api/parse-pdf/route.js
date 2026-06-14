@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { generate, parseAIResult } from '../../../lib/aiClient';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -82,7 +83,7 @@ async function extractTextViaGemini(buffer) {
   }
 }
 
-// ── Minta Groq AI mengekstrak struktur CP dari teks mentah ──
+// ── Minta AI mengekstrak struktur CP dari teks mentah (failover: Gemini → NVIDIA → Groq) ──
 async function extractCPWithGroq(rawText) {
   const prompt = `Anda adalah asisten yang membantu guru SMK mengekstrak informasi dari dokumen PDF Capaian Pembelajaran (CP) resmi Kepmendikbudristek.
 
@@ -105,28 +106,15 @@ Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format J
 }
 
 Catatan Penting:
-Pada array "elemenList", ekstrak SEMUA elemen CP beserta capaiannya yang Anda temukan di dalam dokumen. Jumlah elemen bisa 1, 2, 5, atau berapapun. Masukkan semuanya ke dalam array tersebut. Jika tidak ada elemen spesifik, kembalikan array kosong [].`;
+Pada array "elemenList", ekstrak SEMUA elemen CP beserta capaiannya yang Anda temukan di dalam dokumen. Jumlah elemen bisa 1, 2, 5, atau berapapun. Masukkan semuanya ke dalam array tersebut. Jika tidak ada elemen spesifik, kembalikan array kosong [].
+Kembalikan HANYA JSON murni tanpa markdown.`;
 
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: 'llama-3.1-8b-instant',
-      messages: [
-        { role: 'system', content: 'Anda adalah asisten ekstraksi data. Keluarkan HANYA JSON murni tanpa markdown.' },
-        { role: 'user', content: prompt }
-      ],
-      response_format: { type: 'json_object' }
-    })
+  const aiResult = await generate({
+    system: 'Anda adalah asisten ekstraksi data. Keluarkan HANYA JSON murni tanpa markdown.',
+    user: prompt,
+    jsonMode: true,
   });
-
-  if (!res.ok) return null;
-
-  const aiData = await res.json();
-  return JSON.parse(aiData.choices[0].message.content);
+  return parseAIResult(aiResult.text);
 }
 
 export async function POST(request) {
@@ -168,16 +156,14 @@ export async function POST(request) {
       }
     }
 
-    // ── Strategi 2: Ekstrak struktur CP dengan AI ──
-    if (process.env.GROQ_API_KEY) {
-      try {
-        const extracted = await extractCPWithGroq(rawText);
-        if (extracted && extracted.cpText) {
-          return NextResponse.json({ ...extracted, _usedOcr: usedOcr });
-        }
-      } catch (aiErr) {
-        console.warn('Groq extraction gagal, fallback ke teks mentah:', aiErr.message);
+    // ── Strategi 2: Ekstrak struktur CP dengan AI (failover otomatis) ──
+    try {
+      const extracted = await extractCPWithGroq(rawText);
+      if (extracted && extracted.cpText) {
+        return NextResponse.json({ ...extracted, _usedOcr: usedOcr });
       }
+    } catch (aiErr) {
+      console.warn('AI extraction gagal, fallback ke teks mentah:', aiErr.message);
     }
 
     // Fallback: kirim teks mentah

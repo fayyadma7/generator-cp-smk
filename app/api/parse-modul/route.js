@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { generate, parseAIResult } from '../../../lib/aiClient';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -61,11 +62,8 @@ async function extractTextViaGemini(buffer) {
   }
 }
 
-// ── Parse struktur modul ajar dari teks mentah via Gemini ──
+// ── Parse struktur modul ajar dari teks mentah via AI ──
 async function extractModulWithGemini(rawText) {
-  const key = process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
-  if (!key) return null;
-
   const prompt = `Kamu adalah asisten AI yang membantu mengekstrak informasi dari dokumen Modul Ajar SMK/SMA Kurikulum Merdeka.
 
 Berikut adalah teks yang diekstrak dari PDF modul ajar:
@@ -90,10 +88,10 @@ Ekstrak semua informasi berikut dari teks di atas dan kembalikan sebagai JSON mu
   "topikPertemuan1": "topik atau materi untuk pertemuan pertama/pertemuan ke-1",
   "metodePertemuan1": "metode atau model pembelajaran di pertemuan pertama contoh 'Gallery Walk', 'Project Based Learning' dsb",
   "topikPertemuan2": "topik atau materi untuk pertemuan kedua/pertemuan ke-2",
-  "dimensiKeterkaitan": "dimensi atau konsep yang dikaitkan pada pertemuan 2 (contoh: 'alam dan sosial' untuk IPAS, 'teori dan praktik' untuk kejuruan, 'peluang dan risiko' untuk kewirausahaan, dll). Jika tidak tertulis secara eksplisit, tentukan dimensi keterkaitan yang paling logis berdasarkan materi/TP modul ini",
-  "konteksLokal": "konteks lokal yang disebut dalam modul, bisa berupa nama daerah atau industri lokal",
-  "nilaiSekolah": "nilai/karakter yang ditekankan contoh 'Islami', 'Entrepreneur', 'Nasionalis'",
-  "jenisProdukSumatif": "jenis produk atau karya yang dinilai di asesmen sumatif contoh 'Laporan Observasi', 'Poster', 'Presentasi'",
+  "dimensiKeterkaitan": "dimensi atau konsep yang dikaitkan pada pertemuan 2",
+  "konteksLokal": "konteks lokal yang disebut dalam modul",
+  "nilaiSekolah": "nilai/karakter yang ditekankan",
+  "jenisProdukSumatif": "jenis produk atau karya yang dinilai di asesmen sumatif",
   "aspekPenilaianSumatif": "aspek-aspek penilaian sumatif, pisahkan dengan koma",
   "kktp": "nilai kriteria ketercapaian tujuan pembelajaran, angka saja contoh 70",
   "jumlahSiswa": "jumlah siswa dalam kelas, angka saja, default 32",
@@ -103,33 +101,14 @@ Ekstrak semua informasi berikut dari teks di atas dan kembalikan sebagai JSON mu
 PENTING: Kembalikan JSON murni tanpa markdown, tanpa backtick, tanpa penjelasan.`;
 
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.1,
-            responseMimeType: 'application/json'
-          }
-        })
-      }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) return null;
-    try {
-      return JSON.parse(text);
-    } catch {
-      const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-      if (match) return JSON.parse(match[1]);
-      return null;
-    }
+    const aiResult = await generate({
+      system: 'Anda adalah asisten ekstraksi data. Keluarkan HANYA JSON murni tanpa markdown.',
+      user: prompt,
+      jsonMode: true,
+    });
+    return parseAIResult(aiResult.text);
   } catch (err) {
-    console.error('Gemini modul extract error:', err);
+    console.error('AI modul extract error:', err);
     return null;
   }
 }
