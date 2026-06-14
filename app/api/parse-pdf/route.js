@@ -89,7 +89,7 @@ async function extractCPWithGroq(rawText) {
 
 Berikut adalah teks yang diekstrak dari PDF:
 ---
-${rawText.substring(0, 15000)}
+${rawText.substring(0, 30000)}
 ---
 
 Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format JSON:
@@ -113,7 +113,11 @@ Catatan Penting:
 3. Pada array "elemenList", Anda WAJIB MENCARI TABEL ELEMEN tersebut. Ekstrak setiap baris dari tabel menjadi satu objek di dalam array "elemenList".
    - "nama": Isi dengan nama elemen di kolom kiri tabel.
    - "capaian": Isi dengan deskripsi utuh di kolom kanan tabel.
-   - Jika ada 4 elemen di tabel, buat 4 objek di dalam array ini.
+   - Contoh format yang diinginkan jika menemukan tabel elemen:
+     [
+       { "nama": "Bilangan", "capaian": "Peserta didik dapat membaca, menulis, dan membandingkan bilangan..." },
+       { "nama": "Aljabar", "capaian": "Peserta didik dapat mengenali, melanjutkan, dan membuat pola..." }
+     ]
 Kembalikan HANYA JSON murni tanpa markdown.`;
 
   const aiResult = await generate({

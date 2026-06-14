@@ -35,7 +35,13 @@ Catatan Penting:
 Dokumen CP biasanya membagi CP ke dalam dua bagian:
 - "Capaian Pembelajaran Umum" (paragraf penjelasan).
 - "Capaian Pembelajaran per Elemen" (biasanya tabel dengan kolom "Elemen" dan "Capaian Pembelajaran").
-Pada array "elemenList", Anda WAJIB MENCARI BAGIAN TABEL ELEMEN tersebut. Ekstrak SEMUA elemen beserta deskripsi capaiannya menjadi array JSON. Jika ada 4 elemen, buat 4 objek. Jangan sampai terlewat!`;
+Pada array "elemenList", Anda WAJIB MENCARI BAGIAN TABEL ELEMEN tersebut. Ekstrak SEMUA elemen beserta deskripsi capaiannya menjadi array JSON.
+Contoh format yang diinginkan jika menemukan tabel elemen:
+[
+  { "nama": "Bilangan", "capaian": "Peserta didik dapat membaca, menulis, dan membandingkan bilangan..." },
+  { "nama": "Aljabar", "capaian": "Peserta didik dapat mengenali, melanjutkan, dan membuat pola..." }
+]
+Jangan sampai terlewat!`;
 
   // Coba ambil dari multiple key, fallback ke GEMINI_API_KEY
   try {
