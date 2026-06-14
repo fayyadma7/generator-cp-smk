@@ -10,8 +10,8 @@ Output harus berupa JSON VALID tanpa markdown formatting atau teks lain di luar 
 Pastikan konten yang dihasilkan sesuai dengan Kurikulum Merdeka dan pendekatan Deep Learning (Mindful, Meaningful, Joyful).`;
 
 /* ── Helper: common context string from header ── */
-function buildContext(header) {
-  return `
+function buildContext(header, modulText) {
+  let ctx = `
 Konteks Pembelajaran:
 - Sekolah: ${header.namaSekolah || '-'}
 - Mata Pelajaran: ${header.mataPelajaran || '-'}
@@ -23,193 +23,117 @@ Konteks Pembelajaran:
 - Tahun Pelajaran: ${header.tahunPelajaran || '-'}
 - Nama Guru: ${header.namaGuru || '-'}
 `.trim();
+
+  if (modulText && modulText.trim().length > 20) {
+    ctx += `\n\n=== ISI MODUL AJAR (sebagai referensi) ===\n${modulText.trim()}\n=== AKHIR MODUL ===\n\nGunakan informasi dari modul di atas untuk membuat konten yang sesuai dan kontekstual.`;
+  }
+
+  return ctx;
 }
 
-/* ── LKPD ── */
-function buildLKPDPrompt(header, existingData) {
-  return {
-    system: SYSTEM_PROMPT,
-    user: `${buildContext(header)}
+/* ── Factory: all prompts share the same signature ── */
+function makePrompt(key, header, existingData, modulText, extraInstructions) {
+  const sectionNames = {
+    lkpd: 'LEMBAR KERJA PESERTA DIDIK (LKPD)',
+    formatif: 'PENILAIAN FORMATIF',
+    sumatif: 'PENILAIAN SUMATIF',
+    rubrik: 'RUBRIK PENILAIAN',
+    materi: 'BAHAN AJAR / MATERI',
+    media: 'MEDIA PEMBELAJARAN',
+    refleksi: 'REFLEKSI PEMBELAJARAN',
+    pengayaan: 'AKTIVITAS PENGAYAAN',
+    remediasi: 'AKTIVITAS REMEDIASI',
+  };
 
-Buatlah data untuk LEMBAR KERJA PESERTA DIDIK (LKPD) dengan struktur JSON berikut:
-{
+  const jsonSchemas = {
+    lkpd: `{
   "judulKegiatan": "Judul kegiatan yang menarik dan kontekstual",
   "alokasiWaktu": "Alokasi waktu (misal: 2 JP × 45 menit)",
   "tujuan": "Tujuan kegiatan LKPD (2-3 kalimat)",
   "kegiatan": [
-    {
-      "tanggal": "Tanggal/Hari pertemuan (misal: Pertemuan 1)",
-      "deskripsi": "Deskripsi langkah kegiatan",
-      "stimulus": "Stimulus/pemicu untuk peserta didik"
-    }
+    { "tanggal": "Tanggal/Hari pertemuan", "deskripsi": "Deskripsi langkah", "stimulus": "Stimulus" }
   ]
-}
-
-Buat 2-3 kegiatan. Pastikan relevan dengan mata pelajaran dan fase tersebut.`
-  };
-}
-
-/* ── Formatif ── */
-function buildFormatifPrompt(header, existingData) {
-  return {
-    system: SYSTEM_PROMPT,
-    user: `${buildContext(header)}
-
-Buatlah data untuk PENILAIAN FORMATIF dengan struktur JSON berikut:
-{
+}`,
+    formatif: `{
   "teknik": "Teknik penilaian (Observasi/Unjuk Kerja/Tes Tertulis/Tes Lisan/Penugasan/Portofolio/Proyek/Jurnal)",
   "jenisPenilaian": ["Sikap", "Pengetahuan", "Keterampilan"],
   "instrumen": [
-    {
-      "aspek": "Aspek yang dinilai",
-      "indikator": "Indikator pencapaian",
-      "skor": "Skor maksimal (1-100)"
-    }
+    { "aspek": "Aspek", "indikator": "Indikator", "skor": "Skor" }
   ]
-}
-
-Buat 3-5 instrumen penilaian yang sesuai dengan mata pelajaran ${header.mataPelajaran}.`
-  };
-}
-
-/* ── Sumatif ── */
-function buildSumatifPrompt(header, existingData) {
-  return {
-    system: SYSTEM_PROMPT,
-    user: `${buildContext(header)}
-
-Buatlah data untuk PENILAIAN SUMATIF dengan struktur JSON berikut:
-{
-  "bentuk": "Bentuk penilaian (Pilihan Ganda/Uraian/Essai/Proyek/Portofolio/Unjuk Kerja/Tes Lisan)",
+}`,
+    sumatif: `{
+  "bentuk": "Bentuk penilaian",
   "instrumen": [
-    {
-      "uraian": "Uraian soal atau indikator penilaian",
-      "bobot": "Bobot/nilai (misal: 20)"
-    }
+    { "uraian": "Soal/indikator", "bobot": "Bobot" }
   ],
-  "kkm": "Nilai KKM/Kriteria Ketuntasan (misal: 70)"
-}
-
-Buat 3-5 soal/indikator yang sesuai.`
-  };
-}
-
-/* ── Rubrik ── */
-function buildRubrikPrompt(header, existingData) {
-  return {
-    system: SYSTEM_PROMPT,
-    user: `${buildContext(header)}
-
-Buatlah data untuk RUBRIK PENILAIAN dengan struktur JSON berikut:
-{
+  "kkm": "Nilai KKM"
+}`,
+    rubrik: `{
   "kriteria": [
-    {
-      "kriteria": "Nama kriteria penilaian",
-      "deskripsi": "Deskripsi skala penilaian (4-3-2-1 atau Sangat Baik - Kurang)"
-    }
+    { "kriteria": "Nama kriteria", "deskripsi": "Deskripsi skala" }
   ]
-}
-
-Buat 3-5 kriteria rubrik dengan deskripsi yang jelas.`
-  };
-}
-
-/* ── Materi ── */
-function buildMateriPrompt(header, existingData) {
-  return {
-    system: SYSTEM_PROMPT,
-    user: `${buildContext(header)}
-
-Buatlah data untuk BAHAN AJAR/MATERI dengan struktur JSON berikut:
-{
-  "materiList": [
-    "Nama materi/topik 1",
-    "Nama materi/topik 2",
-    "Nama materi/topik 3"
-  ],
-  "sumber": "Sumber referensi yang digunakan (buku, jurnal, link)"
-}
-
-Buat 3-5 materi pokok yang sesuai dengan judul modul "${header.judulModul}".`
-  };
-}
-
-/* ── Media ── */
-function buildMediaPrompt(header, existingData) {
-  return {
-    system: SYSTEM_PROMPT,
-    user: `${buildContext(header)}
-
-Buatlah data untuk MEDIA PEMBELAJARAN dengan struktur JSON berikut:
-{
+}`,
+    materi: `{
+  "materiList": ["Materi 1", "Materi 2", "Materi 3"],
+  "sumber": "Sumber referensi"
+}`,
+    media: `{
   "mediaList": [
-    {
-      "jenis": "Video/Audio/Gambar/PPT/Infografis/Alat Peraga/Simulasi/LMS/Lainnya",
-      "deskripsi": "Nama media dan deskripsi singkat"
-    }
+    { "jenis": "Video/Audio/dll", "deskripsi": "Nama media" }
   ],
-  "catatan": "Catatan penggunaan media dalam pembelajaran"
-}
-
-Buat 3-5 media yang relevan.`
-  };
-}
-
-/* ── Refleksi ── */
-function buildRefleksiPrompt(header, existingData) {
-  return {
-    system: SYSTEM_PROMPT,
-    user: `${buildContext(header)}
-
-Buatlah data untuk REFLEKSI PEMBELAJARAN dengan struktur JSON berikut:
-{
+  "catatan": "Catatan penggunaan"
+}`,
+    refleksi: `{
   "refleksiList": [
-    {
-      "pertanyaan": "Pertanyaan refleksi untuk peserta didik",
-      "target": "Guru/Peserta Didik/Keduanya"
-    }
+    { "pertanyaan": "Pertanyaan refleksi", "target": "Guru/Peserta Didik/Keduanya" }
   ]
-}
-
-Buat 4-6 pertanyaan refleksi dengan pendekatan 3-2-1 (3 hal baru, 2 kesulitan, 1 pertanyaan) atau teknik refleksi lainnya.`
+}`,
+    pengayaan: `{
+  "pengayaanList": ["Aktivitas 1", "Aktivitas 2"]
+}`,
+    remediasi: `{
+  "remediasiList": ["Aktivitas 1", "Aktivitas 2"]
+}`,
   };
-}
 
-/* ── Pengayaan ── */
-function buildPengayaanPrompt(header, existingData) {
+  const instructions = {
+    lkpd: 'Buat 2-3 kegiatan relevan dengan mata pelajaran dan fase tersebut.',
+    formatif: `Buat 3-5 instrumen penilaian yang sesuai dengan mata pelajaran ${header.mataPelajaran}.`,
+    sumatif: 'Buat 3-5 soal/indikator yang sesuai.',
+    rubrik: 'Buat 3-5 kriteria rubrik dengan deskripsi yang jelas.',
+    materi: `Buat 3-5 materi pokok yang sesuai dengan judul modul "${header.judulModul}".`,
+    media: 'Buat 3-5 media yang relevan.',
+    refleksi: 'Buat 4-6 pertanyaan refleksi dengan pendekatan 3-2-1 atau teknik lainnya.',
+    pengayaan: 'Buat 2-3 aktivitas pengayaan untuk peserta didik yang telah mencapai ketuntasan.',
+    remediasi: 'Buat 2-3 aktivitas remediasi untuk peserta didik yang belum mencapai ketuntasan.',
+  };
+
+  const sectionName = sectionNames[key] || key.toUpperCase();
+  const schema = jsonSchemas[key] || '{}';
+  const instr = instructions[key] || '';
+  const extra = extraInstructions ? '\n\n' + extraInstructions : '';
+
   return {
     system: SYSTEM_PROMPT,
-    user: `${buildContext(header)}
+    user: `${buildContext(header, modulText)}
 
-Buatlah data untuk AKTIVITAS PENGAYAAN dengan struktur JSON berikut:
-{
-  "pengayaanList": [
-    "Deskripsi aktivitas pengayaan 1",
-    "Deskripsi aktivitas pengayaan 2"
-  ]
-}
+Buatlah data untuk ${sectionName} dengan struktur JSON berikut:
+${schema}
 
-Buat 2-3 aktivitas pengayaan untuk peserta didik yang telah mencapai ketuntasan.`
+${instr}${extra}`
   };
 }
 
-/* ── Remediasi ── */
-function buildRemediasiPrompt(header, existingData) {
-  return {
-    system: SYSTEM_PROMPT,
-    user: `${buildContext(header)}
-
-Buatlah data untuk AKTIVITAS REMEDIASI dengan struktur JSON berikut:
-{
-  "remediasiList": [
-    "Deskripsi aktivitas remediasi 1",
-    "Deskripsi aktivitas remediasi 2"
-  ]
-}
-
-Buat 2-3 aktivitas remediasi untuk peserta didik yang belum mencapai ketuntasan.`
-  };
-}
+/* ── All prompt builders ── */
+const buildLKPDPrompt     = (h, e, m) => makePrompt('lkpd', h, e, m);
+const buildFormatifPrompt  = (h, e, m) => makePrompt('formatif', h, e, m);
+const buildSumatifPrompt   = (h, e, m) => makePrompt('sumatif', h, e, m);
+const buildRubrikPrompt    = (h, e, m) => makePrompt('rubrik', h, e, m);
+const buildMateriPrompt    = (h, e, m) => makePrompt('materi', h, e, m);
+const buildMediaPrompt     = (h, e, m) => makePrompt('media', h, e, m);
+const buildRefleksiPrompt  = (h, e, m) => makePrompt('refleksi', h, e, m);
+const buildPengayaanPrompt = (h, e, m) => makePrompt('pengayaan', h, e, m);
+const buildRemediasiPrompt = (h, e, m) => makePrompt('remediasi', h, e, m);
 
 /* ── Exports ── */
 export const sectionPrompts = {

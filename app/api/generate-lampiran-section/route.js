@@ -8,7 +8,7 @@ export const maxDuration = 120;
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { header, sectionKey, existingData } = body;
+    const { header, sectionKey, existingData, modulText } = body;
 
     if (!header || !sectionKey) {
       return NextResponse.json({ error: 'header dan sectionKey wajib diisi' }, { status: 400 });
@@ -20,7 +20,8 @@ export async function POST(request) {
     }
 
     const label = SECTION_LABELS[sectionKey] || sectionKey;
-    const prompts = builder(header, existingData || {});
+    // builder(header, existingData, modulText)
+    const prompts = builder(header, existingData || {}, modulText || '');
 
     // Gemini API key rotation
     const apiKeys = [

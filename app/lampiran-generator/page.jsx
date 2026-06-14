@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { SECTION_META, DEFAULT_DATA, SECTION_COMPONENTS } from './section-forms';
 import { DocPreviewWrap, renderSectionPreview } from './preview-utils';
-import { ChevronLeft, ChevronRight, Eye, Download, X, Check, Lock, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, Download, X, Check, Lock, Sparkles, Loader2, AlertCircle, FileUp, FileText } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════
    MAIN PAGE COMPONENT
@@ -37,9 +37,16 @@ export default function LampiranGeneratorPage() {
 
   const [activeKey, setActiveKey] = useState('lkpd');
   const [modalOpen, setModalOpen] = useState(false);
-  const [aiLoading, setAiLoading] = useState({});   // { sectionKey: true/false }
+  const [aiLoading, setAiLoading] = useState({});     // { sectionKey: true/false }
   const [aiError, setAiError] = useState('');         // global error message
   const [aiSuccess, setAiSuccess] = useState('');     // global success message
+
+  /* ── File Upload State ── */
+  const [modulText, setModulText] = useState('');     // extracted raw text
+  const [modulFileName, setModulFileName] = useState('');
+  const [modulLoading, setModulLoading] = useState(false);
+  const [modulError, setModulError] = useState('');
+  const fileInputRef = useRef(null);
 
   /* ── Derived ── */
   const headerData = header;
@@ -114,6 +121,7 @@ export default function LampiranGeneratorPage() {
           header: h,
           sectionKey,
           existingData: sections[sectionKey]?.data || {},
+          modulText: modulText || '',
         }),
       });
 
@@ -160,6 +168,7 @@ export default function LampiranGeneratorPage() {
             header: h,
             sectionKey: key,
             existingData: sections[key]?.data || {},
+            modulText: modulText || '',
           }),
         });
 
@@ -185,6 +194,40 @@ export default function LampiranGeneratorPage() {
       setAiError(`❌ ${failCount} section gagal. ${lastError}`);
     }
   }, [header, sections, updateSectionData]);
+
+  /* ── File Upload Handler ── */
+  const handleFileUpload = useCallback(async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setModulLoading(true);
+    setModulError('');
+
+    try {
+      const fd = new FormData();
+      fd.append('modul', file);
+      const res = await fetch('/api/parse-modul-text', { method: 'POST', body: fd });
+      const json = await res.json();
+
+      if (!res.ok) throw new Error(json.error || 'Gagal membaca file');
+
+      setModulText(json.text || '');
+      setModulFileName(json.fileName || file.name);
+    } catch (err) {
+      setModulError(err.message);
+      setModulText('');
+      setModulFileName('');
+    } finally {
+      setModulLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }, []);
+
+  const clearModulFile = useCallback(() => {
+    setModulText('');
+    setModulFileName('');
+    setModulError('');
+  }, []);
 
   /* ── Active section data ── */
   const activeSection = sections[activeKey];
@@ -300,6 +343,36 @@ export default function LampiranGeneratorPage() {
               <label>Nama Guru</label>
               <input className="lgn-hf-input" value={header.namaGuru} onChange={e => updateHeader('namaGuru', e.target.value)} placeholder="Nama lengkap guru" />
             </div>
+          </div>
+
+          {/* ── Upload Modul ── */}
+          <div className="lgn-upload-area">
+            <label className="lgn-upload-label">MODUL AJAR (PDF / DOCX)</label>
+            {modulFileName ? (
+              <div className="lgn-upload-file">
+                <FileText size={16} />
+                <span className="lgn-upload-fname">{modulFileName}</span>
+                <button className="lgn-upload-clear" onClick={clearModulFile}>✕</button>
+              </div>
+            ) : (
+              <div className="lgn-upload-box" onClick={() => fileInputRef.current?.click()}>
+                <FileUp size={20} />
+                <span>{modulLoading ? 'Membaca file...' : 'Upload Modul'}</span>
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.docx,.doc"
+              style={{ display: 'none' }}
+              onChange={handleFileUpload}
+              disabled={modulLoading}
+            />
+            {modulLoading && <span className="lgn-upload-status loading">⏳ Membaca...</span>}
+            {modulError && <span className="lgn-upload-status error">{modulError}</span>}
+            {modulText && !modulLoading && (
+              <span className="lgn-upload-status success">✅ {modulText.length.toLocaleString()} karakter</span>
+            )}
           </div>
 
           <div className="lgn-sb-divider" />
