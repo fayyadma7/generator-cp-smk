@@ -1,6 +1,6 @@
-'use client';
 import { useState, useCallback } from 'react';
-import { Loader2, Sparkles, CheckCircle, XCircle, FileUp, ChevronDown, ChevronUp, Download } from 'lucide-react';
+import { Loader2, Sparkles, CheckCircle, XCircle, FileUp, ChevronDown, ChevronUp, Download, FileText } from 'lucide-react';
+import { exportToDocx } from './export-docx';
 
 // ── Daftar semua lampiran ──
 const ALL_KEYS = [
@@ -154,10 +154,8 @@ export default function LampiranPage() {
   };
 
   // ── Unduh JSON (download untuk diproses lebih lanjut) ──
-  const handleDownload = () => {
+  const handleDownloadJSON = () => {
     if (!result) return;
-    
-    // Format JSON sesuai dengan lampiranSchema.js
     const formattedData = {
       header: result.headerDanDaftar?.dokumenHeader || {},
       daftarLampiran: result.headerDanDaftar?.daftarLampiran || [],
@@ -173,7 +171,6 @@ export default function LampiranPage() {
         bahanRemediasi: result.bahanRemediasi || {},
       }
     };
-
     const blob = new Blob([JSON.stringify(formattedData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -181,6 +178,12 @@ export default function LampiranPage() {
     a.download = `lampiran-${formData.kodeModul || 'modul'}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // ── Unduh DOCX (Ukuran F4) ──
+  const handleDownloadDocx = () => {
+    if (!result) return;
+    exportToDocx(result, formData);
   };
 
   // ── Derived ──
@@ -561,12 +564,21 @@ export default function LampiranPage() {
             )}
             <button
               type="button"
-              onClick={handleDownload}
+              onClick={handleDownloadDocx}
               disabled={!allSuccess}
               className="btn btn-primary"
               style={{ flex: 1, height: '48px', fontSize: '15px', gap: '8px', opacity: allSuccess ? 1 : 0.4 }}
             >
-              <Download size={18} /> Unduh Data JSON Lampiran
+              <FileText size={18} /> Unduh Dokumen Word (.docx) - Kertas F4
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadJSON}
+              disabled={!allSuccess}
+              className="btn"
+              style={{ height: '48px', fontSize: '15px', gap: '8px', opacity: allSuccess ? 1 : 0.4, background: 'rgba(255,255,255,0.1)' }}
+            >
+              <Download size={18} /> JSON
             </button>
           </div>
 
