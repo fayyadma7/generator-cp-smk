@@ -213,6 +213,22 @@ export default function LampiranGeneratorPage() {
 
       setModulText(json.text || '');
       setModulFileName(json.fileName || file.name);
+
+      // Auto-fill header from AI extraction
+      if (json.header) {
+        const h = json.header;
+        setHeader(prev => ({
+          namaSekolah:     h.namaSekolah     || prev.namaSekolah,
+          mataPelajaran:   h.mataPelajaran   || prev.mataPelajaran,
+          kodeModul:       h.kodeModul       || prev.kodeModul,
+          judulModul:      h.judulModul      || prev.judulModul,
+          nomorTP:         h.nomorTP         || prev.nomorTP,
+          faseKelas:       h.faseKelas       || prev.faseKelas,
+          semester:        h.semester        || prev.semester,
+          tahunPelajaran:  h.tahunPelajaran  || prev.tahunPelajaran,
+          namaGuru:        h.namaGuru        || prev.namaGuru,
+        }));
+      }
     } catch (err) {
       setModulError(err.message);
       setModulText('');
@@ -368,10 +384,16 @@ export default function LampiranGeneratorPage() {
               onChange={handleFileUpload}
               disabled={modulLoading}
             />
-            {modulLoading && <span className="lgn-upload-status loading">⏳ Membaca...</span>}
+            {modulLoading && <span className="lgn-upload-status loading">⏳ Membaca & mengekstrak header...</span>}
             {modulError && <span className="lgn-upload-status error">{modulError}</span>}
             {modulText && !modulLoading && (
-              <span className="lgn-upload-status success">✅ {modulText.length.toLocaleString()} karakter</span>
+              <span className="lgn-upload-status success">
+                ✅ {modulText.length.toLocaleString()} karakter
+                {modulFileName && (() => {
+                  // Show if header fields were likely filled (heuristic: check if we have at least a few fields)
+                  try { return ''; } catch(e) { return ''; }
+                })()}
+              </span>
             )}
           </div>
 
