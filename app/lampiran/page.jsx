@@ -154,9 +154,40 @@ export default function LampiranPage() {
     }
   };
 
-  // ── Unduh JSON (download untuk diproses lebih lanjut) ──
-  const handleDownloadJSON = () => {
+  // ── Unduh Dokumen (.docx) ──
+  const handleDownloadDocx = async () => {
     if (!result) return;
+    try {
+      setIsLoading(true);
+      
+      // Format JSON sesuai schema agar bisa dibaca exportToDocx
+      const formattedData = {
+        headerDanDaftar: result.headerDanDaftar,
+        lkpd01a: result.lkpd01a,
+        lkpd01b: result.lkpd01b,
+        asesmenFormatif: result.asesmenFormatif,
+        asesmenSumatif: result.asesmenSumatif,
+        rekapKelas: result.rekapKelas,
+        mediaPembelajaran: result.mediaPembelajaran,
+        lembarRefleksi: result.lembarRefleksi,
+        bahanPengayaan: result.bahanPengayaan,
+        bahanRemediasi: result.bahanRemediasi,
+      };
+
+      await exportToDocx(formattedData);
+    } catch (err) {
+      console.error("Gagal export docx:", err);
+      alert("Gagal mengekspor dokumen Word: " + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ── Unduh JSON (download untuk diproses lebih lanjut) ──
+  const handleDownload = () => {
+    if (!result) return;
+    
+    // Format JSON sesuai dengan lampiranSchema.js
     const formattedData = {
       header: result.headerDanDaftar?.dokumenHeader || {},
       daftarLampiran: result.headerDanDaftar?.daftarLampiran || [],
@@ -172,6 +203,7 @@ export default function LampiranPage() {
         bahanRemediasi: result.bahanRemediasi || {},
       }
     };
+
     const blob = new Blob([JSON.stringify(formattedData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -179,12 +211,6 @@ export default function LampiranPage() {
     a.download = `lampiran-${formData.kodeModul || 'modul'}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  };
-
-  // ── Unduh DOCX (Ukuran F4) ──
-  const handleDownloadDocx = () => {
-    if (!result) return;
-    exportToDocx(result, formData);
   };
 
   // ── Derived ──
@@ -570,16 +596,16 @@ export default function LampiranPage() {
               className="btn btn-primary"
               style={{ flex: 1, height: '48px', fontSize: '15px', gap: '8px', opacity: allSuccess ? 1 : 0.4 }}
             >
-              <FileText size={18} /> Unduh Dokumen Word (.docx) - Kertas F4
+              <FileText size={18} /> Unduh Dokumen (.docx)
             </button>
             <button
               type="button"
-              onClick={handleDownloadJSON}
+              onClick={handleDownload}
               disabled={!allSuccess}
               className="btn"
-              style={{ height: '48px', fontSize: '15px', gap: '8px', opacity: allSuccess ? 1 : 0.4, background: 'rgba(255,255,255,0.1)' }}
+              style={{ flex: 1, height: '48px', fontSize: '15px', gap: '8px', opacity: allSuccess ? 1 : 0.4, background: 'rgba(99,179,237,0.15)', color: '#63b3ed', border: '1px solid rgba(99,179,237,0.4)' }}
             >
-              <Download size={18} /> JSON
+              <Download size={18} /> Unduh Data JSON
             </button>
           </div>
 

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
-import { generate, parseAIResult } from '../../../lib/aiClient';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -50,19 +49,37 @@ export async function POST(request) {
 
 // ── EKSTRAKSI 4 BAGIAN (Divide & Conquer) ──
 async function extractModulWithGemini(rawText) {
+  const apiKeys = [
+    process.env.GEMINI_API_KEY_1, process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3, process.env.GEMINI_API_KEY_4, process.env.GEMINI_API_KEY
+  ].filter(Boolean);
+
+  const delay = (ms) => new Promise(r => setTimeout(r, ms));
+
   async function fetchPart(promptText) {
-    try {
-      const res = await generate({
-        user: promptText + "\n\n--- TEKS MODUL ---\n" + rawText,
-        jsonMode: true
-      });
-      const parsed = parseAIResult(res.text);
-      if (!parsed) throw new Error("Format JSON tidak valid");
-      return parsed;
-    } catch (e) {
-      console.error("fetchPart gagal menggunakan semua AI:", e.message);
-      throw new Error(`Semua AI gagal mengekstrak. Error: ${e.message}`);
+    let retryCount = 0;
+    while (retryCount < 5) {
+      const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText + "\n\n--- TEKS MODUL ---\n" + rawText }] }],
+            generationConfig: { responseMimeType: 'application/json', temperature: 0.2 }
+          })
+        });
+
+        if (!response.ok) throw new Error(await response.text());
+        const data = await response.json();
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        return JSON.parse(text);
+      } catch (e) {
+        retryCount++;
+        await delay(2000);
+      }
     }
+    return {};
   }
 
   // Bagian 1: Identitas
