@@ -12,67 +12,31 @@ import {
   PROMPT_BAHAN_PENGAYAAN,
   PROMPT_BAHAN_REMEDIASI
 } from '../../../lampiranPrompts';
+import { generate, parseAIResult } from '../../../lib/aiClient';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-// ── Helper: panggil Gemini satu prompt, return JSON ──
-async function callGemini(systemPrompt, userPrompt, apiKey) {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          responseMimeType: 'application/json',
-        }
-      })
-    }
-  );
-
-  if (!response.ok) {
-    const errBody = await response.text();
-    throw new Error(`Gemini ${response.status}: ${errBody.slice(0, 120)}`);
-  }
-
-  const data = await response.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error('Gemini did not return any text');
-
-  // Bersihkan markdown wrapper jika ada
-  const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+// ── Helper: panggil AI satu prompt, return JSON ──
+async function callGemini(systemPrompt, userPrompt) {
   try {
-    return JSON.parse(cleaned);
-  } catch {
-    throw new Error(`PARSE_ERROR: ${cleaned.slice(0, 80)}`);
+    const res = await generate({
+      system: systemPrompt,
+      user: userPrompt,
+      jsonMode: true
+    });
+    const parsed = parseAIResult(res.text);
+    if (!parsed) throw new Error("Format JSON dari AI tidak valid");
+    return parsed;
+  } catch (err) {
+    throw new Error(`AI Gagal: ${err.message}`);
   }
 }
 
 export async function POST(request) {
   try {
     const inputGuru = await request.json();
-
-    const apiKeys = [
-      process.env.GEMINI_API_KEY_1,
-      process.env.GEMINI_API_KEY_2,
-      process.env.GEMINI_API_KEY_3,
-      process.env.GEMINI_API_KEY_4,
-      process.env.GEMINI_API_KEY,
-    ].filter(Boolean);
-
-    if (apiKeys.length === 0) {
-      return NextResponse.json(
-        { error: 'API Key Gemini belum diatur di Vercel Environment Variables' },
-        { status: 500 }
-      );
-    }
 
     const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -98,17 +62,14 @@ export async function POST(request) {
 
     const finalResults = {};
 
-    // Proses tiap item dengan retry dan random key rotation
+    // Proses tiap item dengan retry
     for (const item of prompts) {
       let retryCount = 0;
       let success = false;
 
       while (retryCount < 6 && !success) {
-        // Pilih API key secara acak setiap percobaan (load balance + fault tolerance)
-        const randomKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-
         try {
-          const result = await callGemini(SYSTEM_PROMPT_GLOBAL, item.prompt, randomKey);
+          const result = await callGemini(SYSTEM_PROMPT_GLOBAL, item.prompt);
           finalResults[item.key] = result;
           success = true;
         } catch (e) {
