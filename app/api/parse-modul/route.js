@@ -54,10 +54,15 @@ async function extractModulWithGemini(rawText) {
     process.env.GEMINI_API_KEY_3, process.env.GEMINI_API_KEY_4, process.env.GEMINI_API_KEY
   ].filter(Boolean);
 
+  if (apiKeys.length === 0) {
+    throw new Error('API Key Gemini tidak ditemukan. Pastikan sudah mengatur GEMINI_API_KEY di environment variables.');
+  }
+
   const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
   async function fetchPart(promptText) {
     let retryCount = 0;
+    let lastError = null;
     while (retryCount < 5) {
       const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
       try {
@@ -70,16 +75,24 @@ async function extractModulWithGemini(rawText) {
           })
         });
 
-        if (!response.ok) throw new Error(await response.text());
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`Google API Error (${response.status}): ${errText}`);
+        }
         const data = await response.json();
         const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        return JSON.parse(text);
+        if (!text) throw new Error('Response kosong dari Gemini');
+        const cleanedText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+        return JSON.parse(cleanedText);
       } catch (e) {
+        lastError = e;
+        console.error("fetchPart retry", retryCount, "error:", e.message);
         retryCount++;
         await delay(2000);
       }
     }
-    return {};
+    console.error("fetchPart failed completely after 5 retries. Last error:", lastError.message);
+    throw new Error(`Ekstraksi AI gagal setelah 5 percobaan. Error: ${lastError.message}`);
   }
 
   // Bagian 1: Identitas
