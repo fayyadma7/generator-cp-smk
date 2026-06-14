@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sectionPrompts, SECTION_LABELS } from '../../../lampiranPromptsHybrid';
+import { generate, parseAIResult } from '../../../lib/aiClient';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -23,95 +24,25 @@ export async function POST(request) {
     // builder(header, existingData, modulText)
     const prompts = builder(header, existingData || {}, modulText || '');
 
-    // Gemini API key rotation
-    const apiKeys = [
-      process.env.GEMINI_API_KEY_1,
-      process.env.GEMINI_API_KEY_2,
-      process.env.GEMINI_API_KEY_3,
-      process.env.GEMINI_API_KEY
-    ].filter(Boolean);
-
-    if (apiKeys.length === 0) {
-      return NextResponse.json({ error: 'API Key Gemini belum diatur' }, { status: 500 });
-    }
-
-    let retryCount = 0;
-    let success = false;
-    let textOutput = '';
-    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-    while (retryCount < 5 && !success) {
-      const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-
-      try {
-        console.log(`Generate ${sectionKey} attempt ${retryCount + 1}...`);
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              systemInstruction: { parts: [{ text: prompts.system }] },
-              contents: [{ parts: [{ text: prompts.user }] }],
-              generationConfig: {
-                responseMimeType: 'application/json',
-                temperature: 0.4,
-                maxOutputTokens: 2048,
-              }
-            })
-          }
-        );
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`Gemini Error [${sectionKey}] attempt ${retryCount + 1}:`, response.status, errorText.slice(0, 150));
-          if (response.status === 429 || response.status >= 500) {
-            throw new Error('RETRYABLE_' + response.status);
-          }
-          return NextResponse.json({
-            error: `Gagal menghubungi AI (${response.status})`,
-          }, { status: response.status });
-        }
-
-        const aiData = await response.json();
-        textOutput = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!textOutput || textOutput.trim().length < 10) {
-          throw new Error('RETRYABLE_EMPTY');
-        }
-
-        // Validate JSON — retry jika Gemini mengembalikan JSON tidak valid
-        try {
-          JSON.parse(textOutput);
-        } catch (parseErr) {
-          throw new Error('RETRYABLE_PARSE:' + parseErr.message);
-        }
-        success = true;
-      } catch (err) {
-        if (err.message && err.message.startsWith('RETRYABLE')) {
-          retryCount++;
-          if (retryCount >= 5) {
-            return NextResponse.json({
-              error: 'Batas percobaan API tercapai. Silakan coba lagi.',
-            }, { status: 429 });
-          }
-          await delay(3000 * retryCount);
-        } else {
-          console.error(`Fatal error generating ${sectionKey}:`, err);
-          return NextResponse.json({
-            error: 'Gagal memproses respons AI: ' + (err.message || 'Unknown error'),
-          }, { status: 500 });
-        }
-      }
-    }
-
-    if (!textOutput) {
-      return NextResponse.json({ error: 'AI tidak mengembalikan data valid.' }, { status: 500 });
+    // Panggil AI Client → failover: Gemini → NVIDIA → Groq
+    let textOutput;
+    try {
+      const aiResult = await generate({
+        system: prompts.system,
+        user: prompts.user,
+        jsonMode: true,
+        model: 'gemini-2.5-flash',
+      });
+      console.log(`✅ [${sectionKey}] AI berhasil via ${aiResult.provider}`);
+      textOutput = aiResult.text;
+    } catch (err) {
+      console.error(`AI Client gagal untuk [${sectionKey}]:`, err.message);
+      return NextResponse.json({ error: err.message || 'AI tidak tersedia.' }, { status: 503 });
     }
 
     let result;
     try {
-      result = JSON.parse(textOutput);
+      result = parseAIResult(textOutput);
     } catch {
       return NextResponse.json({
         error: 'Gagal memproses data AI. Silakan coba lagi.',
