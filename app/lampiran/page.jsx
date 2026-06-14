@@ -1,3 +1,4 @@
+'use client';
 import { useState, useCallback } from 'react';
 import { Loader2, Sparkles, CheckCircle, XCircle, FileUp, ChevronDown, ChevronUp, Download, FileText } from 'lucide-react';
 import { exportToDocx } from './export-docx';
