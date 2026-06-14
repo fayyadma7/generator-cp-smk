@@ -80,8 +80,12 @@ export async function POST(request) {
           throw new Error('RETRYABLE_EMPTY');
         }
 
-        // Validate JSON
-        JSON.parse(textOutput);
+        // Validate JSON — retry jika Gemini mengembalikan JSON tidak valid
+        try {
+          JSON.parse(textOutput);
+        } catch (parseErr) {
+          throw new Error('RETRYABLE_PARSE:' + parseErr.message);
+        }
         success = true;
       } catch (err) {
         if (err.message && err.message.startsWith('RETRYABLE')) {
@@ -105,7 +109,14 @@ export async function POST(request) {
       return NextResponse.json({ error: 'AI tidak mengembalikan data valid.' }, { status: 500 });
     }
 
-    const result = JSON.parse(textOutput);
+    let result;
+    try {
+      result = JSON.parse(textOutput);
+    } catch {
+      return NextResponse.json({
+        error: 'Gagal memproses data AI. Silakan coba lagi.',
+      }, { status: 500 });
+    }
 
     return NextResponse.json({
       sectionKey,
