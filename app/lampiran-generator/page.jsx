@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { SECTION_META, DEFAULT_DATA, SECTION_COMPONENTS } from './section-forms';
 import { DocPreviewWrap, renderSectionPreview } from './preview-utils';
 import { ChevronLeft, ChevronRight, Eye, Download, X, Check, Lock, Sparkles, Loader2, AlertCircle, FileUp, FileText } from 'lucide-react';
+import { exportToDocx } from './export-utils';
 
 /* ═══════════════════════════════════════════════
    MAIN PAGE COMPONENT
@@ -279,6 +280,16 @@ export default function LampiranGeneratorPage() {
     );
   }, [headerData, sections]);
 
+  /* ── Export Handler ── */
+  const handleExport = useCallback(async () => {
+    setAiError('');
+    try {
+      await exportToDocx(header, sections);
+    } catch (err) {
+      setAiError('❌ Gagal export DOCX: ' + (err.message || 'Unknown error'));
+    }
+  }, [header, sections]);
+
   const toggleModal = useCallback(() => {
     setModalOpen(prev => !prev);
   }, []);
@@ -303,7 +314,7 @@ export default function LampiranGeneratorPage() {
           <button className="btn btn-secondary btn-sm" onClick={toggleModal}>
             <Eye size={15} /> Preview Semua
           </button>
-          <button className="btn btn-primary btn-sm" disabled title="Fitur export akan segera tersedia">
+          <button className="btn btn-primary btn-sm" onClick={handleExport}>
             <Download size={15} /> Export DOCX
           </button>
         </div>
@@ -541,7 +552,7 @@ export default function LampiranGeneratorPage() {
             <div className="lgn-modal-header">
               <button className="btn btn-ghost btn-sm" onClick={toggleModal}><X size={16} /> Tutup</button>
               <h3>Preview Dokumen Lampiran</h3>
-              <button className="btn btn-primary btn-sm" disabled title="Fitur export segera tersedia"><Download size={15} /> Export DOCX</button>
+              <button className="btn btn-primary btn-sm" onClick={handleExport}><Download size={15} /> Export DOCX</button>
             </div>
             <div className="lgn-modal-body">
               <aside className="lgn-modal-toc">
