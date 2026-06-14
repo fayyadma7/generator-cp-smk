@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { SYSTEM_PROMPT } from '../../../modul_ajar_ai_template.js';
-import { generate, parseAIResult } from '../../../lib/aiClient';
 
-export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 120;
 
@@ -324,8 +322,8 @@ export async function POST(request) {
     const schema = SCHEMAS[step];
     const stepLabel = STEP_LABELS[step];
 
-    // Potong konteks agar tidak melebihi batas token, perbesar jadi 80000 untuk Gemini
-    const contextText = data.tpText.substring(0, 80000);
+    // Potong konteks agar tidak melebihi batas token
+    const contextText = data.tpText.substring(0, 8000);
 
     const userPrompt = `Kamu sedang mengisi Bagian ${step}/4 dari Modul Ajar: "${stepLabel}".
 
@@ -352,20 +350,61 @@ Kembalikan HANYA objek JSON yang memiliki struktur PERSIS sama dengan skema, tan
 SKEMA YANG HARUS DIISI:
 ${JSON.stringify(schema, null, 2)}`;
 
-    // ── Panggil AI Client → failover otomatis: Gemini → NVIDIA → Groq ──
+    let apiKey;
+    if (step === 1) apiKey = process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
+    else if (step === 2 || step === 4) apiKey = process.env.GEMINI_API_KEY_2 || process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
+    else if (step === 3) apiKey = process.env.GEMINI_API_KEY_3 || process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
+    
+    if (!apiKey) {
+      return NextResponse.json({ error: 'API Key Gemini tidak dikonfigurasi pada environment (Step ' + step + ')' }, { status: 500 });
+    }
+
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: SYSTEM_PROMPT }]
+        },
+        contents: [
+          { parts: [{ text: userPrompt }] }
+        ],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.4
+        }
+      })
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`Gemini API Error (step ${step}):`, errorText);
+
+      // Deteksi rate limit agar frontend bisa retry
+      if (res.status === 429) {
+        return NextResponse.json(
+          { error: 'RATE_LIMIT', message: 'Batas request tercapai. Harap tunggu beberapa detik.' },
+          { status: 429 }
+        );
+      }
+      return NextResponse.json({ error: `Gagal menghubungi AI pada step ${step}: ${res.status}` }, { status: 500 });
+    }
+
+    const aiData = await res.json();
+    const content = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!content) {
+      return NextResponse.json({ error: `AI mengembalikan respon kosong pada step ${step}.` }, { status: 500 });
+    }
+
     let result;
     try {
-      const aiResult = await generate({
-        system: SYSTEM_PROMPT,
-        user: userPrompt,
-        jsonMode: true,
-        model: 'gemini-2.5-flash',
-      });
-      console.log(`✅ Modul step ${step} berhasil via ${aiResult.provider}`);
-      result = parseAIResult(aiResult.text);
-    } catch (err) {
-      console.error(`AI Client gagal (step ${step}):`, err.message);
-      return NextResponse.json({ error: err.message || 'AI tidak tersedia.' }, { status: 503 });
+      result = JSON.parse(content);
+    } catch (parseError) {
+      console.error(`JSON Parse Error (step ${step}). Raw:`, content.substring(0, 500));
+      return NextResponse.json({ error: `AI mengembalikan format tidak valid pada step ${step}. Silakan coba lagi.` }, { status: 500 });
     }
 
     return NextResponse.json({ step, result });

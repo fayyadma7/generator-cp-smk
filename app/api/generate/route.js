@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { buildCPPrompt } from '../../../cpGenerator';
 import { buildSystemPrompt as buildInsersiSystemPrompt } from '../../../cp_insersi_perkoperasian_prompt';
-import { generate, parseAIResult } from '../../../lib/aiClient';
-
-export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
   try {
@@ -13,6 +10,21 @@ export async function POST(request) {
     if (!cpText) {
       return NextResponse.json({ error: 'Teks CP tidak boleh kosong' }, { status: 400 });
     }
+
+    // Load balancer sederhana menggunakan beberapa key Gemini
+    const apiKeys = [
+      process.env.GEMINI_API_KEY_1,
+      process.env.GEMINI_API_KEY_2,
+      process.env.GEMINI_API_KEY_3,
+      process.env.GEMINI_API_KEY
+    ].filter(Boolean);
+
+    if (apiKeys.length === 0) {
+      return NextResponse.json({ error: 'API Key Gemini belum diatur di Vercel Environment Variables' }, { status: 500 });
+    }
+
+    // Pilih random key untuk load balancing simpel
+    const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
 
     const lowerSubject = (subject || '').toLowerCase();
     const isIPAS = lowerSubject.includes('ipas') || lowerSubject.includes('ilmu pengetahuan alam dan sosial');
@@ -140,22 +152,44 @@ ${cpText}${originalElementsText}
 Output harus HANYA berupa JSON persis dengan struktur berikut. PASTIKAN SELURUH PROPERTY DIISI:
 ${jsonFormat}`;
 
-    // Panggil AI Client → failover otomatis: Gemini → NVIDIA → Groq
-    let result;
-    try {
-      const aiResult = await generate({
-        system: systemPrompt,
-        user: finalUserPrompt,
-        jsonMode: true,
-        model: 'gemini-2.5-flash',
-      });
-      console.log(`✅ AI berhasil via ${aiResult.provider}`);
-      result = parseAIResult(aiResult.text);
-    } catch (err) {
-      console.error('AI Client semua gagal:', err.message);
-      return NextResponse.json({ error: err.message || 'Semua AI provider tidak tersedia.' }, { status: 503 });
+    // Memanggil API Gemini
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: systemPrompt }]
+        },
+        contents: [
+          { parts: [{ text: finalUserPrompt }] }
+        ],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.4
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Gemini API Error Response:", errorText);
+      if (response.status === 429) {
+        return NextResponse.json({ error: 'Batas request API tercapai (Rate Limit). Silakan coba lagi.' }, { status: 429 });
+      }
+      return NextResponse.json({ error: 'Gagal menghubungi Gemini AI' }, { status: 500 });
     }
 
+    const aiData = await response.json();
+    const textOutput = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!textOutput) {
+      return NextResponse.json({ error: 'AI mengembalikan respon kosong.' }, { status: 500 });
+    }
+
+    const result = JSON.parse(textOutput);
+    
     return NextResponse.json(result);
 
   } catch (error) {
