@@ -106,7 +106,14 @@ Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format J
 }
 
 Catatan Penting:
-Pada array "elemenList", ekstrak SEMUA elemen CP beserta capaiannya yang Anda temukan di dalam dokumen. Jumlah elemen bisa 1, 2, 5, atau berapapun. Masukkan semuanya ke dalam array tersebut. Jika tidak ada elemen spesifik, kembalikan array kosong [].
+1. Dokumen CP dari Kemendikbudristek biasanya membagi CP ke dalam dua bagian:
+   - "Capaian Pembelajaran Umum" (berisi paragraf penjelasan).
+   - "Capaian Pembelajaran per Elemen" (biasanya disajikan dalam bentuk tabel dengan kolom "Elemen" dan "Capaian Pembelajaran").
+2. Pada field "cpText", gabungkan seluruh isi dari teks tersebut (Capaian Umum + Capaian per Elemen).
+3. Pada array "elemenList", Anda WAJIB MENCARI TABEL ELEMEN tersebut. Ekstrak setiap baris dari tabel menjadi satu objek di dalam array "elemenList".
+   - "nama": Isi dengan nama elemen di kolom kiri tabel.
+   - "capaian": Isi dengan deskripsi utuh di kolom kanan tabel.
+   - Jika ada 4 elemen di tabel, buat 4 objek di dalam array ini.
 Kembalikan HANYA JSON murni tanpa markdown.`;
 
   const aiResult = await generate({

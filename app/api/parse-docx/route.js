@@ -29,7 +29,13 @@ Tolong ekstrak informasi berikut dari teks di atas dan kembalikan dalam format J
   "elemenList": [
     { "nama": "Nama Elemen persis seperti di dokumen", "capaian": "Salin persis dan utuh deskripsi capaian elemen tersebut tanpa diringkas sedikit pun" }
   ]
-}`;
+}
+
+Catatan Penting:
+Dokumen CP biasanya membagi CP ke dalam dua bagian:
+- "Capaian Pembelajaran Umum" (paragraf penjelasan).
+- "Capaian Pembelajaran per Elemen" (biasanya tabel dengan kolom "Elemen" dan "Capaian Pembelajaran").
+Pada array "elemenList", Anda WAJIB MENCARI BAGIAN TABEL ELEMEN tersebut. Ekstrak SEMUA elemen beserta deskripsi capaiannya menjadi array JSON. Jika ada 4 elemen, buat 4 objek. Jangan sampai terlewat!`;
 
   // Coba ambil dari multiple key, fallback ke GEMINI_API_KEY
   try {
